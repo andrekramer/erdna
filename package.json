@@ -1,0 +1,14 @@
+{
+  "name": "erdna",
+  "version": "1.0.0",
+  "description": "serve",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "andre kramer",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
