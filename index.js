@@ -13,7 +13,8 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
   text = req.body.toString('utf-8');
   console.log(text);
-  lang.parse(text);
+  result = lang.parse(text);
+  console.log(JSON.stringify(result));
   reply = text + ".";
   res.send(reply);
 });
