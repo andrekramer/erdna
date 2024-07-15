@@ -2,9 +2,13 @@ function parse(text) {
   let result = [];
   let pos = 0;
   while (pos < text.length) {
-    const [r, p] = parseExpressionOrAtom(text, pos);
+    const [r, p] = readExpressionOrAtom(text, pos);
     if (r.type === "error") {
       return [r];
+    }
+    if (r.type === "comment") {
+        pos = p;
+        continue;
     }
     pos = p;
     result.push(r);
@@ -14,14 +18,14 @@ function parse(text) {
 
 function skipWhitespace(text, pos) {
     ch = text.charAt(pos);
-    while([' ', '\n', '\r', '\t'].includes(ch)) {
+    while([' ', '\n', '\r', '\t'].includes(ch) && pos !== text.length) {
         pos++;
         ch = text.charAt(pos);
     }
     return pos;
 }
 
-function parseExpressionOrAtom(text, pos) {
+function readExpressionOrAtom(text, pos) {
   let result = {};
   pos = skipWhitespace(text, pos);
   console.log("at " + pos);
@@ -38,6 +42,9 @@ function parseExpressionOrAtom(text, pos) {
           result = { type: "string", value: str}
           pos = skipWhitespace(text, p);
         }
+    } else if (ch === ';') {
+        pos = readComment(text, pos);
+        return [{type: "comment", value: ""}, pos];
     } else {
         const [atom, p, error] = readAtom(text, pos);
         if (error) {
@@ -55,7 +62,7 @@ function parseExpressionOrAtom(text, pos) {
 function readAtom(text, pos) {
     let ch = text.charAt(pos);
     let atom = ""
-    while(![' ', '\n', '\r', '\t', ')', '}', ']'].includes(ch) && pos != text.length) {
+    while(![' ', '\n', '\r', '\t', ')', '}', ']', ","].includes(ch) && pos !== text.length) {
         if (ch === '"') {
             return ["No double quotes in identifiers allowed", pos, true];
         }
@@ -69,7 +76,27 @@ function readAtom(text, pos) {
 function readString(text, pos) {
     let ch = text.charAt(++pos);
     let str = ""
-    while(ch !== '"' && pos != text.length) {
+    while(ch !== '"' && pos !== text.length) {
+        if (ch === '\\') {
+            if (pos + 1 === text.length) {
+                return ["Incomplete string escape  " + pos, pos, true];
+            }
+            pos++;
+            switch (text.charAt(pos)) {
+                case 'n': str += '\n'; break;
+                case 'r': str += '\r'; break;
+                case 't': str += '\t'; break;
+                case '\\': str += '\\'; break;
+                case '"': str += '"'; break;
+                case '\'': str += '`'; break;
+                case '\b': str += '`\b'; break;
+                default:
+                  return ["Unknown string escape  " + pos, pos, true];
+            }
+            pos++;
+            ch = text.charAt(pos);
+            continue;
+        }
         str += ch;
         pos++;
         ch = text.charAt(pos);
@@ -78,6 +105,15 @@ function readString(text, pos) {
         return ["Non terminated string at " + pos, pos, true];
     }
     return [str, ++pos, false];
+}
+
+function readComment(test, pos) {
+    ch = text.charAt(pos);
+    while(ch !== '\n' && ch != '\r' && pos !== text.length) {
+        pos++;
+        ch = text.charAt(pos);
+    }
+    return pos;
 }
 
 exports.parse = parse;
