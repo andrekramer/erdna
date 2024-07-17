@@ -50,9 +50,21 @@ function readExpressionOrAtom(text, pos) {
         if (error) {
           result = { type: "error", value: atom }
         } else {
-          console.log(" atom " + atom);
-          result = { type: "atom", value: atom }
-          pos = skipWhitespace(text, p);
+          const ch = atom.charAt(0);
+          if (['-', '+'].includes(ch) || (ch >= '0' && ch <= '9')) {
+            const number = Number(atom);
+            if (Number.isNaN(number)) {
+              result = { type: "error", value: "Not a number " + pos }
+            } else {
+              console.log(" number " + atom);
+              result = { type: "number", value: number }
+              pos = skipWhitespace(text, p);
+            }
+          } else {
+            console.log(" atom " + atom);
+            result = { type: "atom", value: atom }
+            pos = skipWhitespace(text, p);
+          }
         }
     }
   }
@@ -90,6 +102,8 @@ function readString(text, pos) {
                 case '"': str += '"'; break;
                 case '\'': str += '`'; break;
                 case '\b': str += '`\b'; break;
+                case '\f': str += '`\f'; break;
+                case '\v': str += '`\v'; break;
                 default:
                   return ["Unknown string escape  " + pos, pos, true];
             }
