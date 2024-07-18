@@ -1,24 +1,28 @@
 function parse(text) {
-  let result = [];
-  let pos = 0;
-  while (pos < text.length) {
-    const [r, p] = readExpressionOrAtom(text, pos);
-    if (r.type === "error") {
-      return [r];
-    }
-    if (r.type === "comment") {
+    let result = [];
+    let pos = 0;
+    while (pos < text.length) {
+        const [r, p] = readExpressionOrAtom(text, pos);
+        if (r.type === "error") {
+            return [r];
+        }
+        if (r.type === "comment") {
+            pos = p;
+            continue;
+        }
+        if (r.type === "atom" && r.value === '') {
+            pos = p;
+            continue;
+        }
         pos = p;
-        continue;
+        result.push(r);
     }
-    pos = p;
-    result.push(r);
-  }
-  return result;
+    return result;
 }
 
 function skipWhitespace(text, pos) {
     ch = text.charAt(pos);
-    while([' ', '\n', '\r', '\t'].includes(ch) && pos !== text.length) {
+    while ([' ', '\n', '\r', '\t'].includes(ch) && pos !== text.length) {
         pos++;
         ch = text.charAt(pos);
     }
@@ -26,55 +30,94 @@ function skipWhitespace(text, pos) {
 }
 
 function readExpressionOrAtom(text, pos) {
-  let result = {};
-  pos = skipWhitespace(text, pos);
-  console.log("at " + pos);
-  if (['(','{', '['].includes(text.charAt(pos))) {
-    console.log("exp");
-  } else {
+    let result = {};
+    pos = skipWhitespace(text, pos);
     let ch = text.charAt(pos);
-    if (ch === '"') {
+    console.log("at " + pos);
+    if (['(', '{', '['].includes(ch)) {
+        console.log("expression");
+        let exp = [];
+        const bracket = ch;
+        pos++;
+        while (![')', '}', ']'].includes(text.charAt(pos)) && pos < text.length) {
+            pos = skipWhitespace(text, pos);
+            const [r, p] = readExpressionOrAtom(text, pos);
+            if (r.type === "error") {
+                return [r];
+            }
+            if (r.type === "comment") {
+                pos = p;
+                continue;
+            }
+            if (r.type === "atom" && r.value === '') {
+                pos = p;
+                continue;
+            }
+            pos = p;
+            exp.push(r);
+        }
+        if (pos === text.length) {
+            result = { type: "error", value: "Incomplete " + bracket + " expression at " + pos };
+        } else {
+            let err = null;
+            switch (bracket) {
+                case '(':
+                    if (text.charAt(pos) !== ')') err = "Unbalanced (";
+                    break;
+                case '{':
+                    if (text.charAt(pos) !== '{') err = "Unbalanced {";
+                    break;
+                case '[':
+                    if (text.charAt(pos) !== '[') err = "Unbalanced [";
+                    break;
+            }
+            if (err !== null) {
+                result = { type: "error", value: err };
+            } else {
+                pos++;
+                result = { type: "expression", value: exp };
+            }
+        }
+    } else if (ch === '"') {
         const [str, p, error] = readString(text, pos);
         if (error) {
-          result = { type: "error", value: str }
+            result = { type: "error", value: str };
         } else {
-          console.log(" string " + str);
-          result = { type: "string", value: str}
-          pos = skipWhitespace(text, p);
+            console.log(" string " + str);
+            result = { type: "string", value: str };
+            pos = skipWhitespace(text, p);
         }
     } else if (ch === ';') {
         pos = readComment(text, pos);
-        return [{type: "comment", value: ""}, pos];
+        return [{ type: "comment", value: "" }, pos];
+    } else if (ch === '#' && pos + 1 < text.length) {
+        const [r, p] = readObject(text, pos);
+        result = r;
+        pos = p;
     } else {
         const [atom, p, error] = readAtom(text, pos);
         if (error) {
-          result = { type: "error", value: atom }
+            result = { type: "error", value: atom }
         } else {
-          const ch = atom.charAt(0);
-          if (['-', '+'].includes(ch) || (ch >= '0' && ch <= '9')) {
-            const number = Number(atom);
-            if (Number.isNaN(number)) {
-              result = { type: "error", value: "Not a number " + pos }
+            const ch = atom.charAt(0);
+            if ((['-', '+'].includes(ch) && atom.length !== 1) || (ch >= '0' && ch <= '9')) {
+                const [r, next] = readNumber(atom, text, p);
+                result = r;
+                pos = next;
             } else {
-              console.log(" number " + atom);
-              result = { type: "number", value: number }
-              pos = skipWhitespace(text, p);
+                console.log(" atom " + atom);
+                result = { type: "atom", value: atom };
+                pos = skipWhitespace(text, p);
             }
-          } else {
-            console.log(" atom " + atom);
-            result = { type: "atom", value: atom }
-            pos = skipWhitespace(text, p);
-          }
         }
     }
-  }
-  return [result, pos];
+    return [result, pos];
 }
 
 function readAtom(text, pos) {
     let ch = text.charAt(pos);
-    let atom = ""
-    while(![' ', '\n', '\r', '\t', ')', '}', ']', ","].includes(ch) && pos !== text.length) {
+    let atom = "";
+    while (![' ', '\n', '\r', '\t', ')', '}', ']', ","].includes(ch) && pos !== text.length) {
         if (ch === '"') {
             return ["No double quotes in identifiers allowed", pos, true];
         }
@@ -87,8 +130,8 @@ function readAtom(text, pos) {
 
 function readString(text, pos) {
     let ch = text.charAt(++pos);
-    let str = ""
-    while(ch !== '"' && pos !== text.length) {
+    let str = "";
+    while (ch !== '"' && pos !== text.length) {
         if (ch === '\\') {
             if (pos + 1 === text.length) {
                 return ["Incomplete string escape  " + pos, pos, true];
@@ -105,7 +148,7 @@ function readString(text, pos) {
                 case '\f': str += '`\f'; break;
                 case '\v': str += '`\v'; break;
                 default:
-                  return ["Unknown string escape  " + pos, pos, true];
+                    return ["Unknown string escape  " + pos, pos, true];
             }
             pos++;
             ch = text.charAt(pos);
@@ -123,11 +166,36 @@ function readString(text, pos) {
 
 function readComment(test, pos) {
     ch = text.charAt(pos);
-    while(ch !== '\n' && ch != '\r' && pos !== text.length) {
+    while (ch !== '\n' && ch != '\r' && pos !== text.length) {
         pos++;
         ch = text.charAt(pos);
     }
     return pos;
+}
+
+function readObject(text, pos) {
+    if (text.charAt(pos + 1) === 'f') {
+        pos += 2;
+        result = { type: "boolean", value: false };
+    } else if (text.charAt(pos + 1) === 't') {
+        pos += 2;
+        result = { type: "boolean", value: true };
+    } else {
+        result = { type: "error", value: "Unknown # object " + pos };
+    }
+    return [result, pos];
+}
+
+function readNumber(atom, text, pos) {
+    const number = Number(atom);
+    if (Number.isNaN(number)) {
+        result = { type: "error", value: "Not a number " + pos };
+    } else {
+        console.log(" number " + atom);
+        result = { type: "number", value: number };
+        pos = skipWhitespace(text, pos);
+    }
+    return [result, pos];
 }
 
 exports.parse = parse;
