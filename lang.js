@@ -94,7 +94,22 @@ function readExpressionOrAtom(text, pos) {
         const [r, p] = readObject(text, pos);
         result = r;
         pos = p;
+    } else if (ch === "'") {
+        const [r, p] = readExpressionOrAtom(text, ++pos);
+        const quote = [{ type: "atom", value: "quote"}];
+        quote.push(r);
+        result = { type: "expression", value: quote }
+        pos = p;
+    } else if (ch === ",") {
+        const [r, p] = readExpressionOrAtom(text, ++pos);
+        const unquote = [{ type: "atom", value: "unquote"}];
+        unquote.push(r);
+        result = { type: "expression", value: unquote }
+        pos = p;
     } else {
+        if ([')',']','}'].includes(ch)) {
+            return [{ type: "error", value: "Missing opening bracket for " + ch + " at " + pos}];
+        }
         const [atom, p, error] = readAtom(text, pos);
         if (error) {
             result = { type: "error", value: atom }
