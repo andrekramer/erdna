@@ -11,11 +11,21 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
+  const topLevelEnv = {};
   text = req.body.toString('utf-8');
   console.log(text);
   result = lang.parse(text);
   console.log(JSON.stringify(result));
-  reply = text + ".";
+  reply = "";
+  for (const exp of result) {
+    const result = lang.eval(exp, topLevelEnv);
+    if (result.type === "error") {
+      res.send(result.value);
+      return;
+    }
+    reply += lang.write(result);
+    reply += "\n";
+  }
   res.send(reply);
 });
 

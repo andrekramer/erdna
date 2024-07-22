@@ -212,5 +212,94 @@ function readNumber(atom, text, pos) {
     }
     return [result, pos];
 }
+const buildIns = { "+": plus, "*": multiply };
+
+function eval(exp, env) {
+    const type = exp.type;
+    if (type === "string" || type === "number" || type === "boolean") {
+        console.log("type " + type)
+        return exp;
+    }
+    if (type === "atom") {
+        atom = lookup(exp.value, env);
+        if (atom !== undefined) {
+            return atom;
+        } else {
+            if (buildIns[exp.value] !== undefined) {
+                console.log("snarfable");
+                return exp;
+            }
+            return { type: "error", value: "Unbound variable " + exp.value}
+        }
+    }
+    if (type === "expression") {
+        console.log("type expression");
+        const procExp = exp.value[0];
+        console.log("proc " + JSON.stringify(procExp));
+        const proc = eval(procExp, env);
+        const args = [];
+        for (let i = 1; i < exp.value.length; i++) {
+            console.log("arg " + i + " " + JSON.stringify(exp.value[i]));
+            const arg = eval(exp.value[i], env);
+            args.push(arg);
+        }
+        return apply(proc, args, env);
+    }
+    if (type === "error") {
+        return exp;
+    }
+    return exp;
+}
+
+function write(result) {
+    result = JSON.stringify(result);
+    console.log(result);
+    return result;
+}
+
+function lookup(symbol, env) {
+    let e = env;
+    while(e !== undefined) {
+        const value = e[symbol];
+        if (value !== undefined) {
+            return value;
+        }
+        e = env["__parent_scope"];
+    }
+    return undefined;
+}
+
+function apply(proc, args, env) {
+    const buildIn = buildIns[proc.value];
+    if (buildIn !== undefined) {
+       return buildIn(args, env);
+    }
+    return { type: "error", value: "Unkown procedure"};
+}
+
+function plus(args, env) {
+    let value = 0;
+       for (let arg of args) {
+         if (arg.type !== "number" ) {
+            return { type: "error", value: "+ requires numbers as arguments"};
+         }
+         value += arg.value;
+       }
+       return { type: "number", value };
+}
+
+function multiply(args, env) {
+    let value = 1;
+       for (let arg of args) {
+         if (arg.type !== "number" ) {
+            return { type: "error", value: "* requires numbers as arguments"};
+         }
+         value *= arg.value;
+       }
+       return { type: "number", value };
+}
 
 exports.parse = parse;
+exports.eval = eval;
+exports.write = write;
+

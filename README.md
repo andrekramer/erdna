@@ -19,3 +19,5 @@ curl --data-raw '
  (+ 1 2)
 
 ' localhost:8080
+
+curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080
