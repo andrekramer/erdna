@@ -217,12 +217,14 @@ const buildIns = { "+": plus, "*": multiply };
 function eval(exp, env) {
     const type = exp.type;
     if (type === "string" || type === "number" || type === "boolean") {
-        console.log("type " + type)
+        // console.log("eval litteral " + type)
         return exp;
     }
     if (type === "atom") {
+        // console.log("eval atom");
         atom = lookup(exp.value, env);
         if (atom !== undefined) {
+            // console.log("found atom " + JSON.stringify(atom));
             return atom;
         } else {
             if (buildIns[exp.value] !== undefined) {
@@ -232,18 +234,65 @@ function eval(exp, env) {
             return { type: "error", value: "Unbound variable " + exp.value}
         }
     }
+    if (exp.type === "expression" && exp.value[0].type === "atom" && exp.value[0].value === "lambda") {
+        exp.scope = env;
+        return exp;
+    }
+
     if (type === "expression") {
-        console.log("type expression");
-        const procExp = exp.value[0];
-        console.log("proc " + JSON.stringify(procExp));
-        const proc = eval(procExp, env);
-        const args = [];
-        for (let i = 1; i < exp.value.length; i++) {
-            console.log("arg " + i + " " + JSON.stringify(exp.value[i]));
-            const arg = eval(exp.value[i], env);
-            args.push(arg);
+        console.log("eval expression");
+
+        let proc = eval(exp.value[0], env);
+
+        // console.log("proc " + JSON.stringify(proc));
+        if (proc.type === "error") {
+            return proc;
         }
-        return apply(proc, args, env);
+
+        if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
+            // console.log("lambda " + JSON.stringify(proc));
+            
+            if (proc.value.length < 2 && proc.value[1].type !== "expression") {
+                return { type: "error", value: "lambda needs formal params"};
+            }
+            if (proc.value.length < 3) {
+                return { type: "error", value: "lambda needs a body"};
+            }
+            const args = evalArgs(exp, env);
+            
+            const formalsCount = proc.value[1].value.length;
+            if (args.length != formalsCount) {
+                return { type: "error", value: "lambda requires " + formalsCount + " arguments"};
+            }
+
+            const localEnv = { "__parent_scope": proc.scope };
+            const formals = proc.value[1].value;
+            console.log("formals " + JSON.stringify(formals));
+            let i = 0;
+            for (const formal of formals) {
+                if (formal.type !== "atom") {
+                    return { type: "error", value: "Formal arguments must be symbols"};
+                }
+                localEnv[formal.value] = args[i++];
+            }
+            console.log("localEnv " + JSON.stringify(localEnv));
+
+            let result;
+            for (let a = 2; a < proc.value.length; a++) {
+                // console.log("at " + JSON.stringify(proc.value[a]));
+                result = eval(proc.value[a], localEnv);
+                // console.log("result " + JSON.stringify(result));
+            }
+
+            return result;
+        } else {
+            if (proc.type !== "atom") {
+                return { type: "erorr", value: "can't apply a " + proc.type };
+            }
+            console.log("proc " + JSON.stringify(proc));
+            const args = evalArgs(exp, env);
+            return apply(proc, args, env);
+        }
     }
     if (type === "error") {
         return exp;
@@ -251,10 +300,22 @@ function eval(exp, env) {
     return exp;
 }
 
+function evalArgs(exp, env) {
+    const args = [];
+    for (let i = 1; i < exp.value.length; i++) {
+        console.log("arg " + i + " " + JSON.stringify(exp.value[i]));
+        const arg = eval(exp.value[i], env);
+        args.push(arg);
+    }
+    return args;
+}
+
 function write(result) {
-    result = JSON.stringify(result);
-    console.log(result);
-    return result;
+    console.log("write " + JSON.stringify(result));
+    if (result.type === "number" || result.type === "string" || result.type === "boolean") {
+        return result.value;
+    }
+    return JSON.stringify(result);
 }
 
 function lookup(symbol, env) {
@@ -264,7 +325,7 @@ function lookup(symbol, env) {
         if (value !== undefined) {
             return value;
         }
-        e = env["__parent_scope"];
+        e = e["__parent_scope"];
     }
     return undefined;
 }
@@ -274,7 +335,7 @@ function apply(proc, args, env) {
     if (buildIn !== undefined) {
        return buildIn(args, env);
     }
-    return { type: "error", value: "Unkown procedure"};
+    return { type: "error", value: "Unkown procedure " + proc.value };
 }
 
 function plus(args, env) {
