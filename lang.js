@@ -220,6 +220,10 @@ function eval(exp, env) {
         // console.log("eval litteral " + type)
         return exp;
     }
+    if (type === "closure") {
+        console.log("eval closure -> return");
+        return exp;
+    }
     if (type === "atom") {
         // console.log("eval atom");
         atom = lookup(exp.value, env);
@@ -234,9 +238,10 @@ function eval(exp, env) {
             return { type: "error", value: "Unbound variable " + exp.value}
         }
     }
+
     if (exp.type === "expression" && exp.value[0].type === "atom" && exp.value[0].value === "lambda") {
-        exp.scope = env;
-        return exp;
+        const closure = { type: "closure", value: exp, scope: env };
+        return closure;
     }
 
     if (type === "expression") {
@@ -247,6 +252,12 @@ function eval(exp, env) {
         // console.log("proc " + JSON.stringify(proc));
         if (proc.type === "error") {
             return proc;
+        }
+
+        let closureEnv;
+        if (proc.type === "closure") {
+            closureEnv = proc.scope;
+            proc = proc.value;
         }
 
         if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
@@ -265,8 +276,9 @@ function eval(exp, env) {
                 return { type: "error", value: "lambda requires " + formalsCount + " arguments"};
             }
 
-            const localEnv = { "__parent_scope": proc.scope };
+            const localEnv = { "__parent_scope": closureEnv };
             const formals = proc.value[1].value;
+
             console.log("formals " + JSON.stringify(formals));
             let i = 0;
             for (const formal of formals) {
@@ -294,10 +306,11 @@ function eval(exp, env) {
             return apply(proc, args, env);
         }
     }
+
     if (type === "error") {
         return exp;
     }
-    return exp;
+    return { type: "erorr", value: "Could not evaluate " + type };
 }
 
 function evalArgs(exp, env) {
@@ -363,4 +376,3 @@ function multiply(args, env) {
 exports.parse = parse;
 exports.eval = eval;
 exports.write = write;
-
