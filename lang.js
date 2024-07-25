@@ -1,4 +1,5 @@
-function parse(text) {
+
+function read(text) {
     let result = [];
     let pos = 0;
     while (pos < text.length) {
@@ -33,9 +34,9 @@ function readExpressionOrAtom(text, pos) {
     let result = {};
     pos = skipWhitespace(text, pos);
     let ch = text.charAt(pos);
-    console.log("at " + pos);
+    // console.log("at " + pos);
     if (['(', '{', '['].includes(ch)) {
-        console.log("expression");
+        // console.log("expression");
         let exp = [];
         const bracket = ch;
         pos++;
@@ -65,10 +66,10 @@ function readExpressionOrAtom(text, pos) {
                     if (text.charAt(pos) !== ')') err = "Unbalanced (";
                     break;
                 case '{':
-                    if (text.charAt(pos) !== '{') err = "Unbalanced {";
+                    if (text.charAt(pos) !== '}') err = "Unbalanced {";
                     break;
                 case '[':
-                    if (text.charAt(pos) !== '[') err = "Unbalanced [";
+                    if (text.charAt(pos) !== ']') err = "Unbalanced [";
                     break;
             }
             if (err !== null) {
@@ -83,7 +84,7 @@ function readExpressionOrAtom(text, pos) {
         if (error) {
             result = { type: "error", value: str };
         } else {
-            console.log(" string " + str);
+            // console.log(" string " + str);
             result = { type: "string", value: str };
             pos = skipWhitespace(text, p);
         }
@@ -96,19 +97,19 @@ function readExpressionOrAtom(text, pos) {
         pos = p;
     } else if (ch === "'") {
         const [r, p] = readExpressionOrAtom(text, ++pos);
-        const quote = [{ type: "atom", value: "quote"}];
+        const quote = [{ type: "atom", value: "quote" }];
         quote.push(r);
         result = { type: "expression", value: quote }
         pos = p;
     } else if (ch === ",") {
         const [r, p] = readExpressionOrAtom(text, ++pos);
-        const unquote = [{ type: "atom", value: "unquote"}];
+        const unquote = [{ type: "atom", value: "unquote" }];
         unquote.push(r);
         result = { type: "expression", value: unquote }
         pos = p;
     } else {
-        if ([')',']','}'].includes(ch)) {
-            return [{ type: "error", value: "Missing opening bracket for " + ch + " at " + pos}];
+        if ([')', ']', '}'].includes(ch)) {
+            return [{ type: "error", value: "Missing opening bracket for " + ch + " at " + pos }];
         }
         const [atom, p, error] = readAtom(text, pos);
         if (error) {
@@ -120,7 +121,7 @@ function readExpressionOrAtom(text, pos) {
                 result = r;
                 pos = next;
             } else {
-                console.log(" atom " + atom);
+                // console.log(" atom " + atom);
                 result = { type: "atom", value: atom };
                 pos = skipWhitespace(text, p);
             }
@@ -174,12 +175,12 @@ function readString(text, pos) {
         ch = text.charAt(pos);
     }
     if (ch !== '"' && pos == text.length) {
-        return ["Non terminated string at " + pos, pos, true];
+        return ["Non \" terminated string at " + pos, pos, true];
     }
     return [str, ++pos, false];
 }
 
-function readComment(test, pos) {
+function readComment(text, pos) {
     ch = text.charAt(pos);
     while (ch !== '\n' && ch != '\r' && pos !== text.length) {
         pos++;
@@ -206,12 +207,13 @@ function readNumber(atom, text, pos) {
     if (Number.isNaN(number)) {
         result = { type: "error", value: "Not a number " + pos };
     } else {
-        console.log(" number " + atom);
+        // console.log(" number " + atom);
         result = { type: "number", value: number };
         pos = skipWhitespace(text, pos);
     }
     return [result, pos];
 }
+
 const buildIns = { "+": plus, "*": multiply };
 
 function eval(exp, env) {
@@ -232,10 +234,10 @@ function eval(exp, env) {
             return atom;
         } else {
             if (buildIns[exp.value] !== undefined) {
-                console.log("snarfable");
+                // console.log("snarfable");
                 return exp;
             }
-            return { type: "error", value: "Unbound variable " + exp.value}
+            return { type: "error", value: "Unbound variable " + exp.value }
         }
     }
 
@@ -262,18 +264,18 @@ function eval(exp, env) {
 
         if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
             // console.log("lambda " + JSON.stringify(proc));
-            
+
             if (proc.value.length < 2 && proc.value[1].type !== "expression") {
-                return { type: "error", value: "lambda needs formal params"};
+                return { type: "error", value: "lambda needs formal params" };
             }
             if (proc.value.length < 3) {
-                return { type: "error", value: "lambda needs a body"};
+                return { type: "error", value: "lambda needs a body" };
             }
             const args = evalArgs(exp, env);
-            
+
             const formalsCount = proc.value[1].value.length;
             if (args.length != formalsCount) {
-                return { type: "error", value: "lambda requires " + formalsCount + " arguments"};
+                return { type: "error", value: "lambda requires " + formalsCount + " arguments" };
             }
 
             const localEnv = { "__parent_scope": closureEnv };
@@ -283,7 +285,7 @@ function eval(exp, env) {
             let i = 0;
             for (const formal of formals) {
                 if (formal.type !== "atom") {
-                    return { type: "error", value: "Formal arguments must be symbols"};
+                    return { type: "error", value: "Formal arguments must be symbols" };
                 }
                 localEnv[formal.value] = args[i++];
             }
@@ -301,7 +303,7 @@ function eval(exp, env) {
             if (proc.type !== "atom") {
                 return { type: "erorr", value: "can't apply a " + proc.type };
             }
-            console.log("proc " + JSON.stringify(proc));
+            // console.log("proc " + JSON.stringify(proc));
             const args = evalArgs(exp, env);
             return apply(proc, args, env);
         }
@@ -316,7 +318,7 @@ function eval(exp, env) {
 function evalArgs(exp, env) {
     const args = [];
     for (let i = 1; i < exp.value.length; i++) {
-        console.log("arg " + i + " " + JSON.stringify(exp.value[i]));
+        // console.log("arg " + i + " " + JSON.stringify(exp.value[i]));
         const arg = eval(exp.value[i], env);
         args.push(arg);
     }
@@ -324,7 +326,7 @@ function evalArgs(exp, env) {
 }
 
 function write(result) {
-    console.log("write " + JSON.stringify(result));
+    // console.log("write " + JSON.stringify(result));
     if (result.type === "number" || result.type === "string" || result.type === "boolean") {
         return result.value;
     }
@@ -333,7 +335,7 @@ function write(result) {
 
 function lookup(symbol, env) {
     let e = env;
-    while(e !== undefined) {
+    while (e !== undefined) {
         const value = e[symbol];
         if (value !== undefined) {
             return value;
@@ -346,33 +348,33 @@ function lookup(symbol, env) {
 function apply(proc, args, env) {
     const buildIn = buildIns[proc.value];
     if (buildIn !== undefined) {
-       return buildIn(args, env);
+        return buildIn(args, env);
     }
     return { type: "error", value: "Unkown procedure " + proc.value };
 }
 
 function plus(args, env) {
     let value = 0;
-       for (let arg of args) {
-         if (arg.type !== "number" ) {
-            return { type: "error", value: "+ requires numbers as arguments"};
-         }
-         value += arg.value;
-       }
-       return { type: "number", value };
+    for (let arg of args) {
+        if (arg.type !== "number") {
+            return { type: "error", value: "+ requires numbers as arguments" };
+        }
+        value += arg.value;
+    }
+    return { type: "number", value };
 }
 
 function multiply(args, env) {
     let value = 1;
-       for (let arg of args) {
-         if (arg.type !== "number" ) {
-            return { type: "error", value: "* requires numbers as arguments"};
-         }
-         value *= arg.value;
-       }
-       return { type: "number", value };
+    for (let arg of args) {
+        if (arg.type !== "number") {
+            return { type: "error", value: "* requires numbers as arguments" };
+        }
+        value *= arg.value;
+    }
+    return { type: "number", value };
 }
 
-exports.parse = parse;
+exports.read = read;
 exports.eval = eval;
 exports.write = write;

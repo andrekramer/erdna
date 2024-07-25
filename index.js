@@ -7,14 +7,14 @@ app.use(express.raw({ type: '*/*', limit: '10mb' }));
 const port = 8080;
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("erdna");
 });
 
 app.post("/", (req, res) => {
   const topLevelEnv = {};
   text = req.body.toString('utf-8');
-  console.log(text);
-  result = lang.parse(text);
+  // console.log(text);
+  result = lang.read(text);
   console.log(JSON.stringify(result));
   reply = "";
   for (const exp of result) {
