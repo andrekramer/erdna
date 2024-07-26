@@ -241,10 +241,32 @@ function eval(exp, env) {
         }
     }
 
-    if (exp.type === "expression" && exp.value[0].type === "atom" && exp.value[0].value === "lambda") {
-        const closure = { type: "closure", value: exp, scope: env };
-        return closure;
+    if (exp.type === "expression" && exp.value[0].type === "atom") {
+        const first = exp.value[0];
+        if (first.value === "define") {
+            if (exp.value.length !== 3) {
+                return { error: "type", value: "define takes 2 arguments found " + exp.value.length };
+            }
+            const def = exp.value[1];
+            if (def.type === "atom") {
+                console.log("define " + JSON.stringify(def));
+                const arg = exp.value[2];
+                const result = eval(arg, env);
+                console.log("eval define arg result " +  JSON.stringify(result));
+                env[def.value] = result;
+                return result;
+            } else {
+                return { type: "error", value: "Can't define a " + def.type };
+            }
+        }
+
+        if (first.value === "lambda") {
+            console.log("closure over " + JSON.stringify(exp));
+            const closure = { type: "closure", value: exp, scope: env };
+            return closure;
+        }
     }
+   
 
     if (type === "expression") {
         console.log("eval expression");
@@ -263,7 +285,7 @@ function eval(exp, env) {
         }
 
         if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
-            // console.log("lambda " + JSON.stringify(proc));
+            console.log("lambda " + JSON.stringify(proc));
 
             if (proc.value.length < 2 && proc.value[1].type !== "expression") {
                 return { type: "error", value: "lambda needs formal params" };
@@ -272,7 +294,9 @@ function eval(exp, env) {
                 return { type: "error", value: "lambda needs a body" };
             }
             const args = evalArgs(exp, env);
-
+            if (args["type"] === "error") {
+                return args;
+            }
             const formalsCount = proc.value[1].value.length;
             if (args.length != formalsCount) {
                 return { type: "error", value: "lambda requires " + formalsCount + " arguments" };
@@ -289,7 +313,7 @@ function eval(exp, env) {
                 }
                 localEnv[formal.value] = args[i++];
             }
-            console.log("localEnv " + JSON.stringify(localEnv));
+            // console.log("localEnv " + JSON.stringify(localEnv));
 
             let result;
             for (let a = 2; a < proc.value.length; a++) {
@@ -305,6 +329,9 @@ function eval(exp, env) {
             }
             // console.log("proc " + JSON.stringify(proc));
             const args = evalArgs(exp, env);
+            if (args["type"] === "error") {
+                return args;
+            }
             return apply(proc, args, env);
         }
     }
@@ -320,6 +347,9 @@ function evalArgs(exp, env) {
     for (let i = 1; i < exp.value.length; i++) {
         // console.log("arg " + i + " " + JSON.stringify(exp.value[i]));
         const arg = eval(exp.value[i], env);
+        if (arg.type === "error") {
+            return arg;
+        }
         args.push(arg);
     }
     return args;
@@ -329,6 +359,9 @@ function write(result) {
     // console.log("write " + JSON.stringify(result));
     if (result.type === "number" || result.type === "string" || result.type === "boolean") {
         return result.value;
+    }
+    if (result.type === "closure") {
+        return JSON.stringify(result.value);
     }
     return JSON.stringify(result);
 }

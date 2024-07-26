@@ -24,3 +24,8 @@ curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080
 
 curl --data '((lambda (a b) (+ a b)) 1 2 )'  localhost:8080
 
+curl --data '(define a (+ 1 2)) (+ a a 4)' localhost:8080
+
+curl --data '(define a (lambda (x) (+ x 1))) (a 3)'
+
+
