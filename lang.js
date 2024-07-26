@@ -244,17 +244,40 @@ function eval(exp, env) {
     if (exp.type === "expression" && exp.value[0].type === "atom") {
         const first = exp.value[0];
         if (first.value === "define") {
-            if (exp.value.length !== 3) {
-                return { error: "type", value: "define takes 2 arguments found " + exp.value.length };
+            if (exp.value.length < 2) {
+                return { type: "error", value: "define what please?" };
             }
             const def = exp.value[1];
             if (def.type === "atom") {
                 console.log("define " + JSON.stringify(def));
+                if (exp.value.length !== 3) {
+                    return {type: "error", value: "define takes 2 arguments found " + exp.value.length };
+                }
                 const arg = exp.value[2];
                 const result = eval(arg, env);
                 console.log("eval define arg result " +  JSON.stringify(result));
                 env[def.value] = result;
                 return result;
+            } if (def.type === "expression") { // procedure definition - rewrite as lambdda
+                if (exp.value.length < 3) {
+                    return { type: "error", value: "define procedure needs a body"};
+                }
+                const proc = def.value[0];
+                if (proc.type !== "atom") {
+                    return { type: "error", value: "define procedure needs a name"};
+                }
+                const args = [];
+                for (i = 1; i < def.value.length; i++) {
+                    args.push(def.value[i]);
+                }
+                const lambda = [ { type: "atom", value: "lambda"}, {type: "expression", value:args} ];
+                for (i = 2; i < exp.value.length; i++) {
+                    lambda.push(exp.value[i]);
+                }
+                console.log("define proc " + JSON.stringify(lambda));
+                const closure = eval({ type: "expression", value: lambda }, env);
+                env[proc.value] = closure;
+                return closure;
             } else {
                 return { type: "error", value: "Can't define a " + def.type };
             }
