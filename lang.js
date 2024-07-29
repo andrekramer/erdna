@@ -1,3 +1,6 @@
+const res = require("express/lib/response");
+
+const buildIns = { "+": plus, "-": minus, "*": multiply, "equal?":  equal };
 
 function read(text) {
     let result = [];
@@ -40,8 +43,8 @@ function readExpressionOrAtom(text, pos) {
         let exp = [];
         const bracket = ch;
         pos++;
+        pos = skipWhitespace(text, pos);
         while (![')', '}', ']'].includes(text.charAt(pos)) && pos < text.length) {
-            pos = skipWhitespace(text, pos);
             const [r, p] = readExpressionOrAtom(text, pos);
             if (r.type === "error") {
                 return [r];
@@ -56,6 +59,7 @@ function readExpressionOrAtom(text, pos) {
             }
             pos = p;
             exp.push(r);
+            pos = skipWhitespace(text, pos);
         }
         if (pos === text.length) {
             result = { type: "error", value: "Incomplete " + bracket + " expression at " + pos };
@@ -214,8 +218,6 @@ function readNumber(atom, text, pos) {
     return [result, pos];
 }
 
-const buildIns = { "+": plus, "*": multiply };
-
 function eval(exp, env) {
     const type = exp.type;
     if (type === "string" || type === "number" || type === "boolean") {
@@ -243,6 +245,34 @@ function eval(exp, env) {
 
     if (exp.type === "expression" && exp.value[0].type === "atom") {
         const first = exp.value[0];
+
+        if (first.value === "if") {
+            if (exp.value.length < 3) {
+                return { type: "error", value: "if form needs a condition and a then part" };
+            }
+            if (exp.value.length > 4) {
+                return { type: "error", value: "if form requires condition with then and optional else part" };
+            }
+            const condition = exp.value[1];
+            // console.log("if " + JSON.stringify(condition));
+            const result = eval(condition, env);
+            if (result.type === "error") {
+                return result;
+            }
+
+            if (!(result.type === "boolean" && result.value === false)) {
+                const result = eval(exp.value[2], env);
+                return result;
+            } else {
+                if (exp.value.length === 4) {
+                     const result = eval(exp.value[3], env);
+                     return result;
+                } else {
+                    return { type: "boolean", value: false };
+                }
+            }
+        }
+
         if (first.value === "define") {
             if (exp.value.length < 2) {
                 return { type: "error", value: "define what please?" };
@@ -255,7 +285,7 @@ function eval(exp, env) {
                 }
                 const arg = exp.value[2];
                 const result = eval(arg, env);
-                console.log("eval define arg result " +  JSON.stringify(result));
+                // console.log("eval define arg result " +  JSON.stringify(result));
                 env[def.value] = result;
                 return result;
             } if (def.type === "expression") { // procedure definition - rewrite as lambdda
@@ -420,6 +450,28 @@ function plus(args, env) {
     return { type: "number", value };
 }
 
+function minus(args, env) {
+    if (args.length < 1) {
+        return { type: "error", value: "- requires at least one number as argument" };
+    }
+    if (args[0].type !== "number") {
+        return { type: "error", value: "- requires a number as first argument" };
+    }
+
+    let value = args[0].value;
+    if (args.length === 1) {
+        return -value;
+    }
+
+    for (let i = 1; i < args.length; i++) {
+        if (args[i].type !== "number") {
+            return { type: "error", value: "- requires numbers as arguments" };
+        }
+        value -= args[i].value;
+    }
+    return { type: "number", value };
+}
+
 function multiply(args, env) {
     let value = 1;
     for (let arg of args) {
@@ -429,6 +481,24 @@ function multiply(args, env) {
         value *= arg.value;
     }
     return { type: "number", value };
+}
+
+function equal(args, env) {
+    if (args.length != 2) {
+        return { type: "error", value: "equal? requires two argumewnts" };
+    }
+    if (args[0].type === "error") {
+        return args[0];
+    }
+    console.log("args[1] " + JSON.stringify(args[1]));
+    if (args[1].type === "error") {
+        return args[1];
+    }
+    if (args[0].type !== args[1].type) {
+        return { type: "boolean", value: false };
+    }
+    const result = args[0].value === args[1].value;
+    return { type: "boolean", value: result };
 }
 
 exports.read = read;
