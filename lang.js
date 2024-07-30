@@ -1,6 +1,8 @@
 const res = require("express/lib/response");
 
-const buildIns = { "+": plus, "-": minus, "*": multiply, "equal?":  equal };
+const buildIns = { "+": plus, "-": minus, "*": multiply, "/": divide, "equal?":  equal };
+
+let scopeId = 1;
 
 function read(text) {
     let result = [];
@@ -246,6 +248,35 @@ function eval(exp, env) {
     if (exp.type === "expression" && exp.value[0].type === "atom") {
         const first = exp.value[0];
 
+        if (first.value === "set!") {
+            if (exp.value.length !== 3) {
+                return { type: "error", value: "set! requires a name and value" };
+            }
+            const symbol = exp.value[1];
+            if (symbol.type !== "atom") {
+                return { type: "error", value: "Can only set value of a symbol" };
+            }
+
+            let e = env;
+            while(e !== undefined && e[symbol.value] === undefined) {
+                e = e["__parent_scope"];
+            }
+            if (e === undefined) {
+                return { type: "error", value: "Undefined symbol " + symbol.value + " in set!"};
+            }
+
+            const value = e[symbol.value];
+           
+            const update = eval(exp.value[2], env);
+            if (update.type === "error") {
+                return { type: "error", value: "Could not evaluate value to set!"};
+            }
+            
+            console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update));
+            e[symbol.value] = update;
+            return value;
+        }
+
         if (first.value === "if") {
             if (exp.value.length < 3) {
                 return { type: "error", value: "if form needs a condition and a then part" };
@@ -319,7 +350,6 @@ function eval(exp, env) {
             return closure;
         }
     }
-   
 
     if (type === "expression") {
         console.log("eval expression");
@@ -355,7 +385,7 @@ function eval(exp, env) {
                 return { type: "error", value: "lambda requires " + formalsCount + " arguments" };
             }
 
-            const localEnv = { "__parent_scope": closureEnv };
+            const localEnv = { "__parent_scope": closureEnv, name: "scope id " + scopeId++ };
             const formals = proc.value[1].value;
 
             console.log("formals " + JSON.stringify(formals));
@@ -483,16 +513,38 @@ function multiply(args, env) {
     return { type: "number", value };
 }
 
+function divide(args, env) {
+    if (args.length < 1) {
+        return { type: "error", value: "/ requires at least one number as argument" };
+    }
+    if (args[0].type !== "number") {
+        return { type: "error", value: "/ requires a number as first argument" };
+    }
+
+    let value = args[0].value;
+    if (value === 0) {
+        return { type: "error", value: "divide by zero" };
+    }
+    if (args.length === 1) {
+        return 1 / value;
+    }
+
+    for (let i = 1; i < args.length; i++) {
+        if (args[i].type !== "number") {
+            return { type: "error", value: "/ requires numbers as arguments" };
+        }
+        const v = args[i].value;
+        if (v === 0) {
+            return { type: "error", value: "divide by zero" };
+        }
+        value /= v;
+    }
+    return { type: "number", value };
+}
+
 function equal(args, env) {
     if (args.length != 2) {
         return { type: "error", value: "equal? requires two argumewnts" };
-    }
-    if (args[0].type === "error") {
-        return args[0];
-    }
-    console.log("args[1] " + JSON.stringify(args[1]));
-    if (args[1].type === "error") {
-        return args[1];
     }
     if (args[0].type !== args[1].type) {
         return { type: "boolean", value: false };

@@ -57,3 +57,21 @@ curl --data-raw '
   (! 5)   
 ' localhost:8080
 120
+
+curl --data '(define x 1) x (set! x 2) x' localhost:8080
+2
+
+curl --data-raw '
+(define counter (lambda ()  
+  (define x 1)
+  (lambda () (set! x (+ x 1)) x)
+ )
+)
+(define x (counter))
+(x)
+(x)
+(x)
+' localhost:8080
+
+ 
+

@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("/", (req, res) => {
-  const topLevelEnv = {};
+  const topLevelEnv = { name: "top level scope "};
   text = req.body.toString('utf-8');
   // console.log(text);
   result = lang.read(text);
