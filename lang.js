@@ -223,7 +223,7 @@ function readNumber(atom, text, pos) {
 function eval(exp, env) {
     const type = exp.type;
     if (type === "string" || type === "number" || type === "boolean") {
-        // console.log("eval litteral " + type)
+        // console.log("eval literal " + type)
         return exp;
     }
     if (type === "closure") {
@@ -271,7 +271,7 @@ function eval(exp, env) {
             if (update.type === "error") {
                 return { type: "error", value: "Could not evaluate value to set!"};
             }
-            
+
             console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update));
             e[symbol.value] = update;
             return value;
@@ -352,7 +352,7 @@ function eval(exp, env) {
     }
 
     if (type === "expression") {
-        console.log("eval expression");
+        // console.log("eval expression");
 
         let proc = eval(exp.value[0], env);
 
@@ -361,7 +361,7 @@ function eval(exp, env) {
             return proc;
         }
 
-        let closureEnv;
+        let closureEnv = env;
         if (proc.type === "closure") {
             closureEnv = proc.scope;
             proc = proc.value;
@@ -388,7 +388,7 @@ function eval(exp, env) {
             const localEnv = { "__parent_scope": closureEnv, name: "scope id " + scopeId++ };
             const formals = proc.value[1].value;
 
-            console.log("formals " + JSON.stringify(formals));
+            // console.log("formals " + JSON.stringify(formals));
             let i = 0;
             for (const formal of formals) {
                 if (formal.type !== "atom") {

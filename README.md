@@ -35,7 +35,7 @@ curl --data '(define a (+ 1 2)) (+ a a 4)' localhost:8080
 curl --data '(define a (lambda (x) (+ x 1))) (a 3)' localhost:8080
 4
 
-curl --data '(define (add1 x) (+ x 1)) (add1 3)' localhost:8080
+curl --data '(define (add1 x) (+ x 1)) (add1 4)' localhost:8080
 4
 
 curl --data '(define (addx x) (lambda (y) (+ x y))) (define add5 (addx 5)) (add5 3)' localhost:8080
@@ -58,7 +58,7 @@ curl --data-raw '
 ' localhost:8080
 120
 
-curl --data '(define x 1) x (set! x 2) x' localhost:8080
+curl --data '(define x "abc") x (set! x 2) x' localhost:8080
 2
 
 curl --data-raw '
