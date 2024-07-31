@@ -85,3 +85,6 @@ curl --data "'() " localhost:8080
 curl --data "(equal? '() '()) " localhost:8080
 true
 
+curl --data "(equal? '(1 2 3) (list 1 2 3))" localhost:8080
+true
+

@@ -592,16 +592,33 @@ function divide(args, env) {
 }
 
 function equal(args, env) {
+    // console.log("equal? " + JSON.stringify(args));
     if (args.length != 2) {
         return { type: "error", value: "equal? requires two argumewnts" };
     }
     if (args[0].type !== args[1].type) {
         return { type: "boolean", value: false };
     }
+    
     // () empty list is expression with value []
     if (args[0].type === "expression" && args[0].value.length === 0) {
         return args[1].value.length === 0;
     }
+   
+    if (args[0].type === "pair") {
+        let left = args[0];
+        let right = args[1];
+        while (left.type === "pair" && right.type === "pair") {
+           if (!equal([left.value, right.value], env).value === true) {
+              return { type: "boolean", value: false };
+           }
+           left = left.rest;
+           right = right.rest;
+        }
+        const result = left.type === right.type;
+        return { type: "boolean", value: result };
+    }
+
     const result = args[0].value === args[1].value;
     return { type: "boolean", value: result };
 }
