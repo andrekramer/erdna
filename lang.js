@@ -1,6 +1,6 @@
 const res = require("express/lib/response");
 
-const buildIns = { "+": plus, "-": minus, "*": multiply, "/": divide, "equal?":  equal };
+const buildIns = { "+": plus, "-": minus, "*": multiply, "/": divide, "equal?":  equal, "list": listy };
 
 let scopeId = 1;
 
@@ -248,6 +248,18 @@ function eval(exp, env) {
     if (exp.type === "expression" && exp.value[0].type === "atom") {
         const first = exp.value[0];
 
+        if (first.value === "quote") {
+            if (exp.value.length !== 2) {
+                return { type: "error", value: "Can only quote one value" };
+            }
+            let result = exp.value[1];
+            if (result.type === "expression") {
+                result = listify(result.value);
+            }
+            // console.log("quoted " + JSON.stringify(result));
+            return result;
+        }
+
         if (first.value === "set!") {
             if (exp.value.length !== 3) {
                 return { type: "error", value: "set! requires a name and value" };
@@ -402,6 +414,9 @@ function eval(exp, env) {
             for (let a = 2; a < proc.value.length; a++) {
                 // console.log("at " + JSON.stringify(proc.value[a]));
                 result = eval(proc.value[a], localEnv);
+                if (result.type === "error") {
+                    return result;
+                }
                 // console.log("result " + JSON.stringify(result));
             }
 
@@ -443,8 +458,29 @@ function write(result) {
     if (result.type === "number" || result.type === "string" || result.type === "boolean") {
         return result.value;
     }
+    if (result.type === "atom") {
+        return result.value;
+    }
     if (result.type === "closure") {
         return JSON.stringify(result.value);
+    }
+    if (result.type === "expression" && result.value.length === 0) {
+        return "()";
+    }
+    if (result.type === "pair") {
+        let str = "(";
+        let once = false;
+        while (result.type === "pair") {
+            if (!once) {
+                once = true;
+            } else {
+                str += " ";
+            }
+            str += write(result.value);
+            result = result.rest;
+        }
+        str += ")";
+        return str;
     }
     return JSON.stringify(result);
 }
@@ -467,6 +503,19 @@ function apply(proc, args, env) {
         return buildIn(args, env);
     }
     return { type: "error", value: "Unkown procedure " + proc.value };
+}
+
+function listify(expList) {
+    let result = { type: "expression", value: [] };
+    for (i = expList.length - 1; i >= 0; i--) {
+        const pair = { type: "pair", value: expList[i], rest: result };
+        result = pair;
+    }
+    return result;
+}
+
+function listy(args, env) {
+    return listify(args);
 }
 
 function plus(args, env) {
@@ -548,6 +597,10 @@ function equal(args, env) {
     }
     if (args[0].type !== args[1].type) {
         return { type: "boolean", value: false };
+    }
+    // () empty list is expression with value []
+    if (args[0].type === "expression" && args[0].value.length === 0) {
+        return args[1].value.length === 0;
     }
     const result = args[0].value === args[1].value;
     return { type: "boolean", value: result };

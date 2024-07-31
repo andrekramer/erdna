@@ -1,0 +1,54 @@
+curl --data-raw '
+(define a 
+ (lambda ()
+  (define x 1)
+  (define b (lambda () (set! x 2)))
+  (define c (lambda () (define x 3) (b)))
+  (c)
+  x
+ )
+)
+(a)
+' localhost:8080
+2
+
+curl --data-raw '
+(define (a)
+  (define x 1)
+  (define (b) (set! x 2)) 
+  (define (c) (define x 3) (b))
+  (c)
+  x
+)
+(a)
+' localhost:8080
+2
+
+curl --data-raw '
+(define (a) 
+  (define x 10)
+  (define y 11)
+  (define z 12)
+  (define (b)
+   (define y 0)
+   (set! x (+ z 1))
+   (set! z (+ y 2))
+   #t
+  )
+  (define (c)
+    (define z 5)
+    (define (d)
+     (define x 0)
+      (set! x (+ z 1)) 
+      (set! y (+ x 1))
+      (b)
+      1
+    )
+    (d)
+  )
+  (c)
+  (list x y z)
+)
+(a)
+' localhost:8080
+(13 7 2)

@@ -76,6 +76,12 @@ curl --data-raw '
 2
 3
 
+curl --data "'(1 2 a #f) " localhost:8080
+(1 2 a false) 
 
- 
+curl --data "'() " localhost:8080
+()
+
+curl --data "(equal? '() '()) " localhost:8080
+true
 
