@@ -88,3 +88,29 @@ true
 curl --data "(equal? '(1 2 3) (list 1 2 3))" localhost:8080
 true
 
+curl --data "(define a 100) (cons a '(1 2 3))" localhost:8080
+(100 1 2 3)
+
+curl --data "(cons 1 2)" localhost:8080
+(1 . 2)
+
+curl --data "(car '(1 2 3))" localhost:8080 
+1
+
+curl --data "(cdr '(1 2 3))" localhost:8080
+(2 3)
+
+curl --data-raw "
+(define (length l) 
+  (define (len l n) 
+    (if (equal? l '()) 
+      n 
+      (len (cdr l) (+ n 1))
+    )
+  )
+  (len l 0)
+)
+(length '(1 2 3))
+" localhost:8080
+
+

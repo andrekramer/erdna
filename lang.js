@@ -1,6 +1,16 @@
 const res = require("express/lib/response");
 
-const buildIns = { "+": plus, "-": minus, "*": multiply, "/": divide, "equal?":  equal, "list": listy };
+const buildIns = { 
+    "+": plus, 
+    "-": minus, 
+    "*": multiply, 
+    "/": divide, 
+    "equal?":  equal, 
+    "list": listy, 
+    "cons": cons,
+    "car": car,
+    "cdr": cdr
+};
 
 let scopeId = 1;
 
@@ -340,11 +350,11 @@ function eval(exp, env) {
                     return { type: "error", value: "define procedure needs a name"};
                 }
                 const args = [];
-                for (i = 1; i < def.value.length; i++) {
+                for (let i = 1; i < def.value.length; i++) {
                     args.push(def.value[i]);
                 }
                 const lambda = [ { type: "atom", value: "lambda"}, {type: "expression", value:args} ];
-                for (i = 2; i < exp.value.length; i++) {
+                for (let i = 2; i < exp.value.length; i++) {
                     lambda.push(exp.value[i]);
                 }
                 console.log("define proc " + JSON.stringify(lambda));
@@ -479,6 +489,10 @@ function write(result) {
             str += write(result.value);
             result = result.rest;
         }
+        if (result.type !== "expression" && result.value.length !== 0) {
+            str += " . ";
+            str += write(result);
+        }
         str += ")";
         return str;
     }
@@ -506,16 +520,51 @@ function apply(proc, args, env) {
 }
 
 function listify(expList) {
+    if (expList.length === 3 && expList[1].type === "atom" && expList[1].value === ".") {
+        let left = expList[0].type === "expression"? listify(expList[0].value) : expList[0];
+        let right = expList[2].type === "expression"? listify(expList[2].value) : expList[2];
+        const pair = { type: "pair", value: left, rest: right };
+        return pair;
+    }
     let result = { type: "expression", value: [] };
-    for (i = expList.length - 1; i >= 0; i--) {
-        const pair = { type: "pair", value: expList[i], rest: result };
+    for (let i = expList.length - 1; i >= 0; i--) {
+        let value = expList[i].type === "expression"? listify(expList[i].value) : expList[i];
+        const pair = { type: "pair", value: value, rest: result };
         result = pair;
     }
+    console.log("listified " + JSON.stringify(result));
     return result;
 }
 
 function listy(args, env) {
     return listify(args);
+}
+
+function cons(args, env) {
+    if (args.length !== 2) {
+        return { type: "error", value: "cons requires two arguments" };
+    }
+    return { type: "pair", value: args[0], rest: args[1] };
+}
+
+function car(args, env) {
+    if (args.length !== 1) {
+        return { type: "error", value: "car requires a single arguments" };
+    }
+    if (args[0].type !== "pair") {
+        return { type: "error", value: "car requires a non empty list or pair" };
+    }
+    return args[0].value;
+}
+
+function cdr(args, env) {
+    if (args.length !== 1) {
+        return { type: "error", value: "cdr requires a single arguments" };
+    }
+    if (args[0].type !== "pair") {
+        return { type: "error", value: "cdr requires a non empty list or pair" };
+    }
+    return args[0].rest;
 }
 
 function plus(args, env) {
@@ -599,7 +648,7 @@ function equal(args, env) {
     if (args[0].type !== args[1].type) {
         return { type: "boolean", value: false };
     }
-    
+
     // () empty list is expression with value []
     if (args[0].type === "expression" && args[0].value.length === 0) {
         return args[1].value.length === 0;

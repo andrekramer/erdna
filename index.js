@@ -6,12 +6,14 @@ app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
 const port = 8080;
 
+const topLevelEnv = { name: "top level scope "};
+
 app.get("/", (req, res) => {
   res.send("erdna");
 });
 
 app.post("/", (req, res) => {
-  const topLevelEnv = { name: "top level scope "};
+  // const topLevelEnv = { name: "per request top level scope "}; // Uncomment this line for no sharing between requests.
   text = req.body.toString('utf-8');
   // console.log(text);
   result = lang.read(text);
