@@ -12,6 +12,21 @@ const buildIns = {
     "cdr": cdr
 };
 
+const formals = {
+    "if": evalIf,
+    "define": evalDefine,
+    "lambda": evalLambda,
+    "set!": evalSet,
+    "quote": evalQuote
+};
+
+const primitiveTypes = {
+    "string": evalPrimitive,
+    "number": evalPrimitive,
+    "boolean": evalPrimitive,
+    "closure": evalClosure,
+};
+
 let scopeId = 1;
 
 function read(text) {
@@ -232,14 +247,12 @@ function readNumber(atom, text, pos) {
 
 function eval(exp, env) {
     const type = exp.type;
-    if (type === "string" || type === "number" || type === "boolean") {
-        // console.log("eval literal " + type)
-        return exp;
+
+    const primitiveEval = primitiveTypes[type];
+    if (primitiveEval !== undefined) {
+        return primitiveEval(exp, env);
     }
-    if (type === "closure") {
-        console.log("eval closure -> return");
-        return exp;
-    }
+
     if (type === "atom") {
         // console.log("eval atom");
         atom = lookup(exp.value, env);
@@ -255,126 +268,17 @@ function eval(exp, env) {
         }
     }
 
-    if (exp.type === "expression" && exp.value[0].type === "atom") {
-        const first = exp.value[0];
-
-        if (first.value === "quote") {
-            if (exp.value.length !== 2) {
-                return { type: "error", value: "Can only quote one value" };
-            }
-            let result = exp.value[1];
-            if (result.type === "expression") {
-                result = listify(result.value);
-            }
-            // console.log("quoted " + JSON.stringify(result));
-            return result;
-        }
-
-        if (first.value === "set!") {
-            if (exp.value.length !== 3) {
-                return { type: "error", value: "set! requires a name and value" };
-            }
-            const symbol = exp.value[1];
-            if (symbol.type !== "atom") {
-                return { type: "error", value: "Can only set value of a symbol" };
-            }
-
-            let e = env;
-            while(e !== undefined && e[symbol.value] === undefined) {
-                e = e["__parent_scope"];
-            }
-            if (e === undefined) {
-                return { type: "error", value: "Undefined symbol " + symbol.value + " in set!"};
-            }
-
-            const value = e[symbol.value];
-           
-            const update = eval(exp.value[2], env);
-            if (update.type === "error") {
-                return { type: "error", value: "Could not evaluate value to set!"};
-            }
-
-            console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update));
-            e[symbol.value] = update;
-            return value;
-        }
-
-        if (first.value === "if") {
-            if (exp.value.length < 3) {
-                return { type: "error", value: "if form needs a condition and a then part" };
-            }
-            if (exp.value.length > 4) {
-                return { type: "error", value: "if form requires condition with then and optional else part" };
-            }
-            const condition = exp.value[1];
-            // console.log("if " + JSON.stringify(condition));
-            const result = eval(condition, env);
-            if (result.type === "error") {
-                return result;
-            }
-
-            if (!(result.type === "boolean" && result.value === false)) {
-                const result = eval(exp.value[2], env);
-                return result;
-            } else {
-                if (exp.value.length === 4) {
-                     const result = eval(exp.value[3], env);
-                     return result;
-                } else {
-                    return { type: "boolean", value: false };
-                }
-            }
-        }
-
-        if (first.value === "define") {
-            if (exp.value.length < 2) {
-                return { type: "error", value: "define what please?" };
-            }
-            const def = exp.value[1];
-            if (def.type === "atom") {
-                console.log("define " + JSON.stringify(def));
-                if (exp.value.length !== 3) {
-                    return {type: "error", value: "define takes 2 arguments found " + exp.value.length };
-                }
-                const arg = exp.value[2];
-                const result = eval(arg, env);
-                // console.log("eval define arg result " +  JSON.stringify(result));
-                env[def.value] = result;
-                return result;
-            } if (def.type === "expression") { // procedure definition - rewrite as lambdda
-                if (exp.value.length < 3) {
-                    return { type: "error", value: "define procedure needs a body"};
-                }
-                const proc = def.value[0];
-                if (proc.type !== "atom") {
-                    return { type: "error", value: "define procedure needs a name"};
-                }
-                const args = [];
-                for (let i = 1; i < def.value.length; i++) {
-                    args.push(def.value[i]);
-                }
-                const lambda = [ { type: "atom", value: "lambda"}, {type: "expression", value:args} ];
-                for (let i = 2; i < exp.value.length; i++) {
-                    lambda.push(exp.value[i]);
-                }
-                console.log("define proc " + JSON.stringify(lambda));
-                const closure = eval({ type: "expression", value: lambda }, env);
-                env[proc.value] = closure;
-                return closure;
-            } else {
-                return { type: "error", value: "Can't define a " + def.type };
-            }
-        }
-
-        if (first.value === "lambda") {
-            console.log("closure over " + JSON.stringify(exp));
-            const closure = { type: "closure", value: exp, scope: env };
-            return closure;
-        }
-    }
-
     if (type === "expression") {
         // console.log("eval expression");
+
+        if (exp.value[0].type === "atom") {
+            const first = exp.value[0];
+
+            const evalFormal = formals[first.value];
+            if (evalFormal !== undefined) {
+                return evalFormal(exp, env);
+            }
+        }
 
         let proc = eval(exp.value[0], env);
 
@@ -390,7 +294,7 @@ function eval(exp, env) {
         }
 
         if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
-            console.log("lambda " + JSON.stringify(proc));
+            // console.log("lambda " + JSON.stringify(proc));
 
             if (proc.value.length < 2 && proc.value[1].type !== "expression") {
                 return { type: "error", value: "lambda needs formal params" };
@@ -435,6 +339,7 @@ function eval(exp, env) {
             if (proc.type !== "atom") {
                 return { type: "erorr", value: "can't apply a " + proc.type };
             }
+
             // console.log("proc " + JSON.stringify(proc));
             const args = evalArgs(exp, env);
             if (args["type"] === "error") {
@@ -448,6 +353,129 @@ function eval(exp, env) {
         return exp;
     }
     return { type: "erorr", value: "Could not evaluate " + type };
+}
+
+function evalPrimitive(exp, env) {
+    return exp;
+}
+
+function evalClosure(exp, env) {
+    console.log("eval closure");
+    return exp;
+}
+
+function evalLambda(exp, env) {
+    // console.log("closure over " + JSON.stringify(exp));
+    const closure = { type: "closure", value: exp, scope: env };
+    return closure;
+}
+
+function evalQuote(exp, env) {
+    if (exp.value.length !== 2) {
+        return { type: "error", value: "Can only quote one value" };
+    }
+    let result = exp.value[1];
+    if (result.type === "expression") {
+        result = listify(result.value);
+    }
+    // console.log("quoted " + JSON.stringify(result));
+    return result;
+}
+
+function evalSet(exp, env) {
+    if (exp.value.length !== 3) {
+        return { type: "error", value: "set! requires a name and value" };
+    }
+    const symbol = exp.value[1];
+    if (symbol.type !== "atom") {
+        return { type: "error", value: "Can only set value of a symbol" };
+    }
+
+    let e = env;
+    while(e !== undefined && e[symbol.value] === undefined) {
+        e = e["__parent_scope"];
+    }
+    if (e === undefined) {
+        return { type: "error", value: "Undefined symbol " + symbol.value + " in set!"};
+    }
+
+    const value = e[symbol.value];
+   
+    const update = eval(exp.value[2], env);
+    if (update.type === "error") {
+        return { type: "error", value: "Could not evaluate value to set!"};
+    }
+
+    // console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update));
+    e[symbol.value] = update;
+    return value;
+}
+
+function evalIf(exp, env) {
+    if (exp.value.length < 3) {
+        return { type: "error", value: "if form needs a condition and a then part" };
+    }
+    if (exp.value.length > 4) {
+        return { type: "error", value: "if form requires condition with then and optional else part" };
+    }
+    const condition = exp.value[1];
+    // console.log("if " + JSON.stringify(condition));
+    const result = eval(condition, env);
+    if (result.type === "error") {
+        return result;
+    }
+
+    if (!(result.type === "boolean" && result.value === false)) {
+        const result = eval(exp.value[2], env);
+        return result;
+    } else {
+        if (exp.value.length === 4) {
+             const result = eval(exp.value[3], env);
+             return result;
+        } else {
+            return { type: "boolean", value: false };
+        }
+    }
+}
+
+function evalDefine(exp, env) {
+    if (exp.value.length < 2) {
+        return { type: "error", value: "define what please?" };
+    }
+    const def = exp.value[1];
+    if (def.type === "atom") {
+        // console.log("define " + JSON.stringify(def));
+        if (exp.value.length !== 3) {
+            return {type: "error", value: "define takes 2 arguments found " + exp.value.length };
+        }
+        const arg = exp.value[2];
+        const result = eval(arg, env);
+        // console.log("eval define arg result " +  JSON.stringify(result));
+        env[def.value] = result;
+        return result;
+    } if (def.type === "expression") { // procedure definition - rewrite as lambdda
+        if (exp.value.length < 3) {
+            return { type: "error", value: "define procedure needs a body"};
+        }
+        const proc = def.value[0];
+        if (proc.type !== "atom") {
+            return { type: "error", value: "define procedure needs a name"};
+        }
+        const args = [];
+        for (let i = 1; i < def.value.length; i++) {
+            args.push(def.value[i]);
+        }
+        const lambda = [ { type: "atom", value: "lambda"}, {type: "expression", value:args} ];
+        for (let i = 2; i < exp.value.length; i++) {
+            lambda.push(exp.value[i]);
+        }
+        // console.log("define proc " + JSON.stringify(lambda));
+        const closure = eval({ type: "expression", value: lambda }, env);
+        env[proc.value] = closure;
+        return closure;
+    } else {
+        return { type: "error", value: "Can't define a " + def.type };
+    }
 }
 
 function evalArgs(exp, env) {
@@ -532,7 +560,7 @@ function listify(expList) {
         const pair = { type: "pair", value: value, rest: result };
         result = pair;
     }
-    console.log("listified " + JSON.stringify(result));
+    // console.log("listified " + JSON.stringify(result));
     return result;
 }
 
@@ -565,6 +593,38 @@ function cdr(args, env) {
         return { type: "error", value: "cdr requires a non empty list or pair" };
     }
     return args[0].rest;
+}
+
+function equal(args, env) {
+    // console.log("equal? " + JSON.stringify(args));
+    if (args.length != 2) {
+        return { type: "error", value: "equal? requires two argumewnts" };
+    }
+    if (args[0].type !== args[1].type) {
+        return { type: "boolean", value: false };
+    }
+
+    // () empty list is expression with value []
+    if (args[0].type === "expression" && args[0].value.length === 0) {
+        return args[1].value.length === 0;
+    }
+   
+    if (args[0].type === "pair") {
+        let left = args[0];
+        let right = args[1];
+        while (left.type === "pair" && right.type === "pair") {
+           if (!equal([left.value, right.value], env).value === true) {
+              return { type: "boolean", value: false };
+           }
+           left = left.rest;
+           right = right.rest;
+        }
+        const result = left.type === right.type;
+        return { type: "boolean", value: result };
+    }
+
+    const result = args[0].value === args[1].value;
+    return { type: "boolean", value: result };
 }
 
 function plus(args, env) {
@@ -638,38 +698,6 @@ function divide(args, env) {
         value /= v;
     }
     return { type: "number", value };
-}
-
-function equal(args, env) {
-    // console.log("equal? " + JSON.stringify(args));
-    if (args.length != 2) {
-        return { type: "error", value: "equal? requires two argumewnts" };
-    }
-    if (args[0].type !== args[1].type) {
-        return { type: "boolean", value: false };
-    }
-
-    // () empty list is expression with value []
-    if (args[0].type === "expression" && args[0].value.length === 0) {
-        return args[1].value.length === 0;
-    }
-   
-    if (args[0].type === "pair") {
-        let left = args[0];
-        let right = args[1];
-        while (left.type === "pair" && right.type === "pair") {
-           if (!equal([left.value, right.value], env).value === true) {
-              return { type: "boolean", value: false };
-           }
-           left = left.rest;
-           right = right.rest;
-        }
-        const result = left.type === right.type;
-        return { type: "boolean", value: result };
-    }
-
-    const result = args[0].value === args[1].value;
-    return { type: "boolean", value: result };
 }
 
 exports.read = read;
