@@ -17,7 +17,8 @@ const formals = {
     "define": evalDefine,
     "lambda": evalLambda,
     "set!": evalSet,
-    "quote": evalQuote
+    "quote": evalQuote,
+    "let": evalLet
 };
 
 const primitiveTypes = {
@@ -476,6 +477,46 @@ function evalDefine(exp, env) {
     } else {
         return { type: "error", value: "Can't define a " + def.type };
     }
+}
+
+function evalLet(exp, env) {
+    if (exp.value.length < 3) {
+        return { type: "error", value: "let form needs a bind and one or more eval parts" };
+    }
+    const binds = exp.value[1];
+    if (binds.type !== "expression") {
+        return { type: "error", value: "let bind expression expected" };
+    }
+    // rewrite as lambda
+
+    const lambda = { type: "atom", value: "lambda" };
+    const params = [];
+    const args = [];
+    for (const bind of binds.value) {
+        // console.log("param " + JSON.stringify(bind));
+        if (bind.type !== "expression" || bind.value.length !== 2) {
+            return { type: "error", value: "let bind must be expression pair" };
+        }
+        if (bind.value[0].type !== "atom") {
+            return { type: "error", value: "let bind must be atom and expression pair" };
+        }
+        params.push(bind.value[0]);
+        args.push(bind.value[1]);
+    }
+
+    const letLambdaValue = [ lambda, {type: "expression", value: params }];
+    for (let i = 2; i < exp.value.length; i++) {
+        letLambdaValue.push(exp.value[i]);
+    }
+    
+    const letLambdaExpValue = [ { type: "expression", value: letLambdaValue } ];
+    for (const arg of args) {
+        letLambdaExpValue.push(arg);
+    }
+    const letLambdaExp = { type: "expression", value: letLambdaExpValue };
+    console.log("let lambda expression " + JSON.stringify(letLambdaExp));
+
+    return eval(letLambdaExp, env);
 }
 
 function evalArgs(exp, env) {
