@@ -38,7 +38,8 @@ curl --data '(define a (lambda (x) (+ x 1))) (a 3)' localhost:8080
 curl --data '(define (add1 x) (+ x 1)) (add1 4)' localhost:8080
 5
 
-curl --data '(define (addx x) (lambda (y) (+ x y))) (define add5 (addx 5)) (add5 3)' localhost:8080
+curl --data '(define (addx x) (lambda (y) (+ x y))) 
+(define add5 (addx 5)) (add5 3)' localhost:8080
 8
 
 curl --data '(equal? #f (equal? 1 2))' localhost:8080
@@ -114,4 +115,22 @@ curl --data-raw "
 " localhost:8080
 3
 
+curl --data "
+(define apple 'delicious) 
+(cond 
+  [(equal? apple 'baseball) 'wrong]
+  [(equal? apple 'delicious) 'right]
+  [else 'not-sure])" localhost:8080
+'right
 
+curl --data "
+(define (null? l) (equal? '() l))
+(define (append2 list1 list2)
+  (cond ((null? list1)
+         list2)
+        (else
+         (cons (car list1)
+               (append2 (cdr list1) list2)))))
+(append2 '(1 2 3) '(4 5))
+" localhost:8080
+(1 2 3 4 5)

@@ -14,6 +14,7 @@ const buildIns = {
 
 const formals = {
     "if": evalIf,
+    "cond": evalCond,
     "define": evalDefine,
     "lambda": evalLambda,
     "set!": evalSet,
@@ -413,12 +414,21 @@ function evalSet(exp, env) {
 }
 
 function evalIf(exp, env) {
+    const rewrite = rewriteIf(exp, env);
+    if (rewrite.type === "error") {
+        return rewrite;
+    }
+    return eval(rewrite, env);
+}
+
+function rewriteIf(exp, env) {
     if (exp.value.length < 3) {
         return { type: "error", value: "if form needs a condition and a then part" };
     }
     if (exp.value.length > 4) {
         return { type: "error", value: "if form requires condition with then and optional else part" };
     }
+
     const condition = exp.value[1];
     // console.log("if " + JSON.stringify(condition));
     const result = eval(condition, env);
@@ -427,16 +437,48 @@ function evalIf(exp, env) {
     }
 
     if (!(result.type === "boolean" && result.value === false)) {
-        const result = eval(exp.value[2], env);
-        return result;
+        return exp.value[2];
     } else {
         if (exp.value.length === 4) {
-             const result = eval(exp.value[3], env);
-             return result;
+            return exp.value[3];
         } else {
             return { type: "boolean", value: false };
         }
     }
+}
+
+function evalCond(exp, env) {
+    const rewrite = rewriteCond(exp, env);
+    if (rewrite.type === "error") {
+        return rewrite;
+    }
+    return eval(rewrite, env);
+}
+
+function rewriteCond(exp, env) {
+    if (exp.value.length === 1) {
+        return { type: "error", value: "cond needs one or more conditions" };
+    }
+
+    for (let i = 1; i < exp.value.length; i++) {
+        const cond = exp.value[i];
+        if (cond.type !== "expression" && cond.value.length !== 2) {
+            return { type: "error", value: "cond arg must be expression pair" };
+        }
+        // console.log("condition " + JSON.stringify(cond.value[0]));
+        const defaultElse = cond.value[0];
+        if (defaultElse.type === "atom" && defaultElse.value == "else") {
+            if (i !== exp.value.length - 1) {
+                return { type: "error", value: "else must be last arg to cond" };
+            }
+            return cond.value[1];
+        }
+        const test = eval(cond.value[0], env);
+        if (!(test.type === "boolean" && test.value === false)) {
+            return cond.value[1];
+        }
+    }
+    return { type: "boolean", value: false };
 }
 
 function evalDefine(exp, env) {
