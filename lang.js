@@ -9,7 +9,8 @@ const buildIns = {
     "list": listy, 
     "cons": cons,
     "car": car,
-    "cdr": cdr
+    "cdr": cdr,
+    "begin": begin
 };
 
 const formals = {
@@ -676,6 +677,13 @@ function cdr(args, env) {
         return { type: "error", value: "cdr requires a non empty list or pair" };
     }
     return args[0].rest;
+}
+
+function begin(args, env) {
+    if (args.length === 0) {
+        return { type: "error", value: "begin needs at least one argument" };
+    }
+    return args[args.length - 1];
 }
 
 function equal(args, env) {

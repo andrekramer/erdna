@@ -134,3 +134,8 @@ curl --data "
 (append2 '(1 2 3) '(4 5))
 " localhost:8080
 (1 2 3 4 5)
+
+curl --data "(define a 1) (if (equal? 1 1) (begin (set! a 2) 'a '(1 2) (+ 1 a  3 4)) (#f))" localhost:8080
+10
+
+
