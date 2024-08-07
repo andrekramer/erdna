@@ -52,14 +52,17 @@ curl --data-raw '
    (b 2))
   (+ a b))
 ' localhost:8080
+3
 
 curl --data-raw '
 ((lambda (a b) 
    (+ a b)) 1 2)
 ' localhost:8080
+3
 
 curl --data-raw '
 (let  
   () 
   (+ 1  1))
 ' localhost:8080
+2

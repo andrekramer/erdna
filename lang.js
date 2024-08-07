@@ -31,6 +31,7 @@ const primitiveTypes = {
 };
 
 let scopeId = 1;
+const tailCalls = true;
 
 function read(text) {
     let result = [];
@@ -297,47 +298,82 @@ function eval(exp, env) {
         }
 
         if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
-            // console.log("lambda " + JSON.stringify(proc));
+            tail: while (true) {
+                // console.log("lambda " + JSON.stringify(proc));
 
-            if (proc.value.length < 2 && proc.value[1].type !== "expression") {
-                return { type: "error", value: "lambda needs formal params" };
-            }
-            if (proc.value.length < 3) {
-                return { type: "error", value: "lambda needs a body" };
-            }
-            const args = evalArgs(exp, env);
-            if (args["type"] === "error") {
-                return args;
-            }
-            const formalsCount = proc.value[1].value.length;
-            if (args.length != formalsCount) {
-                return { type: "error", value: "lambda requires " + formalsCount + " arguments" };
-            }
-
-            const localEnv = { "__parent_scope": closureEnv, name: "scope id " + scopeId++ };
-            const formals = proc.value[1].value;
-
-            // console.log("formals " + JSON.stringify(formals));
-            let i = 0;
-            for (const formal of formals) {
-                if (formal.type !== "atom") {
-                    return { type: "error", value: "Formal arguments must be symbols" };
+                if (proc.value.length < 2 && proc.value[1].type !== "expression") {
+                    return { type: "error", value: "lambda needs formal params" };
                 }
-                localEnv[formal.value] = args[i++];
-            }
-            // console.log("localEnv " + JSON.stringify(localEnv));
-
-            let result;
-            for (let a = 2; a < proc.value.length; a++) {
-                // console.log("at " + JSON.stringify(proc.value[a]));
-                result = eval(proc.value[a], localEnv);
-                if (result.type === "error") {
-                    return result;
+                if (proc.value.length < 3) {
+                    return { type: "error", value: "lambda needs a body" };
                 }
-                // console.log("result " + JSON.stringify(result));
-            }
+                const args = evalArgs(exp, env);
+                if (args["type"] === "error") {
+                    return args;
+                }
+                const formalsCount = proc.value[1].value.length;
+                if (args.length != formalsCount) {
+                    return { type: "error", value: "lambda requires " + formalsCount + " arguments" };
+                }
 
-            return result;
+                const localEnv = { "__parent_scope": closureEnv, name: "scope id " + scopeId++ };
+                const formals = proc.value[1].value;
+
+                // console.log("formals " + JSON.stringify(formals));
+                let i = 0;
+                for (const formal of formals) {
+                    if (formal.type !== "atom") {
+                        return { type: "error", value: "Formal arguments must be symbols" };
+                    }
+                    localEnv[formal.value] = args[i++];
+                }
+                // console.log("localEnv " + JSON.stringify(localEnv));
+
+                let result;
+                for (let a = 2; a < proc.value.length; a++) {
+                    // console.log("at " + JSON.stringify(proc.value[a]));
+                    let target = proc.value[a];
+
+                    if (tailCalls && a == proc.value.length - 1 && exp.value[0].type === "atom") {
+                        console.log("tail? " + exp.value[0].value + " " + JSON.stringify(target));
+
+                        if (target.type === "expression" && target.value.length !== 0 && target.value[0].type === "atom") {
+                            if (target.value[0].value === "if") {
+                                // console.log("tail if");
+                                target = rewriteIf(target, localEnv);
+                            } else if (target.value[0].value === "cond") {
+                                // console.log("tail cond");
+                                target = rewriteCond(target, localEnv);
+                            }
+                        }
+
+                        if (target.type === "expression" && target.value.length !== 0) {
+                            // console.log("tail target " + JSON.stringify(target));
+                            // Call to same proc can be optimized to avoid stack growing.
+                            if (target.value[0].type === "atom" && target.value[0].value === exp.value[0].value) {
+                                proc = eval(target.value[0], env);
+                                if (proc.type === "closure") {
+                                    closureEnv = proc.scope;
+                                    proc = proc.value;
+                                    exp = target;
+                                    env = localEnv;
+                                    if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
+                                        console.log("tail call");
+                                        continue tail;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    result = eval(target, localEnv);
+                    if (result.type === "error") {
+                        return result;
+                    }
+                    // console.log("result " + JSON.stringify(result));
+                }
+
+                return result;
+            }
         } else {
             if (proc.type !== "atom") {
                 return { type: "erorr", value: "can't apply a " + proc.type };

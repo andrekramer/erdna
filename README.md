@@ -138,4 +138,9 @@ curl --data "
 curl --data "(define a 1) (if (equal? 1 1) (begin (set! a 2) 'a '(1 2) (+ 1 a  3 4)) (#f))" localhost:8080
 10
 
-
+curl --data "
+(define (loop n) 
+   (cond ((equal? n 0) 0)
+         (else (loop (- n 1)))))
+(loop 10000)
+" localhost:8080
