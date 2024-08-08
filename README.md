@@ -124,9 +124,8 @@ curl --data "
 'right
 
 curl --data "
-(define (null? l) (equal? '() l))
 (define (append2 list1 list2)
-  (cond ((null? list1)
+  (cond ((equal? '() list1)
          list2)
         (else
          (cons (car list1)
@@ -144,3 +143,16 @@ curl --data "
          (else (loop (- n 1)))))
 (loop 10000)
 " localhost:8080
+
+; with predefined procs 
+
+curl --data "(not #t)(not #f)(not 1)" localhost:8080
+false
+true
+false
+
+curl --data "(null? '())(null? '(1 2 3))" localhost:8080
+true
+false
+
+

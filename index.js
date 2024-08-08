@@ -1,12 +1,13 @@
 const express = require("express");
 const lang = require("./lang.js");
+const procs = require("./procs.js");
 
 const app = express();
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
 const port = 8080;
 
-const topLevelEnv = { name: "top level scope "};
+const topLevelEnv = procs.seed(); // Uncomment for no procs { name: "top level scope "};
 
 app.get("/", (req, res) => {
   res.send("erdna");

@@ -335,7 +335,7 @@ function eval(exp, env) {
                     let target = proc.value[a];
 
                     if (tailCalls && a == proc.value.length - 1 && exp.value[0].type === "atom") {
-                        console.log("tail? " + exp.value[0].value + " " + JSON.stringify(target));
+                        // console.log("tail? " + exp.value[0].value + " " + JSON.stringify(target));
 
                         if (target.type === "expression" && target.value.length !== 0 && target.value[0].type === "atom") {
                             if (target.value[0].value === "if") {
@@ -358,7 +358,7 @@ function eval(exp, env) {
                                     exp = target;
                                     env = localEnv;
                                     if (proc.type === "expression" && proc.value[0].type === "atom" && proc.value[0].value === "lambda") {
-                                        console.log("tail call");
+                                        // console.log("tail call");
                                         continue tail;
                                     }
                                 }
