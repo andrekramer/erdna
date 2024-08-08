@@ -155,4 +155,10 @@ curl --data "(null? '())(null? '(1 2 3))" localhost:8080
 true
 false
 
+curl --data "(and #t (equal? 1 0))" localhost:8080
+false
+
+curl --data "(or #f (equal? 1 0)) (+ 1 2)"  localhost:8080 
+false
+3
 

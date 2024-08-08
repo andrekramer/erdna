@@ -20,7 +20,9 @@ const formals = {
     "lambda": evalLambda,
     "set!": evalSet,
     "quote": evalQuote,
-    "let": evalLet
+    "let": evalLet,
+    "and": evalAnd,
+    "or": evalOr
 };
 
 const primitiveTypes = {
@@ -32,6 +34,9 @@ const primitiveTypes = {
 
 let scopeId = 1;
 const tailCalls = true;
+
+const trueValue = { type: "boolean", value: true };
+const falseValue = { type: "boolean", value: false };
 
 function read(text) {
     let result = [];
@@ -227,10 +232,10 @@ function readComment(text, pos) {
 function readObject(text, pos) {
     if (text.charAt(pos + 1) === 'f') {
         pos += 2;
-        result = { type: "boolean", value: false };
+        result = falseValue;
     } else if (text.charAt(pos + 1) === 't') {
         pos += 2;
-        result = { type: "boolean", value: true };
+        result = trueValue;
     } else {
         result = { type: "error", value: "Unknown # object " + pos };
     }
@@ -479,7 +484,7 @@ function rewriteIf(exp, env) {
         if (exp.value.length === 4) {
             return exp.value[3];
         } else {
-            return { type: "boolean", value: false };
+            return falseValue;
         }
     }
 }
@@ -515,7 +520,7 @@ function rewriteCond(exp, env) {
             return cond.value[1];
         }
     }
-    return { type: "boolean", value: false };
+    return falseValue;
 }
 
 function evalDefine(exp, env) {
@@ -596,6 +601,28 @@ function evalLet(exp, env) {
     console.log("let lambda expression " + JSON.stringify(letLambdaExp));
 
     return eval(letLambdaExp, env);
+}
+
+function evalAnd(exp, env) {
+    let result = trueValue;
+    for (let i = 1; i < exp.value.length; i++) {
+        result = eval(exp.value[i], env);
+        if (result.type === "boolean" && result.value === false) {
+            return falseValue;
+        }
+    }
+    return result;
+}
+
+function evalOr(exp, env) {
+    let result = falseValue;
+    for (let i = 1; i < exp.value.length; i++) {
+        result = eval(exp.value[i], env);
+        if (!(result.type === "boolean" && result.value === false)) {
+            return trueValue;
+        }
+    }
+    return result;
 }
 
 function evalArgs(exp, env) {
@@ -728,7 +755,7 @@ function equal(args, env) {
         return { type: "error", value: "equal? requires two argumewnts" };
     }
     if (args[0].type !== args[1].type) {
-        return { type: "boolean", value: false };
+        return falseValue;
     }
 
     // () empty list is expression with value []
@@ -741,7 +768,7 @@ function equal(args, env) {
         let right = args[1];
         while (left.type === "pair" && right.type === "pair") {
            if (!equal([left.value, right.value], env).value === true) {
-              return { type: "boolean", value: false };
+              return falseValue;
            }
            left = left.rest;
            right = right.rest;
