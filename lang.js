@@ -10,7 +10,8 @@ const buildIns = {
     "cons": cons,
     "car": car,
     "cdr": cdr,
-    "begin": begin
+    "begin": begin,
+    "append": append
 };
 
 const formals = {
@@ -37,6 +38,7 @@ const tailCalls = true;
 
 const trueValue = { type: "boolean", value: true };
 const falseValue = { type: "boolean", value: false };
+const nullList = { type: "expression", value: [] };
 
 function read(text) {
     let result = [];
@@ -701,7 +703,7 @@ function listify(expList) {
         const pair = { type: "pair", value: left, rest: right };
         return pair;
     }
-    let result = { type: "expression", value: [] };
+    let result = nullList;
     for (let i = expList.length - 1; i >= 0; i--) {
         let value = expList[i].type === "expression"? listify(expList[i].value) : expList[i];
         const pair = { type: "pair", value: value, rest: result };
@@ -740,6 +742,24 @@ function cdr(args, env) {
         return { type: "error", value: "cdr requires a non empty list or pair" };
     }
     return args[0].rest;
+}
+
+function append(args, env) {
+    const list = [];
+    for (l of args) {
+        if (l.type === "expression" && l.value.length === 0) {
+            continue;
+        }
+        if (l.type !== "pair") {
+            return { type: "error", value: "can only append lists" };
+        }
+        let v = l;
+        while (v.type === "pair") {
+            list.push(v.value);
+            v = v.rest;
+        }
+    }
+    return listify(list);
 }
 
 function begin(args, env) {

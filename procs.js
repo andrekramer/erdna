@@ -4,6 +4,14 @@ const lang = require("./lang.js");
 const procs = `
 (define (null? l) (equal? '() l))
 (define (not bool) (if (equal? bool #f) #t #f))
+(define (reverse l) 
+  (define (rev l rl)
+    (cond 
+      ((null? l) rl)
+      (else (rev (cdr l) (cons (car l) rl)))
+    ))
+  (rev l '())
+)
 `;
 
 function seed() {

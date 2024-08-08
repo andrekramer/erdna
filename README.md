@@ -1,3 +1,8 @@
+to clone:
+
+git@github.com:andrekramer/erdna.git
+cd erdna
+
 to install:
 
 npm init
@@ -8,7 +13,7 @@ to run:
 
 node index.js
 
-try it out:
+try it out in another shell:
 
 curl --data "(+ 1 2)" localhost:8080
 3 
@@ -17,10 +22,12 @@ or
 
 curl --data-raw ' 
 
- (+ 1 2)
+ (+ 1 2) ; adds 1 and 2 
 
 ' localhost:8080
 3
+
+or ...
 
 curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080
 48
@@ -161,4 +168,10 @@ false
 curl --data "(or #f (equal? 1 0)) (+ 1 2)"  localhost:8080 
 false
 3
+
+curl --data "(append '() '(1 2 3) (list 4 (+ 2 3)) '() '(6) '(7 8 9 0))" localhost:8080
+(1 2 3 4 5 6 7 8 9 0)
+
+curl --data "(reverse '(1 2 3 4 5 6 7 8 9 0))" localhost:8080
+(0 9 8 7 6 5 4 3 2 1)
 
