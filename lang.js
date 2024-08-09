@@ -1,17 +1,18 @@
 const res = require("express/lib/response");
 
-const buildIns = { 
-    "+": plus, 
-    "-": minus, 
-    "*": multiply, 
-    "/": divide, 
-    "equal?":  equal, 
-    "list": listy, 
+const buildIns = {
+    "+": plus,
+    "-": minus,
+    "*": multiply,
+    "/": divide,
+    "equal?": equal,
+    "list": asList,
     "cons": cons,
     "car": car,
     "cdr": cdr,
+    "append": append,
     "begin": begin,
-    "append": append
+    "<": lessThan
 };
 
 const formals = {
@@ -30,7 +31,7 @@ const primitiveTypes = {
     "string": evalPrimitive,
     "number": evalPrimitive,
     "boolean": evalPrimitive,
-    "closure": evalClosure,
+    "closure": evalClosure
 };
 
 let scopeId = 1;
@@ -438,18 +439,18 @@ function evalSet(exp, env) {
     }
 
     let e = env;
-    while(e !== undefined && e[symbol.value] === undefined) {
+    while (e !== undefined && e[symbol.value] === undefined) {
         e = e["__parent_scope"];
     }
     if (e === undefined) {
-        return { type: "error", value: "Undefined symbol " + symbol.value + " in set!"};
+        return { type: "error", value: "Undefined symbol " + symbol.value + " in set!" };
     }
 
     const value = e[symbol.value];
-   
+
     const update = eval(exp.value[2], env);
     if (update.type === "error") {
-        return { type: "error", value: "Could not evaluate value to set!"};
+        return { type: "error", value: "Could not evaluate value to set!" };
     }
 
     // console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update));
@@ -533,7 +534,7 @@ function evalDefine(exp, env) {
     if (def.type === "atom") {
         // console.log("define " + JSON.stringify(def));
         if (exp.value.length !== 3) {
-            return {type: "error", value: "define takes 2 arguments found " + exp.value.length };
+            return { type: "error", value: "define takes 2 arguments found " + exp.value.length };
         }
         const arg = exp.value[2];
         const result = eval(arg, env);
@@ -542,17 +543,17 @@ function evalDefine(exp, env) {
         return result;
     } if (def.type === "expression") { // procedure definition - rewrite as lambdda
         if (exp.value.length < 3) {
-            return { type: "error", value: "define procedure needs a body"};
+            return { type: "error", value: "define procedure needs a body" };
         }
         const proc = def.value[0];
         if (proc.type !== "atom") {
-            return { type: "error", value: "define procedure needs a name"};
+            return { type: "error", value: "define procedure needs a name" };
         }
         const args = [];
         for (let i = 1; i < def.value.length; i++) {
             args.push(def.value[i]);
         }
-        const lambda = [ { type: "atom", value: "lambda"}, {type: "expression", value:args} ];
+        const lambda = [{ type: "atom", value: "lambda" }, { type: "expression", value: args }];
         for (let i = 2; i < exp.value.length; i++) {
             lambda.push(exp.value[i]);
         }
@@ -573,8 +574,8 @@ function evalLet(exp, env) {
     if (binds.type !== "expression") {
         return { type: "error", value: "let bind expression expected" };
     }
-    // rewrite as lambda
 
+    // rewrite as lambda
     const lambda = { type: "atom", value: "lambda" };
     const params = [];
     const args = [];
@@ -590,12 +591,12 @@ function evalLet(exp, env) {
         args.push(bind.value[1]);
     }
 
-    const letLambdaValue = [ lambda, {type: "expression", value: params }];
+    const letLambdaValue = [lambda, { type: "expression", value: params }];
     for (let i = 2; i < exp.value.length; i++) {
         letLambdaValue.push(exp.value[i]);
     }
-    
-    const letLambdaExpValue = [ { type: "expression", value: letLambdaValue } ];
+
+    const letLambdaExpValue = [{ type: "expression", value: letLambdaValue }];
     for (const arg of args) {
         letLambdaExpValue.push(arg);
     }
@@ -646,7 +647,7 @@ function write(result) {
         return result.value;
     }
     if (result.type === "atom") {
-        return result.value;
+        return "'" + result.value;
     }
     if (result.type === "closure") {
         return JSON.stringify(result.value);
@@ -698,14 +699,14 @@ function apply(proc, args, env) {
 
 function listify(expList) {
     if (expList.length === 3 && expList[1].type === "atom" && expList[1].value === ".") {
-        let left = expList[0].type === "expression"? listify(expList[0].value) : expList[0];
-        let right = expList[2].type === "expression"? listify(expList[2].value) : expList[2];
+        let left = expList[0].type === "expression" ? listify(expList[0].value) : expList[0];
+        let right = expList[2].type === "expression" ? listify(expList[2].value) : expList[2];
         const pair = { type: "pair", value: left, rest: right };
         return pair;
     }
     let result = nullList;
     for (let i = expList.length - 1; i >= 0; i--) {
-        let value = expList[i].type === "expression"? listify(expList[i].value) : expList[i];
+        let value = expList[i].type === "expression" ? listify(expList[i].value) : expList[i];
         const pair = { type: "pair", value: value, rest: result };
         result = pair;
     }
@@ -713,7 +714,7 @@ function listify(expList) {
     return result;
 }
 
-function listy(args, env) {
+function asList(args, env) {
     return listify(args);
 }
 
@@ -769,6 +770,25 @@ function begin(args, env) {
     return args[args.length - 1];
 }
 
+function lessThan(args, env) {
+    if (args.length === 0) {
+        return trueValue;
+    }
+    const first = args[0];
+    if (first.type !== "number") {
+        return { type: "error", value: "< requires numbers as arguments" };
+    }
+    for (let i = 1; i < args.length; i++) {
+        if (args[i].type !== "number") {
+            return { type: "error", value: "< requires numbers as arguments" };
+        }
+        if (!(first.value < args[i].value)) {
+            return falseValue;
+        }
+    }
+    return trueValue;
+}
+
 function equal(args, env) {
     // console.log("equal? " + JSON.stringify(args));
     if (args.length != 2) {
@@ -782,16 +802,16 @@ function equal(args, env) {
     if (args[0].type === "expression" && args[0].value.length === 0) {
         return args[1].value.length === 0;
     }
-   
+
     if (args[0].type === "pair") {
         let left = args[0];
         let right = args[1];
         while (left.type === "pair" && right.type === "pair") {
-           if (!equal([left.value, right.value], env).value === true) {
-              return falseValue;
-           }
-           left = left.rest;
-           right = right.rest;
+            if (!equal([left.value, right.value], env).value === true) {
+                return falseValue;
+            }
+            left = left.rest;
+            right = right.rest;
         }
         const result = left.type === right.type;
         return { type: "boolean", value: result };

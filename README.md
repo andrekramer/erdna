@@ -109,7 +109,7 @@ curl --data "(cdr '(1 2 3))" localhost:8080
 (2 3)
 
 curl --data-raw "
-(define (length l) 
+(define (length2 l) 
   (define (len l n) 
     (if (equal? l '()) 
       n 
@@ -118,7 +118,7 @@ curl --data-raw "
   )
   (len l 0)
 )
-(length '(1 2 3))
+(length2 '(1 2 3))
 " localhost:8080
 3
 
@@ -174,4 +174,11 @@ curl --data "(append '() '(1 2 3) (list 4 (+ 2 3)) '() '(6) '(7 8 9 0))" localho
 
 curl --data "(reverse '(1 2 3 4 5 6 7 8 9 0))" localhost:8080
 (0 9 8 7 6 5 4 3 2 1)
+
+curl --data "(<)(< 1)(< 1 2)(< 2 1)(< 2 3 4)"  localhost:8080
+true
+true
+true
+false
+true
 

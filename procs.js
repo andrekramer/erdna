@@ -12,6 +12,15 @@ const procs = `
     ))
   (rev l '())
 )
+(define (length l)
+  (define (len l n)
+    (if (equal? l '())
+      n
+      (len (cdr l) (+ n 1))
+    )
+  )
+  (len l 0)
+)
 `;
 
 function seed() {

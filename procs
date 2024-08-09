@@ -1,0 +1,29 @@
+curl --data-raw "
+(define (filter f l) 
+  (define (fil f l l2) 
+    (cond ((equal? l '()) l2)
+          ((f (car l))  (fil f (cdr l) (cons (car l) l2)) )
+          (else  (fil f (cdr l) l2))))
+  (fil f l '())
+)
+(filter2 (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
+" localhost:8080
+ (9 8 7 6 8)
+
+curl --data-raw "
+(define (quicksort xs)
+   (if (null? xs) '()
+      (let ((x (car xs))
+            (xs' (cdr xs)) )
+         (append (quicksort
+                    (filter (lambda (x')
+                               (< x' x) )
+                            xs'))
+                 (list x)
+                 (quicksort
+                    (filter (lambda (x')
+                               (not (< x' x)) )
+                            xs'))))))
+(quicksort '(3 5 4 7 1 9 2 12 4 8 1.1 0 -1 2))
+" localhost:8080
+(-1 0 1 1.1 2 2 3 4 4 5 7 8 9 12)
