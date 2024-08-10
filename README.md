@@ -182,3 +182,19 @@ true
 false
 true
 
+curl --data "
+(define (variable-args a b . c) (cons a (cons b c)))
+(variable-args 1 2 '(3 4 5))
+(define (variable-args-only . x) x)
+(variable-args-only  0 1 2 3)
+(variable-args-only)
+"  localhost:8080
+(1 2 (3 4 5))
+(0 1 2 3)
+()
+
+curl --data "(apply + '(1 2 3))" localhost:8080
+6
+curl --data "(apply (lambda (. x) x) '(1 2 3 4))" localhost:8080
+(1 2 3 4)
+

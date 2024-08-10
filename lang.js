@@ -12,7 +12,8 @@ const buildIns = {
     "cdr": cdr,
     "append": append,
     "begin": begin,
-    "<": lessThan
+    "<": lessThan,
+    "apply": applyToList
 };
 
 const formals = {
@@ -320,18 +321,35 @@ function eval(exp, env) {
                     return args;
                 }
                 const formalsCount = proc.value[1].value.length;
-                if (args.length != formalsCount) {
+                const formals = proc.value[1].value;
+                // console.log("varargs? " + proc.value[1].value[formalsCount - 2].value);
+                if ((formalsCount >= 2 && formals[formalsCount - 2].value === ".")) {
+                  if (args.length < formalsCount - 2) {
+                    return { type: "error", value: "lambda requires at least " + (formalsCount - 2) + " arguments" };
+                  }
+                } else if (args.length != formalsCount) {
                     return { type: "error", value: "lambda requires " + formalsCount + " arguments" };
                 }
 
                 const localEnv = { "__parent_scope": closureEnv, name: "scope id " + scopeId++ };
-                const formals = proc.value[1].value;
 
                 // console.log("formals " + JSON.stringify(formals));
                 let i = 0;
                 for (const formal of formals) {
                     if (formal.type !== "atom") {
                         return { type: "error", value: "Formal arguments must be symbols" };
+                    }
+                    if (formal.value === ".") {
+                        // varargs
+                        if (i !== formals.length - 2) {
+                            return { type: "error", value: ". must be second last formal parameter" };
+                        }
+                        const rest = [];
+                        for (let j = i; j < args.length; j++) {
+                            rest.push(args[j]);
+                        }
+                        localEnv[formals[formals.length -1].value] = listify(rest);
+                        break;
                     }
                     localEnv[formal.value] = args[i++];
                 }
@@ -787,6 +805,19 @@ function lessThan(args, env) {
         }
     }
     return trueValue;
+}
+
+function applyToList(args, env) {
+    if (args.length !== 2) {
+        return { type: "error", value: "apply takes 2 arguments" };
+    }
+    expValue = [args[0]];
+    for (let head = args[1]; head.type === "pair"; head = head.rest) {
+        expValue.push(head.value);
+    }
+    const exp = { type: "expression", value: expValue };
+    // console.log("apply " + JSON.stringify(exp));
+    return eval(exp, env);
 }
 
 function equal(args, env) {
