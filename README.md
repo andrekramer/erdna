@@ -128,7 +128,7 @@ curl --data "
   [(equal? apple 'baseball) 'wrong]
   [(equal? apple 'delicious) 'right]
   [else 'not-sure])" localhost:8080
-'right
+right
 
 curl --data "
 (define (append2 list1 list2)
@@ -148,7 +148,7 @@ curl --data "
 (define (loop n) 
    (cond ((equal? n 0) 0)
          (else (loop (- n 1)))))
-(loop 10000)
+(loop 1000000)
 " localhost:8080
 
 ; with predefined procs 
@@ -195,6 +195,15 @@ curl --data "
 
 curl --data "(apply + '(1 2 3))" localhost:8080
 6
+
 curl --data "(apply (lambda (. x) x) '(1 2 3 4))" localhost:8080
 (1 2 3 4)
+
+curl --data "(quasiquote (a 1 ,(+ 1 2)))" localhost:8080
+export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080
+(a 1 3)
+
+curl --data "'(a 1 ,(+ 1 2))" localhost:8080
+(a 1 (unquote (+ 1 2)))
+
 

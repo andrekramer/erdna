@@ -24,6 +24,7 @@ const formals = {
     "letrec": evalLetrec,
     "set!": evalSet,
     "quote": evalQuote,
+    "quasiquote": evalQuasiquote,
     "let": evalLet,
     "and": evalAnd,
     "or": evalOr
@@ -144,13 +145,19 @@ function readExpressionOrAtom(text, pos) {
         const [r, p] = readExpressionOrAtom(text, ++pos);
         const quote = [{ type: "atom", value: "quote" }];
         quote.push(r);
-        result = { type: "expression", value: quote }
+        result = { type: "expression", value: quote };
+        pos = p;
+    }  else if (ch === "`") {
+        const [r, p] = readExpressionOrAtom(text, ++pos);
+        const quasiquote = [{ type: "atom", value: "quasiquote" }];
+        quasiquote.push(r);
+        result = { type: "expression", value: quasiquote };
         pos = p;
     } else if (ch === ",") {
         const [r, p] = readExpressionOrAtom(text, ++pos);
         const unquote = [{ type: "atom", value: "unquote" }];
         unquote.push(r);
-        result = { type: "expression", value: unquote }
+        result = { type: "expression", value: unquote };
         pos = p;
     } else {
         if ([')', ']', '}'].includes(ch)) {
@@ -204,7 +211,8 @@ function readString(text, pos) {
                 case 't': str += '\t'; break;
                 case '\\': str += '\\'; break;
                 case '"': str += '"'; break;
-                case '\'': str += '`'; break;
+                case '\`': str += '`'; break;
+                case '\'': str += "'"; break;
                 case '\b': str += '`\b'; break;
                 case '\f': str += '`\f'; break;
                 case '\v': str += '`\v'; break;
@@ -456,6 +464,31 @@ function evalQuote(exp, env) {
         result = listify(result.value);
     }
     // console.log("quoted " + JSON.stringify(result));
+    return result;
+}
+
+function evalQuasiquote(exp, env) {
+    if (exp.value.length !== 2) {
+        return { type: "error", value: "Can only quasi-quote one value" };
+    }
+    let result = exp.value[1];
+    if (result.type === "expression") {
+        const resultList = [];
+        for (const subExp of exp.value[1].value) {
+            if (subExp.type === "expression" && subExp.value[0].type === "atom" && subExp.value[0].value === "unquote") {
+                if (subExp.value.length !== 2) {
+                    return { type: "error", value: "Can only unquote one value"};
+                }
+                const unquoteExp = subExp.value[1];
+                const r = eval(unquoteExp, env);
+                resultList.push(r);
+            } else {
+                resultList.push(subExp);
+            }
+        }
+        result = listify(resultList);
+    }
+    // console.log("quasiquoted " + JSON.stringify(result));
     return result;
 }
 
@@ -723,7 +756,7 @@ function write(result) {
         return result.value;
     }
     if (result.type === "atom") {
-        return "'" + result.value;
+        return result.value;
     }
     if (result.type === "closure") {
         return JSON.stringify(result.value);
