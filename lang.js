@@ -332,7 +332,7 @@ function eval(exp, env) {
                     return { type: "error", value: "lambda requires " + formalsCount + " arguments" };
                 }
 
-                const localEnv = { "__parent_scope": closureEnv, name: "scope id " + scopeId++ };
+                let localEnv = { "__parent_scope": closureEnv, name: "scope id " + scopeId++ };
 
                 // console.log("formals " + JSON.stringify(formals));
                 let i = 0;
@@ -378,7 +378,7 @@ function eval(exp, env) {
                                     // console.log("tail letrec");
                                     const rewrite = rewriteLetrec(target, localEnv);
                                     target = rewrite[0];
-                                    env = rewrite[1];
+                                    localEnv = rewrite[1];
                                     continue;
                                 }
                             }
@@ -498,7 +498,7 @@ function evalLetrec(exp, env) {
 
 function rewriteLetrec(exp, env) {
     const letrecEnv =  { "__parent_scope": env, name: "letrec " + scopeId++ };
-    
+
     if (exp.value.length < 3) {
         return [{ type: "error", value: "letrec form needs a bind and one or more eval sub parts" }, env];
     }
