@@ -21,6 +21,7 @@ const formals = {
     "cond": evalCond,
     "define": evalDefine,
     "lambda": evalLambda,
+    "letrec": evalLetrec,
     "set!": evalSet,
     "quote": evalQuote,
     "let": evalLet,
@@ -363,14 +364,25 @@ function eval(exp, env) {
                     if (tailCalls && a == proc.value.length - 1 && exp.value[0].type === "atom") {
                         // console.log("tail? " + exp.value[0].value + " " + JSON.stringify(target));
 
-                        if (target.type === "expression" && target.value.length !== 0 && target.value[0].type === "atom") {
-                            if (target.value[0].value === "if") {
-                                // console.log("tail if");
-                                target = rewriteIf(target, localEnv);
-                            } else if (target.value[0].value === "cond") {
-                                // console.log("tail cond");
-                                target = rewriteCond(target, localEnv);
+                        rewrite: while (true) {
+                            if (target.type === "expression" && target.value.length !== 0 && target.value[0].type === "atom") {
+                                if (target.value[0].value === "if") {
+                                    // console.log("tail if");
+                                    target = rewriteIf(target, localEnv);
+                                    continue;
+                                } else if (target.value[0].value === "cond") {
+                                    // console.log("tail cond");
+                                    target = rewriteCond(target, localEnv);
+                                    continue;
+                                } else if (target.value[0].value === "letrec") {
+                                    // console.log("tail letrec");
+                                    const rewrite = rewriteLetrec(target, localEnv);
+                                    target = rewrite[0];
+                                    env = rewrite[1];
+                                    continue;
+                                }
                             }
+                            break;
                         }
 
                         if (target.type === "expression" && target.value.length !== 0) {
@@ -474,6 +486,52 @@ function evalSet(exp, env) {
     // console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update));
     e[symbol.value] = update;
     return value;
+}
+
+function evalLetrec(exp, env) {
+    const rewrite = rewriteLetrec(exp, env);
+    if (rewrite[0].type === "error") {
+        return rewrite;
+    }
+    return eval(rewrite[0], rewrite[1]);
+}
+
+function rewriteLetrec(exp, env) {
+    const letrecEnv =  { "__parent_scope": env, name: "letrec " + scopeId++ };
+    
+    if (exp.value.length < 3) {
+        return [{ type: "error", value: "letrec form needs a bind and one or more eval sub parts" }, env];
+    }
+    const binds = exp.value[1];
+    if (binds.type !== "expression") {
+        return [{ type: "error", value: "letrec bind expression expected" }, env];
+    }
+    for (const bind of binds.value) {
+        if (bind.type !== "expression" || bind.value.length !== 2) {
+            return [{ type: "error", value: "letrec bind must be expression pair" }, env];
+        }
+        if (bind.value[0].type !== "atom") {
+            return [{ type: "error", value: "letrec bind must be atom and expression pair" } , env];
+        }
+ 
+        const variable = bind.value[0].value;
+        // console.log("letrec var " + variable);
+        
+        const value = eval(bind.value[1], letrecEnv);
+        if (value.type === "error") {
+            return [{ type: "error", value: "letrec bind eval fails" }, env];
+        }
+        letrecEnv[variable] = value;
+    }
+    for (let i = 2; i < exp.value.length - 1; i++) {
+        const result = eval(exp.value[i], letrecEnv);
+        if (result.type === "error") {
+            return [result, env];
+        }
+    }
+    const letrecExp = exp.value[exp.value.length - 1];
+    // console.log("letrec exp " + JSON.stringify(letrecExp));
+    return [letrecExp, letrecEnv];
 }
 
 function evalIf(exp, env) {
@@ -586,7 +644,7 @@ function evalDefine(exp, env) {
 
 function evalLet(exp, env) {
     if (exp.value.length < 3) {
-        return { type: "error", value: "let form needs a bind and one or more eval parts" };
+        return { type: "error", value: "let form needs a bind and one or more eval sub parts" };
     }
     const binds = exp.value[1];
     if (binds.type !== "expression") {

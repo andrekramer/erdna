@@ -66,3 +66,13 @@ curl --data-raw '
   (+ 1  1))
 ' localhost:8080
 2
+
+curl --data-raw "
+(letrec 
+  ((ping (lambda (a l) (if (equal? a 0) l (pong (- a 1) (cons \"ping\" l)))))
+   (pong (lambda (a l) (if (equal? a 0) l (ping (- a 1) (cons \"pong\" l)))))
+  )
+  (ping 10 '())
+)
+" localhost:8080
+(pong ping pong ping pong ping pong ping pong ping)

@@ -27,3 +27,15 @@ curl --data-raw "
 (quicksort '(3 5 4 7 1 9 2 12 4 8 1.1 0 -1 2))
 " localhost:8080
 (-1 0 1 1.1 2 2 3 4 4 5 7 8 9 12)
+
+curl --data-raw "
+   (define (make count l) 
+     (cond 
+       ((equal? count 0) l)
+       (else (make (- count 1) (cons count l)))
+   ))
+   (quicksort (reverse (make 1000 '())))
+" localhost:8080
+
+To increase stack size use, e.g.:
+node --stack-size=1000000 index.js 
