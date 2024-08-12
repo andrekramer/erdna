@@ -39,3 +39,27 @@ curl --data-raw "
 
 To increase stack size use, e.g.:
 node --stack-size=1000000 index.js 
+
+curl --data-raw "
+(define (min . l) 
+  (define (min2 l m)
+    (if (null? l) m 
+      (min2 (cdr l) (letrec ((h (car l))) (if (< h m) h m ))))
+  )
+  (min2 (cdr l) (car l))
+)
+(min 4 5 2 7)
+" localhost:8080
+2
+
+curl --data-raw "
+(define (member m l)
+  (cond ((null? l) #f)
+        ((equal? m (car l)) l) 
+        (else (member m (cdr l)))
+  )
+)
+(member 2 '(1 #t 2 3 (4 5)))
+" localhost:8080
+(2 3 (4 5))
+

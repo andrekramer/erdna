@@ -17,11 +17,11 @@ const buildIns = {
 };
 
 const formals = {
-    "if": evalIf,
-    "cond": evalCond,
+    "if": evalRewrite(rewriteIf),
+    "cond": evalRewrite(rewriteCond),
+    "letrec": evalRewrite(rewriteLetrec),
     "define": evalDefine,
     "lambda": evalLambda,
-    "letrec": evalLetrec,
     "set!": evalSet,
     "quote": evalQuote,
     "quasiquote": evalQuasiquote,
@@ -36,6 +36,12 @@ const primitiveTypes = {
     "boolean": evalPrimitive,
     "closure": evalClosure
 };
+
+const rewrites = {
+    "if": rewriteIf,
+    "cond": rewriteCond,
+    "letrec": rewriteLetrec
+}
 
 let scopeId = 1;
 const tailCalls = true;
@@ -374,19 +380,10 @@ function eval(exp, env) {
 
                         rewrite: while (true) {
                             if (target.type === "expression" && target.value.length !== 0 && target.value[0].type === "atom") {
-                                if (target.value[0].value === "if") {
-                                    // console.log("tail if");
-                                    target = rewriteIf(target, localEnv);
-                                    continue;
-                                } else if (target.value[0].value === "cond") {
-                                    // console.log("tail cond");
-                                    target = rewriteCond(target, localEnv);
-                                    continue;
-                                } else if (target.value[0].value === "letrec") {
-                                    // console.log("tail letrec");
-                                    const rewrite = rewriteLetrec(target, localEnv);
-                                    target = rewrite[0];
-                                    localEnv = rewrite[1];
+                                const rewrite = rewrites[target.value[0].value];
+                                if (rewrite !== undefined) {
+                                    // console.log("tail " + target.value[0].value);
+                                    [target, localEnv] = rewrite(target, localEnv);
                                     continue;
                                 }
                             }
@@ -521,12 +518,14 @@ function evalSet(exp, env) {
     return value;
 }
 
-function evalLetrec(exp, env) {
-    const rewrite = rewriteLetrec(exp, env);
-    if (rewrite[0].type === "error") {
-        return rewrite;
-    }
-    return eval(rewrite[0], rewrite[1]);
+function evalRewrite(rewrite) {
+    return (exp, env) => {
+        const [rewriteExp, localEnv] = rewrite(exp, env);
+        if (rewriteExp.type === "error") {
+            return rewriteExp;
+        }
+        return eval(rewriteExp, localEnv);
+    };
 }
 
 function rewriteLetrec(exp, env) {
@@ -567,72 +566,56 @@ function rewriteLetrec(exp, env) {
     return [letrecExp, letrecEnv];
 }
 
-function evalIf(exp, env) {
-    const rewrite = rewriteIf(exp, env);
-    if (rewrite.type === "error") {
-        return rewrite;
-    }
-    return eval(rewrite, env);
-}
-
 function rewriteIf(exp, env) {
     if (exp.value.length < 3) {
-        return { type: "error", value: "if form needs a condition and a then part" };
+        return [{ type: "error", value: "if form needs a condition and a then part" }, env];
     }
     if (exp.value.length > 4) {
-        return { type: "error", value: "if form requires condition with then and optional else part" };
+        return [{ type: "error", value: "if form requires condition with then and optional else part" }, env];
     }
 
     const condition = exp.value[1];
     // console.log("if " + JSON.stringify(condition));
     const result = eval(condition, env);
     if (result.type === "error") {
-        return result;
+        return [result, env];
     }
 
     if (!(result.type === "boolean" && result.value === false)) {
-        return exp.value[2];
+        return [exp.value[2], env];
     } else {
         if (exp.value.length === 4) {
-            return exp.value[3];
+            return [exp.value[3], env];
         } else {
-            return falseValue;
+            return [falseValue, env];
         }
     }
 }
 
-function evalCond(exp, env) {
-    const rewrite = rewriteCond(exp, env);
-    if (rewrite.type === "error") {
-        return rewrite;
-    }
-    return eval(rewrite, env);
-}
-
 function rewriteCond(exp, env) {
     if (exp.value.length === 1) {
-        return { type: "error", value: "cond needs one or more conditions" };
+        return [{ type: "error", value: "cond needs one or more conditions" }, env];
     }
 
     for (let i = 1; i < exp.value.length; i++) {
         const cond = exp.value[i];
         if (cond.type !== "expression" && cond.value.length !== 2) {
-            return { type: "error", value: "cond arg must be expression pair" };
+            return [{ type: "error", value: "cond arg must be expression pair" }, env];
         }
         // console.log("condition " + JSON.stringify(cond.value[0]));
         const defaultElse = cond.value[0];
         if (defaultElse.type === "atom" && defaultElse.value == "else") {
             if (i !== exp.value.length - 1) {
-                return { type: "error", value: "else must be last arg to cond" };
+                return [{ type: "error", value: "else must be last arg to cond" }, env];
             }
-            return cond.value[1];
+            return [cond.value[1], env];
         }
         const test = eval(cond.value[0], env);
         if (!(test.type === "boolean" && test.value === false)) {
-            return cond.value[1];
+            return [cond.value[1], env];
         }
     }
-    return falseValue;
+    return [falseValue, env];
 }
 
 function evalDefine(exp, env) {
