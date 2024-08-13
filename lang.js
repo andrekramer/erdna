@@ -6,7 +6,7 @@ const buildIns = {
     "*": multiply,
     "/": divide,
     "equal?": equal,
-    "list": asList,
+    "list": (args, env) => listify(args),
     "cons": cons,
     "car": car,
     "cdr": cdr,
@@ -19,6 +19,7 @@ const buildIns = {
 const formals = {
     "if": evalRewrite(rewriteIf),
     "cond": evalRewrite(rewriteCond),
+    "case": evalRewrite(rewriteCase),
     "letrec": evalRewrite(rewriteLetrec),
     "define": evalDefine,
     "lambda": evalLambda,
@@ -34,12 +35,13 @@ const primitiveTypes = {
     "string": evalPrimitive,
     "number": evalPrimitive,
     "boolean": evalPrimitive,
-    "closure": evalClosure
+    "closure": evalPrimitive
 };
 
 const rewrites = {
     "if": rewriteIf,
     "cond": rewriteCond,
+    "case": rewriteCase,
     "letrec": rewriteLetrec
 }
 
@@ -266,7 +268,7 @@ function readNumber(atom, text, pos) {
     if (Number.isNaN(number)) {
         result = { type: "error", value: "Not a number " + pos };
     } else {
-        // console.log(" number " + atom);
+        // console.log("number " + atom);
         result = { type: "number", value: number };
         pos = skipWhitespace(text, pos);
     }
@@ -301,7 +303,6 @@ function eval(exp, env) {
 
         if (exp.value[0].type === "atom") {
             const first = exp.value[0];
-
             const evalFormal = formals[first.value];
             if (evalFormal !== undefined) {
                 return evalFormal(exp, env);
@@ -309,7 +310,6 @@ function eval(exp, env) {
         }
 
         let proc = eval(exp.value[0], env);
-
         // console.log("proc " + JSON.stringify(proc));
         if (proc.type === "error") {
             return proc;
@@ -437,19 +437,11 @@ function eval(exp, env) {
     return { type: "erorr", value: "Could not evaluate " + type };
 }
 
-function evalPrimitive(exp, env) {
-    return exp;
-}
-
-function evalClosure(exp, env) {
-    console.log("eval closure");
-    return exp;
-}
+function evalPrimitive(exp, env) { return exp; }
 
 function evalLambda(exp, env) {
     // console.log("closure over " + JSON.stringify(exp));
-    const closure = { type: "closure", value: exp, scope: env };
-    return closure;
+    return { type: "closure", value: exp, scope: env };
 }
 
 function evalQuote(exp, env) {
@@ -616,6 +608,48 @@ function rewriteCond(exp, env) {
         }
     }
     return [falseValue, env];
+}
+
+function rewriteCase(exp, env) {
+    if (exp.value.length < 2) {
+        return [{ type: "error", value: "case needs expression and one or more conditions" }, env];
+    }
+    const selector = eval(exp.value[1], env);
+    // console.log("selector " + JSON.stringify(selector));
+    for (let i = 2; i < exp.value.length; i++) {
+       const cond = exp.value[i];
+       if (cond.type !== "expression" || cond.value.length < 2) {
+         return [{ type: "error", value: "invalid condition" }, env];
+       }
+       const condCase = cond.value[0];
+       if (condCase.type == "atom" && condCase.value === "else") {
+            // console.log("case else");
+            if (i !== exp.value.length - 1) {
+                return [{ type: "error", value: "else must be last case" }, env];
+            }
+            return evalCase(cond);
+       }
+       if (condCase.type !== "expression") {
+          return [{ type: "error", value: "cond case must be a list" }, env];
+       }
+       for (let i = 0; i < condCase.value.length; i++) {
+           if (equal([selector, condCase.value[i]], env).value === true) {
+              // console.log("case match");
+              return evalCase(cond);
+           }
+       }
+    }
+    return [falseValue, env];
+}
+
+function evalCase(cond, env) {
+    for (let c = 1; c < cond.value.length - 1; c++) {
+        const result = eval(cond.value[c], env);
+        if (result.type === "error") {
+            return error;
+        }
+    }
+    return [cond.value[cond.value.length - 1], env];
 }
 
 function evalDefine(exp, env) {
@@ -804,10 +838,6 @@ function listify(expList) {
     }
     // console.log("listified " + JSON.stringify(result));
     return result;
-}
-
-function asList(args, env) {
-    return listify(args);
 }
 
 function cons(args, env) {

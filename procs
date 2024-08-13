@@ -63,3 +63,9 @@ curl --data-raw "
 " localhost:8080
 (2 3 (4 5))
 
+curl --data-raw "
+(define (map1 f l) 
+  (if (null? l) '() (cons (f (car l)) (map1 f (cdr l))))
+)
+(map1 (lambda (a) (+ a 1)) '(1 2 3 4 5))  
+" localhost:8080

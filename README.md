@@ -207,3 +207,12 @@ curl --data "'(a 1 ,(+ 1 2))" localhost:8080
 (a 1 (unquote (+ 1 2)))
 
 
+curl --data '
+(let ((number 4))
+  (case number
+    [(0 1) "small"]
+    [(2) "medium"]
+    [(3 4 5) "large"]
+    [else "other"]))
+' localhost:8080
+"large"
