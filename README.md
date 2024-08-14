@@ -1,5 +1,7 @@
-An interpreter for a Scheme like language written in javascript hosted in a node web server.
-The commit history builds up language features for the examples below but Macros and callcc not covered.  
+An interpreter for a Scheme -like language written in javascript 
+hosted in a node web server.
+The commit history builds up language features for the examples below 
+but Macros and callcc are not covered.  
 What if the Web was programmable in a uniform but flexible syntax?
 
 to clone:
@@ -19,7 +21,7 @@ node index.js
 
 try it out in another shell using the curl command to post a script to the server:
 
-curl --data "(+ 1 2)" localhost:8080
+curl --data "(+ 1 2)" localhost:8080    
 3 
 
 or 
@@ -28,35 +30,35 @@ curl --data-raw "
 
  (+ 1 2 3 4 5) ; adds 1 and 2 
 
-" localhost:8080
+" localhost:8080    
 15
 
 or ...
 
-curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080
+curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080    
 48
 
-curl --data '((lambda (a b) (+ a b)) 1 2 )'  localhost:8080
+curl --data '((lambda (a b) (+ a b)) 1 2 )'  localhost:8080    
 3
 
-curl --data '(define a (+ 1 2)) (+ a a 4)' localhost:8080
+curl --data '(define a (+ 1 2)) (+ a a 4)' localhost:8080    
 3
 10
 
-curl --data '(define a (lambda (x) (+ x 1))) (a 3)' localhost:8080
+curl --data '(define a (lambda (x) (+ x 1))) (a 3)' localhost:8080  
 4
 
-curl --data '(define (add1 x) (+ x 1)) (add1 4)' localhost:8080
+curl --data '(define (add1 x) (+ x 1)) (add1 4)' localhost:8080  
 5
 
 curl --data '(define (addx x) (lambda (y) (+ x y))) 
-(define add5 (addx 5)) (add5 3)' localhost:8080
+(define add5 (addx 5)) (add5 3)' localhost:8080  
 8
 
-curl --data '(equal? #f (equal? 1 2))' localhost:8080
+curl --data '(equal? #f (equal? 1 2))' localhost:8080  
 true
 
-curl --data '(if (equal? "abc" "abc") (+ 2 3) (+ 4 5))' localhost:8080
+curl --data '(if (equal? "abc" "abc") (+ 2 3) (+ 4 5))' localhost:8080  
 5
 
 curl --data-raw '
@@ -67,10 +69,10 @@ curl --data-raw '
     )
   )
   (! 5)   
-' localhost:8080
+' localhost:8080  
 120
 
-curl --data '(define x "abc") x (set! x 2) x' localhost:8080
+curl --data '(define x "abc") x (set! x 2) x' localhost:8080  
 2
 
 curl --data-raw '
@@ -83,33 +85,33 @@ curl --data-raw '
 (x)
 (x)
 (x)
-' localhost:8080
+' localhost:8080  
 1
 2
 3
 
-curl --data "'(1 2 a #f) " localhost:8080
+curl --data "'(1 2 a #f) " localhost:8080  
 (1 2 a false) 
 
-curl --data "'() " localhost:8080
+curl --data "'() " localhost:8080  
 ()
 
-curl --data "(equal? '() '()) " localhost:8080
+curl --data "(equal? '() '()) " localhost:8080  
 true
 
-curl --data "(equal? '(1 2 3) (list 1 2 3))" localhost:8080
+curl --data "(equal? '(1 2 3) (list 1 2 3))" localhost:8080  
 true
 
-curl --data "(define a 100) (cons a '(1 2 3))" localhost:8080
+curl --data "(define a 100) (cons a '(1 2 3))" localhost:8080  
 (100 1 2 3)
 
-curl --data "(cons 1 2)" localhost:8080
+curl --data "(cons 1 2)" localhost:8080  
 (1 . 2)
 
-curl --data "(car '(1 2 3))" localhost:8080 
+curl --data "(car '(1 2 3))" localhost:8080   
 1
 
-curl --data "(cdr '(1 2 3))" localhost:8080
+curl --data "(cdr '(1 2 3))" localhost:8080  
 (2 3)
 
 curl --data-raw "
@@ -123,7 +125,7 @@ curl --data-raw "
   (len l 0)
 )
 (length2 '(1 2 3))
-" localhost:8080
+" localhost:8080  
 3
 
 curl --data "
@@ -131,7 +133,7 @@ curl --data "
 (cond 
   [(equal? apple 'baseball) 'wrong]
   [(equal? apple 'delicious) 'right]
-  [else 'not-sure])" localhost:8080
+  [else 'not-sure])" localhost:8080  
 right
 
 curl --data "
@@ -142,10 +144,10 @@ curl --data "
          (cons (car list1)
                (append2 (cdr list1) list2)))))
 (append2 '(1 2 3) '(4 5))
-" localhost:8080
+" localhost:8080  
 (1 2 3 4 5)
 
-curl --data "(define a 1) (if (equal? 1 1) (begin (set! a 2) 'a '(1 2) (+ 1 a  3 4)) (#f))" localhost:8080
+curl --data "(define a 1) (if (equal? 1 1) (begin (set! a 2) 'a '(1 2) (+ 1 a  3 4)) (#f))" localhost:8080  
 10
 
 curl --data "
@@ -153,33 +155,33 @@ curl --data "
    (cond ((equal? n 0) 0)
          (else (loop (- n 1)))))
 (loop 1000000)
-" localhost:8080
+" localhost:8080  
 
 ; with predefined procs 
 
-curl --data "(not #t)(not #f)(not 1)" localhost:8080
+curl --data "(not #t)(not #f)(not 1)" localhost:8080  
 false
 true
 false
 
-curl --data "(null? '())(null? '(1 2 3))" localhost:8080
+curl --data "(null? '())(null? '(1 2 3))" localhost:8080  
 true
 false
 
-curl --data "(and #t (equal? 1 0))" localhost:8080
+curl --data "(and #t (equal? 1 0))" localhost:8080  
 false
 
-curl --data "(or #f (equal? 1 0)) (+ 1 2)"  localhost:8080 
+curl --data "(or #f (equal? 1 0)) (+ 1 2)"  localhost:8080   
 false
 3
 
-curl --data "(append '() '(1 2 3) (list 4 (+ 2 3)) '() '(6) '(7 8 9 0))" localhost:8080
+curl --data "(append '() '(1 2 3) (list 4 (+ 2 3)) '() '(6) '(7 8 9 0))" localhost:8080  
 (1 2 3 4 5 6 7 8 9 0)
 
-curl --data "(reverse '(1 2 3 4 5 6 7 8 9 0))" localhost:8080
+curl --data "(reverse '(1 2 3 4 5 6 7 8 9 0))" localhost:8080  
 (0 9 8 7 6 5 4 3 2 1)
 
-curl --data "(<)(< 1)(< 1 2)(< 2 1)(< 2 3 4)"  localhost:8080
+curl --data "(<)(< 1)(< 1 2)(< 2 1)(< 2 3 4)"  localhost:8080  
 true
 true
 true
@@ -192,22 +194,22 @@ curl --data "
 (define (variable-args-only . x) x)
 (variable-args-only  0 1 2 3)
 (variable-args-only)
-"  localhost:8080
+"  localhost:8080  
 (1 2 (3 4 5))
 (0 1 2 3)
 ()
 
-curl --data "(apply + '(1 2 3))" localhost:8080
+curl --data "(apply + '(1 2 3))" localhost:8080  
 6
 
-curl --data "(apply (lambda (. x) x) '(1 2 3 4))" localhost:8080
+curl --data "(apply (lambda (. x) x) '(1 2 3 4))" localhost:8080  
 (1 2 3 4)
 
-curl --data "(quasiquote (a 1 ,(+ 1 2)))" localhost:8080
-export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080
+curl --data "(quasiquote (a 1 ,(+ 1 2)))" localhost:8080  
+export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080  
 (a 1 3)
 
-curl --data "'(a 1 ,(+ 1 2))" localhost:8080
+curl --data "'(a 1 ,(+ 1 2))" localhost:8080  
 (a 1 (unquote (+ 1 2)))
 
 
@@ -218,13 +220,13 @@ curl --data '
     [(2) "medium"]
     [(3 4 5) "large"]
     [else "other"]))
-' localhost:8080
+' localhost:8080  
 "large"
 
 curl --data "
 (define c (lambda () '()))
 (eval '(+ 1 2) c)
-" localhost:8080
+" localhost:8080  
 3
 
 curl --data "
@@ -232,7 +234,7 @@ curl --data "
 (eval '(list a b (+ a b)) c)
 (eval (cons '+ (cons 'a (cons 'b '()))) c)
 (eval '((lambda (a) (+ 1 a)) 100) c)
-" localhost:8080
+" localhost:8080  
 (1 2 3)
 3
 101
