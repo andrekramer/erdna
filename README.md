@@ -216,3 +216,21 @@ curl --data '
     [else "other"]))
 ' localhost:8080
 "large"
+
+curl --data "
+(define c (lambda () '()))
+(eval '(+ 1 2) c)
+" localhost:8080
+3
+
+curl --data "
+(define c (let ((a 1) (b 2)) (lambda () (list a b))))
+(eval '(list a b (+ a b)) c)
+(eval (cons '+ (cons 'a (cons 'b '()))) c)
+(eval '((lambda (a) (+ 1 a)) 100) c)
+" localhost:8080
+(1 2 3)
+3
+101
+3
+

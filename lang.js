@@ -28,7 +28,8 @@ const formals = {
     "quasiquote": evalQuasiquote,
     "let": evalLet,
     "and": evalAnd,
-    "or": evalOr
+    "or": evalOr,
+    "eval": eval2
 };
 
 const primitiveTypes = {
@@ -275,7 +276,25 @@ function readNumber(atom, text, pos) {
     return [result, pos];
 }
 
+function pairToExp(exp) {
+    if (exp.type === "pair") {
+       const value = [exp.value];
+       let head = exp.rest;
+        while (head.type === "pair") {
+            value.push(pairToExp(head.value));
+            head = head.rest;
+        }
+        exp = { type: "expression", value };
+    }
+    return exp;
+}
+
 function eval(exp, env) {
+    
+    if (exp.type === "pair") {
+        exp = pairToExp(exp);
+    }
+
     const type = exp.type;
 
     const primitiveEval = primitiveTypes[type];
@@ -765,6 +784,18 @@ function evalArgs(exp, env) {
         args.push(arg);
     }
     return args;
+}
+
+function eval2(exp, env) {
+    if (exp.value.length !== 3) {
+        return { type: "error", value: "eval takes an expression to evaluate and a closure to borrow an environment from" };
+    }
+    const closure = eval(exp.value[2], env);
+    if (closure.type !== "closure") {
+        return { type: "error", value: "eval requires a closure as second arg to provide an environment to evaluate in" };
+    }
+    const exp2 = eval(exp.value[1], env);
+    return eval(exp2, closure.scope);
 }
 
 function write(result) {
