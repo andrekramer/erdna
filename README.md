@@ -1,3 +1,7 @@
+An interpreter for a Scheme like language written in javascript hosted in a node web server.
+The commit history builds up language features for the examples below but Macros and callcc not covered.  
+What if the Web was programmable in a uniform but flexible syntax?
+
 to clone:
 
 git@github.com:andrekramer/erdna.git
@@ -13,19 +17,19 @@ to run:
 
 node index.js
 
-try it out in another shell:
+try it out in another shell using the curl command to post a script to the server:
 
 curl --data "(+ 1 2)" localhost:8080
 3 
 
 or 
 
-curl --data-raw ' 
+curl --data-raw " 
 
- (+ 1 2) ; adds 1 and 2 
+ (+ 1 2 3 4 5) ; adds 1 and 2 
 
-' localhost:8080
-3
+" localhost:8080
+15
 
 or ...
 
