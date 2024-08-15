@@ -67,7 +67,7 @@ false
 
 curl --data-raw "
 (define (map f l) 
-  (if (null? l) '() (cons (f (car l)) (map1 f (cdr l))))
+  (if (null? l) '() (cons (f (car l)) (map f (cdr l))))
 )
 (map (lambda (a) (+ a 1)) '(1 2 3 4 5))  
 " localhost:8080
@@ -80,6 +80,8 @@ curl --data-raw "; reduce right associative
 (reduce * '(1 2 3 4 5) 1)
 (reduce - '(100 20 30 5 40) 0)
 " localhost:8080
+120
+145
 
 curl --data-raw "; reduce left associative
 (define (reduce2 fn r l)
@@ -89,3 +91,4 @@ curl --data-raw "; reduce left associative
 (reduce2 - 0.0 '(100 20 30 5 40))
 " localhost:8080
 0.008333333333333333
+-195

@@ -156,6 +156,7 @@ curl --data "
          (else (loop (- n 1)))))
 (loop 1000000)
 " localhost:8080  
+0
 
 ; with predefined procs 
 
