@@ -1,0 +1,11 @@
+curl --data '
+(string-length "abcdef")
+(slice "abcdefgh" 3 5)
+(slice "123abcdefgh" 4)
+(concat "abc" "def\n" "123")
+' localhost:8080  
+6  
+de  
+bcdefgh  
+abcdef  
+123  

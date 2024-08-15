@@ -13,7 +13,10 @@ const buildIns = {
     "append": append,
     "begin": begin,
     "<": lessThan,
-    "apply": applyToList
+    "apply": applyToList,
+    "string-length": strLength,
+    "slice": strSlice,
+    "concat": strConcat
 };
 
 const formals = {
@@ -1058,6 +1061,36 @@ function divide(args, env) {
         value /= v;
     }
     return { type: "number", value };
+}
+
+function strLength(args, env) {
+    if (args.length !== 1 || args[0].type !== "string") {
+        return { type: "error", value: "string-length expectes one string argument" };
+    }
+    return { type: "number", value: args[0].value.length };
+}
+
+function strSlice(args, env) {
+    if (args.length === 2 && args[0].type === "string" && args[1].type === "number") {
+        return { type: "string", value: args[0].value.slice(args[1].value) };
+    } if (args.length === 3 && args[0].type === "string" && args[1].type === "number" && args[2].type === "number") {
+        return { type: "string", value: args[0].value.slice(args[1].value, args[2].value) };
+    }
+    return { type: "error", value: "slice expectes string and one or two numeric arguments" };
+}
+
+function strConcat(args, env) {
+    if (args.length === 0 || args[0].type !== "string") {
+        return { type: "error", value: "concat requires at least one string as argument" };
+    }
+    let value = args[0].value;
+    for (let i = 1; i < args.length; i++) {
+        if (args[i].type !== "string") {
+            return { type: "error", value: "concat requires strings as arguments" };
+        }
+        value += args[i].value;
+    }
+    return { type: "string", value };
 }
 
 exports.read = read;
