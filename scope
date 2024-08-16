@@ -75,6 +75,15 @@ curl --data-raw '
 ' localhost:8080
 3
 
+curl --data-raw '
+(letrec
+  ((define a 7) 
+   (b 3)
+   (define (plus1 b) (+ 1 b)))
+  (+ a b (plus1 2)))
+' localhost:8080
+13
+
 curl --data-raw "
 (letrec 
   ((ping (lambda (a l) (if (equal? a 0) l (pong (- a 1) (cons \"ping\" l)))))

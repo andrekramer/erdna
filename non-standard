@@ -2,11 +2,13 @@ curl --data '
 (string-length "abcdefg")
 (slice "abcdefgh" 3 5)
 (slice "123abcdefgh" 4)
-(concat "abc" 100.001 "def\n" "123" #f)
+(concat "abc " 100.001 "\ndef\n" "123" #f)
 (indexOf "World" "Hello World!")
 ' localhost:8080  
-6   
-de    
-bcdefgh    
-abcdef  
-123   
+7
+de
+bcdefgh
+abc 100.001
+def
+123false
+6

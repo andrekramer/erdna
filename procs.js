@@ -20,6 +20,12 @@ const procs = `
   )
   (len l 0)
 )
+(define (caar l) (car (car l)))
+(define (cadr l) (car (cdr l)))
+(define (cdar l) (cdr (car l)))
+(define (cddr l) (cdr (cdr l)))
+(define (>= n1 n2) (not (< n1 n2)))
+(define (<= n1 n2) (not (> n1 n2)))
 `;
 
 function seed() {

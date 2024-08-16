@@ -152,7 +152,7 @@ curl --data "(define a 1) (if (equal? 1 1) (begin (set! a 2) 'a '(1 2) (+ 1 a  3
 
 curl --data "
 (define (loop n) 
-   (cond ((equal? n 0) 0)
+   (cond ((= n 0) 0)
          (else (loop (- n 1)))))
 (loop 1000000)
 " localhost:8080  
@@ -188,6 +188,13 @@ true
 true
 false
 true
+
+curl --data "(>)(> 1)(> 2 1)(> 1 2)(> 4 3 2)"  localhost:8080  
+true  
+true  
+true  
+false  
+true  
 
 curl --data "
 (define (variable-args a b . c) (cons a (cons b c)))
@@ -240,4 +247,36 @@ curl --data "
 3
 101
 3
+
+curl --data "
+(= 100 101) (= 110 110) (= 1 0 1) (= '2 2) (=)
+" localhost:8080  
+false  
+true  
+false  
+true  
+true  
+
+curl --data "
+(caar '((1 2) 0 (3 4)))
+(cadr '((1 2) 0 (3 4)))
+(cdar '((1 2) 0 (3 4)))
+(cddr '((1 2) 0 (3 4)))
+" localhost:8080  
+1   
+0  
+(2)  
+((3 4))  
+
+curl --data '
+(error "raise an error")
+(define (hick n) 
+  (cond ((> 10 n) n)
+    (else (error "hick"))))
+(hick 9)
+(hick 11)
+' localhost:8080  
+ERROR raise an error!  
+9  
+ERROR hick!  
 

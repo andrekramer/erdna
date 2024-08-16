@@ -71,6 +71,7 @@ curl --data-raw "
 )
 (map (lambda (a) (+ a 1)) '(1 2 3 4 5))  
 " localhost:8080
+(2 3 4 5 6)
 
 curl --data-raw "; reduce right associative
 (define (reduce fn l r)
@@ -92,3 +93,17 @@ curl --data-raw "; reduce left associative
 " localhost:8080
 0.008333333333333333
 -195
+
+curl --data-raw "
+(define (largest nums)
+  (local [(define (bigger x y)
+            (cond [(> x y) x]
+                  [else y]))
+          (define (helper nums)
+            (cond [(null? (rest nums)) (first nums)]
+                  [(cons (rest nums))
+                   (bigger (first nums) (helper (rest nums)))]))]
+    (helper nums)))
+(largest (list 5 15 12 13 14 11 3 9 8 7 6 16 4 10 2 1))
+" localhost:8080
+16

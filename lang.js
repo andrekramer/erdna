@@ -5,26 +5,29 @@ const buildIns = {
     "-": minus,
     "*": multiply,
     "/": divide,
+    "=": numberEqual,
     "equal?": equal,
     "list": (args, env) => listify(args),
     "cons": cons,
-    "car": car,
-    "cdr": cdr,
+    "car": car, "first": car,
+    "cdr": cdr, "rest": cdr,
     "append": append,
     "begin": begin,
     "<": lessThan,
+    ">": greaterThan,
     "apply": applyToList,
     "string-length": strLength,
     "slice": strSlice,
     "concat": strConcat,
-    "indexOf": strIndexOf
+    "indexOf": strIndexOf,
+    "error": error
 };
 
 const formals = {
     "if": evalRewrite(rewriteIf),
     "cond": evalRewrite(rewriteCond),
     "case": evalRewrite(rewriteCase),
-    "letrec": evalRewrite(rewriteLetrec),
+    "letrec": evalRewrite(rewriteLetrec), "local": evalRewrite(rewriteLetrec),
     "define": evalDefine,
     "lambda": evalLambda,
     "set!": evalSet,
@@ -567,8 +570,15 @@ function rewriteLetrec(exp, env) {
         return [{ type: ERR, value: "letrec bind expression expected" }, env];
     }
     for (const bind of binds.value) {
+
+        if (bind.type === EXP && bind.value.length > 1 && bind.value[0].type === ATOM && bind.value[0].value === "define") {
+            // allow defines to add to local env
+            eval(bind, letrecEnv);
+            continue;
+        }
+
         if (bind.type !== EXP || bind.value.length !== 2) {
-            return [{ type: ERR, value: "letrec bind must be expression pair" }, env];
+            return [{ type: ERR, value: "letrec bind must be a define or an expression pair" }, env];
         }
         if (bind.value[0].type !== ATOM) {
             return [{ type: ERR, value: "letrec bind must be atom and expression pair" } , env];
@@ -817,6 +827,9 @@ function eval2(exp, env) {
 
 function write(result) {
     // console.log("write " + JSON.stringify(result));
+    if (result.type === ERR) {
+        return "ERROR " + result.value + "!";
+    }
     if (result.type === NUM || result.type === STR || result.type === BOOL) {
         return result.value;
     }
@@ -959,6 +972,25 @@ function lessThan(args, env) {
     return trueValue;
 }
 
+function greaterThan(args, env) {
+    if (args.length === 0) {
+        return trueValue;
+    }
+    const first = args[0];
+    if (first.type !== NUM) {
+        return { type: ERR, value: "> requires numbers as arguments" };
+    }
+    for (let i = 1; i < args.length; i++) {
+        if (args[i].type !== NUM) {
+            return { type: ERR, value: "> requires numbers as arguments" };
+        }
+        if (!(first.value > args[i].value)) {
+            return falseValue;
+        }
+    }
+    return trueValue;
+}
+
 function applyToList(args, env) {
     if (args.length !== 2) {
         return { type: ERR, value: "apply takes 2 arguments" };
@@ -1004,6 +1036,25 @@ function equal(args, env) {
     return { type: BOOL, value: result };
 }
 
+function numberEqual(args, env) {
+    if (args.length === 0) {
+        return trueValue;
+    }
+    if (args[0].type !== NUM) {
+        return { type: ERR, value: "= only compares numbers" };
+    }
+    const value = args[0].value;
+    for (let i = 0; i < args.length; i++) {
+        if (args[1].type !== NUM) {
+            return { type: ERR, value: "= only compares numbers" };
+        }
+        if (args[i].value !== value) {
+            return falseValue;
+        }
+    }
+    return trueValue;
+}
+ 
 function plus(args, env) {
     let value = 0;
     for (let arg of args) {
@@ -1115,6 +1166,13 @@ function strIndexOf(args, env) {
         return { type: ERR, value: "indexOf requires two string arguments" };
     }
     return args[1].value.indexOf(args[0].value);
+}
+
+function error(args, env) {
+    if (args.length == 1 && args[0].type === STR) {
+        return { type: ERR, value: args[0].value };
+    }
+    return { type: ERR, value: "error!" };
 }
 
 exports.read = read;
