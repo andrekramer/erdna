@@ -281,3 +281,9 @@ ERROR raise an error!
 9  
 ERROR hick!  
 
+curl --data "  
+(symbol? 'a) (number? 1) (pair? '(1 2)) (string? \"abc\") (boolean? #f)  
+(symbol? '1) (number? 'x) (pair? '()) (string? '(\"abc\")) (boolean? 0)  
+" localhost:8080  i 
+true true true true true  
+false false false false  

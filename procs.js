@@ -30,7 +30,7 @@ const procs = `
 (define (number? x) (equal? (type-of x) 2))
 (define (pair? x) (equal? (type-of x) 8))
 (define (string? x) (equal? (type-of x) 3))
-(define (boolen? x) (equal? (type-of x) 4))
+(define (boolean? x) (equal? (type-of x) 4))
 `;
 
 function seed() {
