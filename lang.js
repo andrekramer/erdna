@@ -5,6 +5,7 @@ const buildIns = {
     "-": minus,
     "*": multiply,
     "/": divide,
+    "div-mod": divmod,
     "=": numberEqual,
     "equal?": equal,
     "list": (args, env) => listify(args),
@@ -19,7 +20,8 @@ const buildIns = {
     "string-length": strLength,
     "slice": strSlice,
     "concat": strConcat,
-    "indexOf": strIndexOf,
+    "index-of": strIndexOf,
+    "type-of": typeOf,
     "error": error
 };
 
@@ -1128,6 +1130,15 @@ function divide(args, env) {
     return { type: NUM, value };
 }
 
+function divmod(args, env) {
+    if (args.length !== 2 || args[0].type !== NUM || args[1].type !== NUM) {
+        return { type: ERR, value: "divmod requires two numbers as arguments" };
+    }
+    const x = args[0].value;
+    const y = args[1].value;
+    return listify([Math.floor(x / y), x % y]);
+}
+
 function strLength(args, env) {
     if (args.length !== 1 || args[0].type !== STR) {
         return { type: ERR, value: "string-length expectes one string argument" };
@@ -1146,15 +1157,15 @@ function strSlice(args, env) {
 
 function strConcat(args, env) {
     function concatable(type) {
-        return type >= NUM && type <= BOOL;
+        return (type >= NUM && type <= BOOL) || type === ATOM;
     }
     if (args.length === 0 || !concatable(args[0].type)) {
-        return { type: ERR, value: "concat requires at least one string as argument" };
+        return { type: ERR, value: "concat requires at least one argument" };
     }
     let value = "";
     for (const arg of args) {
         if (!concatable(arg.type)) {
-            return { type: ERR, value: "concat requires strings as arguments" };
+            return { type: ERR, value: "concat requires valies that convert to string as arguments" };
         }
         value += arg.value;
     }
@@ -1163,9 +1174,16 @@ function strConcat(args, env) {
 
 function strIndexOf(args, env) {
     if (args.length != 2 || args[0].type !== STR || args[1].type !== STR) {
-        return { type: ERR, value: "indexOf requires two string arguments" };
+        return { type: ERR, value: "index-of requires two string arguments" };
     }
     return args[1].value.indexOf(args[0].value);
+}
+
+function typeOf(args, env) {
+    if (args.length != 1) {
+        return { type: ERR, value: "type-of takes one argument" };
+    }
+    return { type: NUM, value: args[0].type };
 }
 
 function error(args, env) {

@@ -3,7 +3,7 @@ curl --data '
 (slice "abcdefgh" 3 5)
 (slice "123abcdefgh" 4)
 (concat "abc " 100.001 "\ndef\n" "123" #f)
-(indexOf "World" "Hello World!")
+(index-of "World" "Hello World!")
 ' localhost:8080  
 7
 de
@@ -12,3 +12,9 @@ abc 100.001
 def
 123false
 6
+
+curl --data "(type-of 'a)" localhost:8080  
+0
+
+curl --data "(div-mod 13 3)" localhost:8080  
+(4 1)

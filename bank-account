@@ -1,0 +1,45 @@
+curl --data "
+(define (make-account)
+   (let ((my-balance 0))
+
+      ;; return the current balance
+      (define (balance)
+         my-balance)
+
+      ;; make a withdrawal
+     (define (withdraw amount)
+        (if (>= my-balance amount)
+           (begin (set! my-balance (- my-balance amount))
+                   my-balance)
+           \"Insufficient funds\"))
+
+     ;; make a deposit
+     (define (deposit amount)
+        (set! my-balance (+ my-balance amount))
+        my-balance)
+
+     ;; the dispatching function -- decide what to do with the request
+     (define (dispatch m)
+        (cond ((equal? m 'balance) balance)
+              ((equal? m 'withdraw) withdraw)
+              ((equal? m 'deposit) deposit)
+              (else (error (concat \"unknown method \" m)))))
+
+      dispatch))
+(define acct1 (make-account))  
+(define acct2 (make-account))  
+((acct1 'balance))   
+((acct1 'deposit) 100) 
+((acct1 'withdraw) 30)  
+((acct1 'withdraw) 200) 
+
+;; acct2 is a different account from acct1!
+((acct2 'balance))  
+((acct2 'close))  
+" localhost:8080
+0
+100
+70
+Insufficient funds
+0
+ERROR unknown method close!

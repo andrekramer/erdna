@@ -26,6 +26,11 @@ const procs = `
 (define (cddr l) (cdr (cdr l)))
 (define (>= n1 n2) (not (< n1 n2)))
 (define (<= n1 n2) (not (> n1 n2)))
+(define (symbol? x) (equal? (type-of x) 0))
+(define (number? x) (equal? (type-of x) 2))
+(define (pair? x) (equal? (type-of x) 8))
+(define (string? x) (equal? (type-of x) 3))
+(define (boolen? x) (equal? (type-of x) 4))
 `;
 
 function seed() {
