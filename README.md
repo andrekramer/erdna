@@ -1,12 +1,13 @@
-An interpreter for a Scheme -like language written in javascript 
+An interpreter for a Scheme -like language written in javascript
 hosted in a node web server.
-The commit history builds up language features for the examples below 
+The commit history builds up language features for the curl commands below
+and in the examples directory.
 but Macros and callcc are not covered.  
 What if the Web was programmable in a uniform but flexible syntax?
 
 to clone:
 
-git@github.com:andrekramer/erdna.git
+git@github.com:andrekramer/erdna.git  
 cd erdna
 
 to install:
