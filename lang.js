@@ -22,7 +22,8 @@ const buildIns = {
     "concat": strConcat,
     "index-of": strIndexOf,
     "type-of": typeOf,
-    "error": error
+    "error": error,
+    "sleep-promise": sleep
 };
 
 const formals = {
@@ -45,7 +46,8 @@ const primitiveTypes = {
     "2": evalPrimitive,
     "3": evalPrimitive,
     "4": evalPrimitive,
-    "5": evalPrimitive
+    "5": evalPrimitive,
+    "9": evalPrimitive
 };
 
 const rewrites = {
@@ -64,6 +66,7 @@ const STR = 3;
 const BOOL = 4;
 const CLOSURE = 5;
 const PAIR = 8;
+const PROMISE = 9;
 
 let scopeId = 1;
 const tailCalls = true;
@@ -429,7 +432,7 @@ function eval(exp, env) {
                                 }
                             }
                             break;
-                        }
+                        } 
 
                         if (target.type === EXP && target.value.length !== 0) {
                             // console.log("tail target " + JSON.stringify(target));
@@ -1136,7 +1139,7 @@ function divmod(args, env) {
     }
     const x = args[0].value;
     const y = args[1].value;
-    return listify([Math.floor(x / y), x % y]);
+    return { type: PAIR, value: { type: NUM, value: Math.floor(x / y)}, rest:  { type: NUM, value: x % y} };
 }
 
 function strLength(args, env) {
@@ -1173,24 +1176,34 @@ function strConcat(args, env) {
 }
 
 function strIndexOf(args, env) {
-    if (args.length != 2 || args[0].type !== STR || args[1].type !== STR) {
+    if (args.length !== 2 || args[0].type !== STR || args[1].type !== STR) {
         return { type: ERR, value: "index-of requires two string arguments" };
     }
     return args[1].value.indexOf(args[0].value);
 }
 
 function typeOf(args, env) {
-    if (args.length != 1) {
+    if (args.length !== 1) {
         return { type: ERR, value: "type-of takes one argument" };
     }
     return { type: NUM, value: args[0].type };
 }
 
 function error(args, env) {
-    if (args.length == 1 && args[0].type === STR) {
+    if (args.length === 1 && args[0].type === STR) {
         return { type: ERR, value: args[0].value };
     }
     return { type: ERR, value: "error!" };
+}
+
+function sleep(args, env) {
+    const ret = { type: PROMISE };
+    if (args.length !== 1 || args[0].type !== NUM) {
+        return { type: ERR, value: "sleep expects a number as argument" };
+    }
+    const promise = new Promise(r => { setTimeout(r, args[0].value); ret.value = "done." });
+    ret.promise = promise;
+    return ret;
 }
 
 exports.read = read;

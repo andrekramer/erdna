@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.send("erdna");
 });
 
-app.post("/", (req, res) => {
+app.post("/", async (req, res) => {
   // const topLevelEnv = { name: "per request top level scope "}; // Uncomment this line for no sharing between requests.
   text = req.body.toString('utf-8');
   // console.log(text);
@@ -21,10 +21,15 @@ app.post("/", (req, res) => {
   console.log(JSON.stringify(result));
   reply = "";
   for (const exp of result) {
-    const result = lang.eval(exp, topLevelEnv);
-    if (result.type === "error") {
+    let result = lang.eval(exp, topLevelEnv);
+    if (result.type === -1) {
       res.send(result.value);
       return;
+    }
+    if (result.type === 9) {
+      console.log("promise!");
+      await result.promise;
+      result = result.value;
     }
     reply += lang.write(result);
     reply += "\n";
