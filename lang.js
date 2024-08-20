@@ -1201,7 +1201,7 @@ function sleep(args, env) {
     if (args.length !== 1 || args[0].type !== NUM) {
         return { type: ERR, value: "sleep expects a number as argument" };
     }
-    const promise = new Promise(r => { setTimeout(r, args[0].value); ret.value = "done." });
+    const promise = new Promise(r => { setTimeout(r, args[0].value) }).then(r => ret.value = "done.");
     ret.promise = promise;
     return ret;
 }
