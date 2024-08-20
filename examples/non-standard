@@ -20,3 +20,9 @@ curl --data "(div-mod 13 3)" localhost:8080
 (4 . 1)
 
 curl --data "(sleep-promise 2000)" localhost:8080
+curl --data "(resolve (sleep-promise 2000))" localhost:8080
+curl --data "
+(define (test) 
+  (define a (sleep-promise 2000)) 
+  (+ 1 2) 
+  (resolve a)) (test)" localhost:8080

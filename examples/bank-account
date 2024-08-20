@@ -42,4 +42,5 @@ curl --data "
 70
 Insufficient funds
 0
-ERROR unknown method close!
+
+unknown method close

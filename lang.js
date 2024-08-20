@@ -23,7 +23,13 @@ const buildIns = {
     "index-of": strIndexOf,
     "type-of": typeOf,
     "error": error,
-    "sleep-promise": sleep
+    "sleep-promise": sleep,
+    "resolve": resolve
+};
+
+const asyncBuildIns = {
+    "apply": applyToList,
+    "resolve": resolve
 };
 
 const formals = {
@@ -55,7 +61,7 @@ const rewrites = {
     "cond": rewriteCond,
     "case": rewriteCase,
     "letrec": rewriteLetrec
-}
+};
 
 const ATOM = 0;
 const EXP = 1;
@@ -312,7 +318,7 @@ function pairToExp(exp) {
     return exp;
 }
 
-function eval(exp, env) {
+async function eval(exp, env) {
     
     if (exp.type === PAIR) {
         exp = pairToExp(exp);
@@ -349,11 +355,11 @@ function eval(exp, env) {
             const first = exp.value[0];
             const evalFormal = formals[first.value];
             if (evalFormal !== undefined) {
-                return evalFormal(exp, env);
+                return await evalFormal(exp, env);
             }
         }
 
-        let proc = eval(exp.value[0], env);
+        let proc = await eval(exp.value[0], env);
         // console.log("proc " + JSON.stringify(proc));
         if (proc.type === ERR) {
             return proc;
@@ -375,7 +381,7 @@ function eval(exp, env) {
                 if (proc.value.length < 3) {
                     return { type: ERR, value: "lambda needs a body" };
                 }
-                const args = evalArgs(exp, env);
+                const args = await evalArgs(exp, env);
                 if (args["type"] === ERR) {
                     return args;
                 }
@@ -427,18 +433,18 @@ function eval(exp, env) {
                                 const rewrite = rewrites[target.value[0].value];
                                 if (rewrite !== undefined) {
                                     // console.log("tail " + target.value[0].value);
-                                    [target, localEnv] = rewrite(target, localEnv);
+                                    [target, localEnv] = await rewrite(target, localEnv);
                                     continue;
                                 }
                             }
                             break;
-                        } 
+                        }
 
                         if (target.type === EXP && target.value.length !== 0) {
                             // console.log("tail target " + JSON.stringify(target));
                             // Call to same proc can be optimized to avoid stack growing.
                             if (target.value[0].type === ATOM && target.value[0].value === exp.value[0].value) {
-                                proc = eval(target.value[0], env);
+                                proc = await eval(target.value[0], env);
                                 if (proc.type === CLOSURE) {
                                     closureEnv = proc.scope;
                                     proc = proc.value;
@@ -452,7 +458,7 @@ function eval(exp, env) {
                             }
                         }
                     }
-                    result = eval(target, localEnv);
+                    result = await eval(target, localEnv);
                     if (result.type === ERR) {
                         return result;
                     }
@@ -467,11 +473,11 @@ function eval(exp, env) {
             }
 
             // console.log("proc " + JSON.stringify(proc));
-            const args = evalArgs(exp, env);
+            const args = await evalArgs(exp, env);
             if (args["type"] === ERR) {
                 return args;
             }
-            return apply(proc, args, env);
+            return await apply(proc, args, env);
         }
     }
 
@@ -483,12 +489,12 @@ function eval(exp, env) {
 
 function evalPrimitive(exp, env) { return exp; }
 
-function evalLambda(exp, env) {
+async function evalLambda(exp, env) {
     // console.log("closure over " + JSON.stringify(exp));
     return { type: CLOSURE, value: exp, scope: env };
 }
 
-function evalQuote(exp, env) {
+async function evalQuote(exp, env) {
     if (exp.value.length !== 2) {
         return { type: ERR, value: "Can only quote one value" };
     }
@@ -500,7 +506,7 @@ function evalQuote(exp, env) {
     return result;
 }
 
-function evalQuasiquote(exp, env) {
+async function evalQuasiquote(exp, env) {
     if (exp.value.length !== 2) {
         return { type: ERR, value: "Can only quasi-quote one value" };
     }
@@ -513,7 +519,7 @@ function evalQuasiquote(exp, env) {
                     return { type: ERR, value: "Can only unquote one value"};
                 }
                 const unquoteExp = subExp.value[1];
-                const r = eval(unquoteExp, env);
+                const r = await eval(unquoteExp, env);
                 resultList.push(r);
             } else {
                 resultList.push(subExp);
@@ -525,7 +531,7 @@ function evalQuasiquote(exp, env) {
     return result;
 }
 
-function evalSet(exp, env) {
+async function evalSet(exp, env) {
     if (exp.value.length !== 3) {
         return { type: ERR, value: "set! requires a name and value" };
     }
@@ -544,7 +550,7 @@ function evalSet(exp, env) {
 
     const value = e[symbol.value];
 
-    const update = eval(exp.value[2], env);
+    const update = await eval(exp.value[2], env);
     if (update.type === ERR) {
         return { type: ERR, value: "Could not evaluate value to set!" };
     }
@@ -555,16 +561,16 @@ function evalSet(exp, env) {
 }
 
 function evalRewrite(rewrite) {
-    return (exp, env) => {
-        const [rewriteExp, localEnv] = rewrite(exp, env);
+    return async (exp, env) => {
+        const [rewriteExp, localEnv] = await rewrite(exp, env);
         if (rewriteExp.type === ERR) {
             return rewriteExp;
         }
-        return eval(rewriteExp, localEnv);
+        return await eval(rewriteExp, localEnv);
     };
 }
 
-function rewriteLetrec(exp, env) {
+async function rewriteLetrec(exp, env) {
     const letrecEnv =  { "__parent_scope": env, name: "letrec " + scopeId++ };
 
     if (exp.value.length < 3) {
@@ -578,7 +584,10 @@ function rewriteLetrec(exp, env) {
 
         if (bind.type === EXP && bind.value.length > 1 && bind.value[0].type === ATOM && bind.value[0].value === "define") {
             // allow defines to add to local env
-            eval(bind, letrecEnv);
+            const v = await eval(bind, letrecEnv);
+            if (v.type === ERR) {
+                return [{ type: ERR, value: "letrec define eval fails" }, env];
+            }
             continue;
         }
 
@@ -592,14 +601,14 @@ function rewriteLetrec(exp, env) {
         const variable = bind.value[0].value;
         // console.log("letrec var " + variable);
         
-        const value = eval(bind.value[1], letrecEnv);
+        const value = await eval(bind.value[1], letrecEnv);
         if (value.type === ERR) {
             return [{ type: ERR, value: "letrec bind eval fails" }, env];
         }
         letrecEnv[variable] = value;
     }
     for (let i = 2; i < exp.value.length - 1; i++) {
-        const result = eval(exp.value[i], letrecEnv);
+        const result = await eval(exp.value[i], letrecEnv);
         if (result.type === ERR) {
             return [result, env];
         }
@@ -609,7 +618,7 @@ function rewriteLetrec(exp, env) {
     return [letrecExp, letrecEnv];
 }
 
-function rewriteIf(exp, env) {
+async function rewriteIf(exp, env) {
     if (exp.value.length < 3) {
         return [{ type: ERR, value: "if form needs a condition and a then part" }, env];
     }
@@ -619,7 +628,7 @@ function rewriteIf(exp, env) {
 
     const condition = exp.value[1];
     // console.log("if " + JSON.stringify(condition));
-    const result = eval(condition, env);
+    const result = await eval(condition, env);
     if (result.type === ERR) {
         return [result, env];
     }
@@ -635,7 +644,7 @@ function rewriteIf(exp, env) {
     }
 }
 
-function rewriteCond(exp, env) {
+async function rewriteCond(exp, env) {
     if (exp.value.length === 1) {
         return [{ type: ERR, value: "cond needs one or more conditions" }, env];
     }
@@ -653,7 +662,7 @@ function rewriteCond(exp, env) {
             }
             return [cond.value[1], env];
         }
-        const test = eval(cond.value[0], env);
+        const test = await eval(cond.value[0], env);
         if (!(test.type === BOOL && test.value === false)) {
             return [cond.value[1], env];
         }
@@ -661,11 +670,11 @@ function rewriteCond(exp, env) {
     return [falseValue, env];
 }
 
-function rewriteCase(exp, env) {
+async function rewriteCase(exp, env) {
     if (exp.value.length < 2) {
         return [{ type: ERR, value: "case needs expression and one or more conditions" }, env];
     }
-    const selector = eval(exp.value[1], env);
+    const selector = await eval(exp.value[1], env);
     // console.log("selector " + JSON.stringify(selector));
     for (let i = 2; i < exp.value.length; i++) {
        const cond = exp.value[i];
@@ -678,7 +687,7 @@ function rewriteCase(exp, env) {
             if (i !== exp.value.length - 1) {
                 return [{ type: ERR, value: "else must be last case" }, env];
             }
-            return evalCase(cond);
+            return await evalCase(cond);
        }
        if (condCase.type !== EXP) {
           return [{ type: ERR, value: "cond case must be a list" }, env];
@@ -686,16 +695,16 @@ function rewriteCase(exp, env) {
        for (let i = 0; i < condCase.value.length; i++) {
            if (equal([selector, condCase.value[i]], env).value === true) {
               // console.log("case match");
-              return evalCase(cond);
+              return await evalCase(cond);
            }
        }
     }
     return [falseValue, env];
 }
 
-function evalCase(cond, env) {
+async function evalCase(cond, env) {
     for (let c = 1; c < cond.value.length - 1; c++) {
-        const result = eval(cond.value[c], env);
+        const result = await eval(cond.value[c], env);
         if (result.type === ERR) {
             return error;
         }
@@ -703,7 +712,7 @@ function evalCase(cond, env) {
     return [cond.value[cond.value.length - 1], env];
 }
 
-function evalDefine(exp, env) {
+async function evalDefine(exp, env) {
     if (exp.value.length < 2) {
         return { type: ERR, value: "define what please?" };
     }
@@ -714,7 +723,7 @@ function evalDefine(exp, env) {
             return { type: ERR, value: "define takes 2 arguments found " + exp.value.length };
         }
         const arg = exp.value[2];
-        const result = eval(arg, env);
+        const result = await eval(arg, env);
         // console.log("eval define arg result " +  JSON.stringify(result));
         env[def.value] = result;
         return result;
@@ -735,7 +744,7 @@ function evalDefine(exp, env) {
             lambda.push(exp.value[i]);
         }
         // console.log("define proc " + JSON.stringify(lambda));
-        const closure = eval({ type: EXP, value: lambda }, env);
+        const closure = await eval({ type: EXP, value: lambda }, env);
         env[proc.value] = closure;
         return closure;
     } else {
@@ -743,7 +752,7 @@ function evalDefine(exp, env) {
     }
 }
 
-function evalLet(exp, env) {
+async function evalLet(exp, env) {
     if (exp.value.length < 3) {
         return { type: ERR, value: "let form needs a bind and one or more eval sub parts" };
     }
@@ -780,13 +789,13 @@ function evalLet(exp, env) {
     const letLambdaExp = { type: EXP, value: letLambdaExpValue };
     console.log("let lambda expression " + JSON.stringify(letLambdaExp));
 
-    return eval(letLambdaExp, env);
+    return await eval(letLambdaExp, env);
 }
 
-function evalAnd(exp, env) {
+async function evalAnd(exp, env) {
     let result = trueValue;
     for (let i = 1; i < exp.value.length; i++) {
-        result = eval(exp.value[i], env);
+        result = await eval(exp.value[i], env);
         if (result.type === BOOL && result.value === false) {
             return falseValue;
         }
@@ -794,10 +803,10 @@ function evalAnd(exp, env) {
     return result;
 }
 
-function evalOr(exp, env) {
+async function evalOr(exp, env) {
     let result = falseValue;
     for (let i = 1; i < exp.value.length; i++) {
-        result = eval(exp.value[i], env);
+        result = await eval(exp.value[i], env);
         if (!(result.type === BOOL && result.value === false)) {
             return trueValue;
         }
@@ -805,11 +814,11 @@ function evalOr(exp, env) {
     return result;
 }
 
-function evalArgs(exp, env) {
+async function evalArgs(exp, env) {
     const args = [];
     for (let i = 1; i < exp.value.length; i++) {
         // console.log("arg " + i + " " + JSON.stringify(exp.value[i]));
-        const arg = eval(exp.value[i], env);
+        const arg = await eval(exp.value[i], env);
         if (arg.type === ERR) {
             return arg;
         }
@@ -818,16 +827,16 @@ function evalArgs(exp, env) {
     return args;
 }
 
-function eval2(exp, env) {
+async function eval2(exp, env) {
     if (exp.value.length !== 3) {
         return { type: ERR, value: "eval takes an expression to evaluate and a closure to borrow an environment from" };
     }
-    const closure = eval(exp.value[2], env);
+    const closure = await eval(exp.value[2], env);
     if (closure.type !== CLOSURE) {
         return { type: ERR, value: "eval requires a closure as second arg to provide an environment to evaluate in" };
     }
-    const exp2 = eval(exp.value[1], env);
-    return eval(exp2, closure.scope);
+    const exp2 = await eval(exp.value[1], env);
+    return await eval(exp2, closure.scope);
 }
 
 function write(result) {
@@ -881,9 +890,12 @@ function lookup(symbol, env) {
     return undefined;
 }
 
-function apply(proc, args, env) {
+async function apply(proc, args, env) {
     const buildIn = buildIns[proc.value];
     if (buildIn !== undefined) {
+        if (asyncBuildIns[proc.value] !== undefined) {
+            return await buildIn(args, env);
+        }
         return buildIn(args, env);
     }
     return { type: ERR, value: "Unkown procedure " + proc.value };
@@ -996,7 +1008,7 @@ function greaterThan(args, env) {
     return trueValue;
 }
 
-function applyToList(args, env) {
+async function applyToList(args, env) {
     if (args.length !== 2) {
         return { type: ERR, value: "apply takes 2 arguments" };
     }
@@ -1006,7 +1018,7 @@ function applyToList(args, env) {
     }
     const exp = { type: EXP, value: expValue };
     // console.log("apply " + JSON.stringify(exp));
-    return eval(exp, env);
+    return await eval(exp, env);
 }
 
 function equal(args, env) {
@@ -1206,6 +1218,17 @@ function sleep(args, env) {
     return ret;
 }
 
+async function resolve(args, env) {
+    if (args.length !== 1 || args[0].type !== PROMISE) {
+        return { type: ERR, value: "resolve expects a promise as argument" };
+    }
+    const promise = args[0];
+    await promise.promise;
+    return promise.value;
+}
+
 exports.read = read;
 exports.eval = eval;
 exports.write = write;
+exports.ERR = ERR;
+exports.PROMISE = PROMISE;

@@ -21,12 +21,16 @@ app.post("/", async (req, res) => {
   console.log(JSON.stringify(result));
   reply = "";
   for (const exp of result) {
-    let result = lang.eval(exp, topLevelEnv);
-    if (result.type === -1) {
+    let result = await lang.eval(exp, topLevelEnv);
+    if (result.type === lang.ERR) {
+      if (reply !== "") {
+        res.send("" + reply + "\n" + result.value);
+        return;
+      }
       res.send(result.value);
       return;
     }
-    if (result.type === 9) {
+    if (result.type === lang.PROMISE) {
       console.log("promise!");
       await result.promise;
       result = result.value;
