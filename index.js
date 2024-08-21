@@ -1,4 +1,5 @@
 const express = require("express");
+const { ERR, PROMISE } = require("./constants.js");
 const lang = require("./lang.js");
 const procs = require("./procs.js");
 
@@ -22,7 +23,7 @@ app.post("/", async (req, res) => {
   reply = "";
   for (const exp of result) {
     let result = await lang.eval(exp, topLevelEnv);
-    if (result.type === lang.ERR) {
+    if (result.type === ERR) {
       if (reply !== "") {
         res.send("" + reply + "\n" + result.value);
         return;
@@ -30,7 +31,7 @@ app.post("/", async (req, res) => {
       res.send(result.value);
       return;
     }
-    if (result.type === lang.PROMISE) {
+    if (result.type === PROMISE) {
       console.log("promise!");
       await result.promise;
       result = result.value;

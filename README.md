@@ -270,16 +270,16 @@ curl --data "
 ((3 4))  
 
 curl --data '
-(error "raise an error")
 (define (hick n) 
   (cond ((> 10 n) n)
     (else (error "hick"))))
 (hick 9)
 (hick 11)
+(error "raise an error")
 ' localhost:8080  
-ERROR raise an error!  
 9  
-ERROR hick!  
+
+hick  
 
 curl --data "  
 (symbol? 'a) (number? 1) (pair? '(1 2)) (string? \"abc\") (boolean? #f)  
