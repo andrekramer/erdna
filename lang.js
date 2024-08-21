@@ -24,7 +24,7 @@ const buildIns = {
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
     "type-of": typeOf,
     "error": error,
-    "sleep-promise": promises.sleep, "resolve": promises.resolve
+    "sleep-promise": promises.sleep, "fetch-promise": promises.fetchPromise, "resolve": promises.resolve
 };
 
 const asyncBuildIns = {
