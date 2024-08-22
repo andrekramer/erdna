@@ -16,16 +16,10 @@ async function fetchPromise(args, env) {
     if (args.length === 0 || args[0].type !== STR) {
         return { type: ERR, value: "fetch-promise expect a url as first argument" };
     }
+    let promise;
     if (args.length === 1) {
         console.log("fetch");
-        const promise = fetch(args[0].value).then((response) => response.text())
-            .then((body) => {
-                ret.value = { type: STR, value: body };
-                // console.log("body " + body);
-            });
-        ret.promise = promise;
-        return ret;
-
+        promise = fetch(args[0].value);
     } else if (args.length === 2) {
         const customHeaders = {
             "Content-Type": "application/json",
@@ -33,20 +27,24 @@ async function fetchPromise(args, env) {
         if (args[1].type !== STR) {
             return { type: ERR, value: "fetch-promise expect a text body as optional second argument" };
         }
-        const promise = fetch(args[0].value, {
+        promise = fetch(args[0].value, {
             method: "POST",
             headers: customHeaders,
             body: args[1].value,
-        }).then((response) => response.text())
-            .then((body) => {
-                ret.value = { type: STR, value: body };
-            });
-        ret.promise = promise;
-        return ret;
-
+        });
     } else if (args.length > 2) {
         return { type: ERR, value: "fetch-promise called with too many arguments" };
     }
+    const promise2 = promise.then((response) => response.text())
+    .then((body) => {
+        ret.value = { type: STR, value: body };
+        // console.log("body " + body);
+    }).catch((error) => {
+        // console.error('fetch error ', error);
+        ret.value = { type: ERR, value: "fetch error " + error};
+    });
+    ret.promise = promise2;
+    return ret;
 }
 
 async function resolve(args, env, eval) {
@@ -57,7 +55,7 @@ async function resolve(args, env, eval) {
     try {
         await promise.promise;
     } catch (e) {
-        return { type: ERR, value: "resolve error " + JSON.stringify(e) };
+        return { type: ERR, value: "resolve error " + e };
     }
 
     return promise.value;
