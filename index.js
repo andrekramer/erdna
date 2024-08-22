@@ -7,8 +7,18 @@ const app = express();
 app.use(express.raw({ type: '*/*', limit: '10mb' }));
 
 const port = process.env.PORT || 8080;
+const apiKey = process.env.APIKEY || '';
 
 const topLevelEnv = procs.seed(); // Uncomment for no procs { name: "top level scope "};
+
+
+app.use((req, res, next) => {
+  if (apiKey !== "" && req.headers["apikey"] !== apiKey) {
+    res.status(401).send('invalid api key');
+  } else {
+    next();
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("erdna");

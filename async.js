@@ -13,26 +13,27 @@ function sleep(args, env) {
 async function fetchPromise(args, env) {
     const ret = { type: PROMISE };
 
-    if (args.length === 0 || args[0].type !== STR) {
-        return { type: ERR, value: "fetch-promise expect a url as first argument" };
+    if (args.length < 2 || args[0].type !== STR || args[1].type !== STR) {
+        return { type: ERR, value: "fetch-promise expect a url as first argument and apikey as second argument" };
     }
     let promise;
-    if (args.length === 1) {
-        console.log("fetch");
-        promise = fetch(args[0].value);
-    } else if (args.length === 2) {
+    if (args.length === 2) {
+        console.log("fetch ");
+        promise = fetch(args[0].value, { headers: { "apikey": args[1].value }});
+    } else if (args.length === 3) {
         const customHeaders = {
             "Content-Type": "application/json",
+            "apikey": args[1].value
         }
-        if (args[1].type !== STR) {
-            return { type: ERR, value: "fetch-promise expect a text body as optional second argument" };
+        if (args[2].type !== STR) {
+            return { type: ERR, value: "fetch-promise expect a text body as optional 3rd argument" };
         }
         promise = fetch(args[0].value, {
             method: "POST",
             headers: customHeaders,
-            body: args[1].value,
+            body: args[2].value,
         });
-    } else if (args.length > 2) {
+    } else if (args.length > 3) {
         return { type: ERR, value: "fetch-promise called with too many arguments" };
     }
     const promise2 = promise.then((response) => response.text())
