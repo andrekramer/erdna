@@ -8,7 +8,7 @@ const {
     equal, numberEqual,
     plus, minus, multiply, divide, divmod,
     strLength, strSlice, strConcat, strIndexOf,
-    typeOf, error
+    typeOf, print, error
 } = require("./buildins.js");
 const promises = require("./async.js");
 
@@ -22,8 +22,7 @@ const buildIns = {
     "<": lessThan, ">": greaterThan,
     "apply": applyToList,
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
-    "type-of": typeOf,
-    "error": error,
+    "type-of": typeOf, "print": print, "error": error,
     "sleep-promise": promises.sleep, "fetch-promise": promises.fetchPromise, "resolve": promises.resolve
 };
 

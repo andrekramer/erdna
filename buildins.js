@@ -320,6 +320,74 @@ function error(args, env) {
     return { type: ERR, value: "error!" };
 }
 
+function escape(str) {
+   let r = '"';
+   for (let i = 0; i < str.length; i++) {
+      switch(str[i]) {
+        case '"': 
+            r += '\\"';
+            break;
+        case '\n': 
+            r += '\\n';
+            break;
+         case '\t': 
+            r += '\\t';
+            break;
+        case '\r': 
+            r += '\\r';
+            break;
+        case '\\': 
+            r += '\\';
+            break;
+        default:
+            r += str[i];
+      }
+   }
+   r += '"';
+   return r;
+}
+
+function print(args, env) {
+    console.log("print " + JSON.stringify(args));
+    let result = "";
+    for (const arg of args) {
+        console.log("print arg " + JSON.stringify(arg.type));
+        if (arg.type === ERR) {
+            result += "(error " + escape(arg.value) + ")";
+        } else if (arg.type === NUM) {
+            result += arg.value;
+        } else if (arg.type === STR) {
+            result += escape(arg.value); 
+        } else if (arg.type === ATOM ) {
+            result += arg.value;
+        } else if (arg.type === EXP && arg.value.length === 0) {
+            result += "()";
+        } else if (arg.type === PAIR) {
+            let a = arg;
+            let str = "(";
+            let once = false;
+            while (a.type === PAIR) {
+                if (!once) {
+                    once = true;
+                } else {
+                    str += " ";
+                }
+                str += print([a.value], env).value;
+                a = a.rest;
+            }
+            if (a.type !== EXP && a.value.length !== 0) {
+                str += " . ";
+                str += print([a], env).value;
+            }
+            str += ")";
+            result = str;
+        } else {
+            return { type: ERR, value: "Could not print a " + arg.type}
+        }
+    }
+    return { type: STR, value: result };
+}
+
 exports.listify = listify
 exports.pairToExp = pairToExp
 exports.cons = cons
@@ -343,3 +411,4 @@ exports.strConcat = strConcat
 exports.strIndexOf = strIndexOf
 exports.typeOf = typeOf
 exports.error = error
+exports.print = print
