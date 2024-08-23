@@ -65,9 +65,16 @@ curl --data '(resolve (fetch-promise "http://localhost:8081" "XXX"))' localhost:
 # read and eval the result from a remote promise:
 curl --data "
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
-(eval (read (resolve (remote-promise \"http://localhost:8081\" \"\"
-'(begin (define add1 (lambda (b) (+ 1 b))) (define x (add1 7)) 
-   (quasiquote (+ 2 3 ,x)))))) (lambda ()()))     
+(eval (read 
+   (resolve 
+     (remote-promise \"http://localhost:8081\" \"\"
+       '(letrec
+          ((add1 (lambda (b) (+ 1 b))) 
+           (x (add1 7))
+           (y (add1 1)) )
+          (quasiquote (+ ,x ,y 3))
+      )))) 
+      (lambda ()()))     
 " localhost:8080
 13
 
