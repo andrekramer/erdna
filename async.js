@@ -16,21 +16,22 @@ async function fetchPromise(args, env) {
     if (args.length < 2 || args[0].type !== STR || args[1].type !== STR) {
         return { type: ERR, value: "fetch-promise expect a url as first argument and apikey as second argument" };
     }
+    const headers = {};
+    if (args[1].value !== "") {
+        headers["apikey"] = args[1].value;
+    }
     let promise;
     if (args.length === 2) {
         console.log("fetch ");
-        promise = fetch(args[0].value, { headers: { "apikey": args[1].value }});
+        promise = fetch(args[0].value, { headers });
     } else if (args.length === 3) {
-        const customHeaders = {
-            "Content-Type": "application/json",
-            "apikey": args[1].value
-        }
+        headers[ "Content-Type"] = "application/json";
         if (args[2].type !== STR) {
             return { type: ERR, value: "fetch-promise expect a text body as optional 3rd argument" };
         }
         promise = fetch(args[0].value, {
             method: "POST",
-            headers: customHeaders,
+            headers,
             body: args[2].value,
         });
     } else if (args.length > 3) {

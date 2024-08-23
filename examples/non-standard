@@ -22,6 +22,12 @@ curl --data "(div-mod 13 3)" localhost:8080
 curl --data "(print '(+ 1 2.0 (a . 1) (a b c (d e)) \"ddd\"))" localhost:8080
 (+ 1 2 (a . 1) (a b c (d e)) "ddd")
 
+curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080  
+15   
+
+curl --data "(eval (read \"(+ 1 2) '(a b) (* 1 2)\") (lambda () ()))"  localhost:8080
+2  
+
 curl --data "(sleep-promise 2000)" localhost:8080
 curl --data "(resolve (sleep-promise 2000))" localhost:8080
 curl --data "
@@ -31,6 +37,7 @@ curl --data "
   (resolve a)) (test)" localhost:8080
 
 
+curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080
 # In another console:
 export PORT=8081;node index.js 
 
@@ -54,4 +61,13 @@ curl --data "
 # Use api key XXX (can use different keys for each hop) 
 export APIKEY=XXX; node --stack-size=1000000 index.js 
 curl --data '(resolve (fetch-promise "http://localhost:8081" "XXX"))' localhost:8080
+
+# read and eval the result from a remote promise:
+curl --data "
+(define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
+(eval (read (resolve (remote-promise \"http://localhost:8081\" \"\"
+'(begin (define add1 (lambda (b) (+ 1 b))) (define x (add1 7)) 
+   (quasiquote (+ 2 3 ,x)))))) (lambda ()()))     
+" localhost:8080
+13
 

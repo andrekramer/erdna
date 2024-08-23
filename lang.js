@@ -8,7 +8,8 @@ const {
     equal, numberEqual,
     plus, minus, multiply, divide, divmod,
     strLength, strSlice, strConcat, strIndexOf,
-    typeOf, print, error
+    typeOf, print, error,
+    escape
 } = require("./buildins.js");
 const promises = require("./async.js");
 
@@ -23,7 +24,8 @@ const buildIns = {
     "apply": applyToList,
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
     "type-of": typeOf, "print": print, "error": error,
-    "sleep-promise": promises.sleep, "fetch-promise": promises.fetchPromise, "resolve": promises.resolve
+    "sleep-promise": promises.sleep, "fetch-promise": promises.fetchPromise, "resolve": promises.resolve,
+    "read": readExp
 };
 
 const asyncBuildIns = {
@@ -814,8 +816,14 @@ function write(result) {
     if (result.type === ERR) {
         return "ERROR " + result.value + "!";
     }
-    if (result.type === NUM || result.type === STR || result.type === BOOL) {
+    if (result.type === NUM) {
         return result.value;
+    }
+    if (result.type === BOOL) {
+        return result.value ? "#t" : "#f";
+    }
+    if (result.type === STR) {
+        return escape(result.value);
     }
     if (result.type === ATOM ) {
         return result.value;
@@ -869,6 +877,18 @@ async function apply(proc, args, env) {
         return buildIn(args, env);
     }
     return { type: ERR, value: "Unkown procedure " + proc.value };
+}
+
+function readExp(args, env) {
+    if (args.length !== 1 || args[0].type !== STR) {
+        return { type: ERR, value: "read expectes one string argument" };
+    }
+    const exps = read(args[0].value);
+    if (exps.length === 1) {
+        return exps[0];
+    }
+    exps.unshift({ type: ATOM, value: "begin" });
+    return { type: EXP, value: exps };
 }
 
 exports.read = read;

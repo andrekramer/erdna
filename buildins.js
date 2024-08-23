@@ -327,16 +327,16 @@ function escape(str) {
         case '"': 
             r += '\\"';
             break;
-        case '\n': 
+        case '\n':
             r += '\\n';
             break;
-         case '\t': 
+         case '\t':
             r += '\\t';
             break;
-        case '\r': 
+        case '\r':
             r += '\\r';
             break;
-        case '\\': 
+        case '\\':
             r += '\\';
             break;
         default:
@@ -348,16 +348,18 @@ function escape(str) {
 }
 
 function print(args, env) {
-    console.log("print " + JSON.stringify(args));
+    // .log("print " + JSON.stringify(args));
     let result = "";
     for (const arg of args) {
-        console.log("print arg " + JSON.stringify(arg.type));
+        // console.log("print arg " + JSON.stringify(arg.type));
         if (arg.type === ERR) {
             result += "(error " + escape(arg.value) + ")";
         } else if (arg.type === NUM) {
             result += arg.value;
         } else if (arg.type === STR) {
-            result += escape(arg.value); 
+            result += escape(arg.value);
+        } else if (arg.type === BOOL) {
+            result += (args.value? "#t" : "#f");
         } else if (arg.type === ATOM ) {
             result += arg.value;
         } else if (arg.type === EXP && arg.value.length === 0) {
@@ -412,3 +414,4 @@ exports.strIndexOf = strIndexOf
 exports.typeOf = typeOf
 exports.error = error
 exports.print = print
+exports.escape = escape
