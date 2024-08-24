@@ -144,7 +144,7 @@ function equal(args, env) {
 
     // () empty list is expression with value []
     if (args[0].type === EXP && args[0].value.length === 0) {
-        return args[1].value.length === 0;
+        return args[1].value.length === 0 ? trueValue : falseValue;
     }
 
     if (args[0].type === PAIR) {

@@ -29,7 +29,7 @@ app.post("/", async (req, res) => {
   text = req.body.toString('utf-8');
   // console.log(text);
   result = lang.read(text);
-  console.log(JSON.stringify(result));
+  // console.log(JSON.stringify(result));
   reply = "";
   for (const exp of result) {
     let result = await lang.eval(exp, topLevelEnv);
@@ -42,7 +42,7 @@ app.post("/", async (req, res) => {
       return;
     }
     if (result.type === PROMISE) {
-      console.log("promise!");
+      // console.log("promise!");
       await result.promise;
       result = result.value;
     }

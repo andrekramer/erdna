@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, PAIR, trueValue, falseValue } = require("./constants.js");
+const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, PAIR, trueValue, falseValue, PROMISE } = require("./constants.js");
 const {
     listify, pairToExp,
     cons, car, cdr,
@@ -49,14 +49,6 @@ const formals = {
     "eval": eval2
 };
 
-const primitiveTypes = {
-    "2": evalPrimitive,
-    "3": evalPrimitive,
-    "4": evalPrimitive,
-    "5": evalPrimitive,
-    "9": evalPrimitive
-};
-
 const rewrites = {
     "if": rewriteIf,
     "cond": rewriteCond,
@@ -68,6 +60,7 @@ let scopeId = 1;
 const tailCalls = true;
 
 function read(text) {
+    // console.log("read " + text);
     let result = [];
     let pos = 0;
     while (pos < text.length) {
@@ -292,17 +285,14 @@ function readNumber(atom, text, pos) {
 
 async function eval(exp, env) {
     
-    if (exp.type === PAIR) {
+    let type = exp.type;
+
+    if (type >= NUM && type <= PROMISE ) {
+        // primitive eval returns self
+        return exp;
+    } else if (type === PAIR) {
         exp = pairToExp(exp);
-    }
-
-    const type = exp.type;
-
-    if (type > EXP) {
-        const primitiveEval = primitiveTypes[type];
-        if (primitiveEval !== undefined) {
-            return primitiveEval(exp, env);
-        }
+        type = exp.type;
     }
 
     if (type === ATOM) {
@@ -458,8 +448,6 @@ async function eval(exp, env) {
     }
     return { type: "erorr", value: "Could not evaluate " + type };
 }
-
-function evalPrimitive(exp, env) { return exp; }
 
 async function evalLambda(exp, env) {
     // console.log("closure over " + JSON.stringify(exp));
@@ -759,7 +747,7 @@ async function evalLet(exp, env) {
         letLambdaExpValue.push(arg);
     }
     const letLambdaExp = { type: EXP, value: letLambdaExpValue };
-    console.log("let lambda expression " + JSON.stringify(letLambdaExp));
+    // console.log("let lambda expression " + JSON.stringify(letLambdaExp));
 
     return await eval(letLambdaExp, env);
 }

@@ -57,7 +57,7 @@ curl --data '(define (addx x) (lambda (y) (+ x y)))
 8
 
 curl --data '(equal? #f (equal? 1 2))' localhost:8080  
-true
+#t
 
 curl --data '(if (equal? "abc" "abc") (+ 2 3) (+ 4 5))' localhost:8080  
 5
@@ -92,16 +92,16 @@ curl --data-raw '
 3
 
 curl --data "'(1 2 a #f) " localhost:8080  
-(1 2 a false) 
+(1 2 a #f) 
 
 curl --data "'() " localhost:8080  
 ()
 
 curl --data "(equal? '() '()) " localhost:8080  
-true
+#t
 
 curl --data "(equal? '(1 2 3) (list 1 2 3))" localhost:8080  
-true
+#t
 
 curl --data "(define a 100) (cons a '(1 2 3))" localhost:8080  
 (100 1 2 3)
@@ -162,19 +162,19 @@ curl --data "
 ; with predefined procs 
 
 curl --data "(not #t)(not #f)(not 1)" localhost:8080  
-false
-true
-false
+#f
+#t
+#f
 
 curl --data "(null? '())(null? '(1 2 3))" localhost:8080  
-true
-false
+#t
+#f
 
 curl --data "(and #t (equal? 1 0))" localhost:8080  
-false
+#f
 
 curl --data "(or #f (equal? 1 0)) (+ 1 2)"  localhost:8080   
-false
+#f
 3
 
 curl --data "(append '() '(1 2 3) (list 4 (+ 2 3)) '() '(6) '(7 8 9 0))" localhost:8080  
@@ -184,18 +184,18 @@ curl --data "(reverse '(1 2 3 4 5 6 7 8 9 0))" localhost:8080
 (0 9 8 7 6 5 4 3 2 1)
 
 curl --data "(<)(< 1)(< 1 2)(< 2 1)(< 2 3 4)"  localhost:8080  
-true
-true
-true
-false
-true
+#t
+#t
+#t
+#f
+#t
 
 curl --data "(>)(> 1)(> 2 1)(> 1 2)(> 4 3 2)"  localhost:8080  
-true  
-true  
-true  
-false  
-true  
+#t  
+#t  
+#t  
+#f  
+#t  
 
 curl --data "
 (define (variable-args a b . c) (cons a (cons b c)))
@@ -252,11 +252,11 @@ curl --data "
 curl --data "
 (= 100 101) (= 110 110) (= 1 0 1) (= '2 2) (=)
 " localhost:8080  
-false  
-true  
-false  
-true  
-true  
+#f  
+#t  
+#f  
+#t  
+#t  
 
 curl --data "
 (caar '((1 2) 0 (3 4)))
@@ -285,5 +285,5 @@ curl --data "
 (symbol? 'a) (number? 1) (pair? '(1 2)) (string? \"abc\") (boolean? #f)  
 (symbol? '1) (number? 'x) (pair? '()) (string? '(\"abc\")) (boolean? 0)  
 " localhost:8080 
-true true true true true  
-false false false false  
+#t #t #t #t #t  
+#f #f #f #f  

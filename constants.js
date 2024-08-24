@@ -6,8 +6,8 @@ const NUM = 2;
 const STR = 3;
 const BOOL = 4;
 const CLOSURE = 5;
+const PROMISE = 6;
 const PAIR = 8;
-const PROMISE = 9;
 
 const trueValue = { type: BOOL, value: true };
 const falseValue = { type: BOOL, value: false };
