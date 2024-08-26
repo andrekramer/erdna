@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, PAIR, trueValue, falseValue, PROMISE } = require("./constants.js");
+const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, trueValue, falseValue, PROMISE } = require("./constants.js");
 const {
     listify, pairToExp,
     cons, car, cdr,
@@ -8,8 +8,7 @@ const {
     equal, numberEqual,
     plus, minus, multiply, divide, divmod,
     strLength, strSlice, strConcat, strIndexOf,
-    typeOf, print, error,
-    escape
+    typeOf, print, error, printValue
 } = require("./buildins.js");
 const promises = require("./async.js");
 
@@ -25,7 +24,7 @@ const buildIns = {
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
     "type-of": typeOf, "print": print, "error": error,
     "sleep-promise": promises.sleep, "fetch-promise": promises.fetchPromise, "resolve": promises.resolve,
-    "read": readExp
+    "read": readExp, "display": display
 };
 
 const asyncBuildIns = {
@@ -800,48 +799,11 @@ async function eval2(exp, env) {
 }
 
 function write(result) {
-    // console.log("write " + JSON.stringify(result));
-    if (result.type === ERR) {
-        return "ERROR " + result.value + "!";
+    const str = printValue(result);
+    if (str === undefined) {
+        return "undefined";
     }
-    if (result.type === NUM) {
-        return result.value;
-    }
-    if (result.type === BOOL) {
-        return result.value ? "#t" : "#f";
-    }
-    if (result.type === STR) {
-        return escape(result.value);
-    }
-    if (result.type === ATOM ) {
-        return result.value;
-    }
-    if (result.type === CLOSURE) {
-        return JSON.stringify(result.value);
-    }
-    if (result.type === EXP && result.value.length === 0) {
-        return "()";
-    }
-    if (result.type === PAIR) {
-        let str = "(";
-        let once = false;
-        while (result.type === PAIR) {
-            if (!once) {
-                once = true;
-            } else {
-                str += " ";
-            }
-            str += write(result.value);
-            result = result.rest;
-        }
-        if (result.type !== EXP && result.value.length !== 0) {
-            str += " . ";
-            str += write(result);
-        }
-        str += ")";
-        return str;
-    }
-    return JSON.stringify(result);
+    return str;
 }
 
 function lookup(symbol, env) {
@@ -877,6 +839,22 @@ function readExp(args, env) {
     }
     exps.unshift({ type: ATOM, value: "begin" });
     return { type: EXP, value: exps };
+}
+
+function display(args, env) {
+    for (const arg of args) {
+        if (arg.type === STR) {
+            console.log(arg.value);
+        } else {
+            const str = printValue(arg);
+            if (str !== undefined) {
+                console.log(str);
+            } else {
+                console.log(JSON.stringify(arg.value));
+            }
+        }
+    }
+    return { type: VOID, value: undefined };
 }
 
 exports.read = read;

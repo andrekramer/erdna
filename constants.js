@@ -7,6 +7,7 @@ const STR = 3;
 const BOOL = 4;
 const CLOSURE = 5;
 const PROMISE = 6;
+const VOID = 7;
 const PAIR = 8;
 
 const trueValue = { type: BOOL, value: true };
@@ -23,6 +24,7 @@ exports.STR = STR
 exports.BOOL = BOOL
 exports.CLOSURE = CLOSURE
 exports.PAIR = PAIR
+exports.VOID = VOID
 exports.PROMISE = PROMISE
 
 exports.trueValue = trueValue

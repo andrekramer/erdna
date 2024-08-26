@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, trueValue, falseValue, nullList } = require("./constants.js");
+const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, trueValue, falseValue, nullList } = require("./constants.js");
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
@@ -303,7 +303,7 @@ function strIndexOf(args, env) {
     if (args.length !== 2 || args[0].type !== STR || args[1].type !== STR) {
         return { type: ERR, value: "index-of requires two string arguments" };
     }
-    return args[1].value.indexOf(args[0].value);
+    return { type: NUM, value: args[1].value.indexOf(args[0].value) };
 }
 
 function typeOf(args, env) {
@@ -347,46 +347,66 @@ function escape(str) {
    return r;
 }
 
+function printValue(value) {
+    if (value.type === ERR) {
+        return "(error " + escape(value.value) + ")";
+    }
+    if (value.type === NUM) {
+        return value.value;
+    }
+    if (value.type === BOOL) {
+        return value.value ? "#t" : "#f";
+    }
+    if (value.type === STR) {
+        return escape(value.value);
+    }
+    if (value.type === ATOM ) {
+        return value.value;
+    }
+    if (value.type === CLOSURE) {
+        // console.log("closure");
+        return "λ";
+    }
+    if (value.type === VOID) {
+        return "";
+    }
+    if (value.type === EXP && value.value.length === 0) {
+        return "()";
+    }
+    if (value.type === PAIR) {
+        let str = "(";
+        let once = false;
+        while (value.type === PAIR) {
+            if (!once) {
+                once = true;
+            } else {
+                str += " ";
+            }
+            str += printValue(value.value);
+            value = value.rest;
+        }
+        if (value.type !== EXP && value.value.length !== 0) {
+            str += " . ";
+            str += printValue(value);
+        }
+        str += ")";
+        return str;
+    }
+    return undefined;
+}
+
 function print(args, env) {
     // .log("print " + JSON.stringify(args));
     let result = "";
     for (const arg of args) {
         // console.log("print arg " + JSON.stringify(arg.type));
-        if (arg.type === ERR) {
-            result += "(error " + escape(arg.value) + ")";
-        } else if (arg.type === NUM) {
-            result += arg.value;
-        } else if (arg.type === STR) {
-            result += escape(arg.value);
-        } else if (arg.type === BOOL) {
-            result += (args.value? "#t" : "#f");
-        } else if (arg.type === ATOM ) {
-            result += arg.value;
-        } else if (arg.type === EXP && arg.value.length === 0) {
-            result += "()";
-        } else if (arg.type === PAIR) {
-            let a = arg;
-            let str = "(";
-            let once = false;
-            while (a.type === PAIR) {
-                if (!once) {
-                    once = true;
-                } else {
-                    str += " ";
-                }
-                str += print([a.value], env).value;
-                a = a.rest;
-            }
-            if (a.type !== EXP && a.value.length !== 0) {
-                str += " . ";
-                str += print([a], env).value;
-            }
-            str += ")";
-            result = str;
-        } else {
-            return { type: ERR, value: "Could not print a " + arg.type}
+        const str = printValue(arg);
+        if (str === undefined) {
+            return { type: ERR, value: "Could not print a " + arg.type };
         }
+        result += str;
     }
+  
     return { type: STR, value: result };
 }
 
@@ -415,3 +435,4 @@ exports.typeOf = typeOf
 exports.error = error
 exports.print = print
 exports.escape = escape
+exports.printValue = printValue

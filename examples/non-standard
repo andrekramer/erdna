@@ -47,7 +47,7 @@ curl --data '(resolve (fetch-promise "http://localhost:8081" ""))' localhost:808
 erdna
 
 curl --data '(resolve (fetch-promise "http://localhost:8081" "" "(+ 1 2 3)" ))' localhost:8080
-6
+"6\n"
 
 curl --data "
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))

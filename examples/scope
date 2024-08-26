@@ -92,5 +92,5 @@ curl --data-raw "
   (ping 10 '())
 )
 " localhost:8080
-(pong ping pong ping pong ping pong ping pong ping)
+("pong" "ping" "pong" "ping" "pong" "ping" "pong" "ping" "pong" "ping")
 

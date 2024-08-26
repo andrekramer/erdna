@@ -287,3 +287,9 @@ curl --data "
 " localhost:8080 
 #t #t #t #t #t  
 #f #f #f #f  
+
+curl --data "(define (hello) (display \"Hello world\")) (hello)" localhost:8080
+λ
+1
+
+
