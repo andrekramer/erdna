@@ -13,7 +13,7 @@ curl --data-raw "
 curl --data-raw "
 (define (quicksort xs)
    (if (null? xs) '()
-      (letrec ((x (car xs))
+      (let ((x (car xs))
             (xs' (cdr xs)) )
          (append (quicksort
                     (filter (lambda (x')

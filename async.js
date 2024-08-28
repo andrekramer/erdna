@@ -22,7 +22,7 @@ async function fetchPromise(args, env) {
     }
     let promise;
     if (args.length === 2) {
-        console.log("fetch ");
+        // console.log("fetch " + args[0].value);
         promise = fetch(args[0].value, { headers });
     } else if (args.length === 3) {
         headers[ "Content-Type"] = "application/json";

@@ -288,8 +288,26 @@ curl --data "
 #t #t #t #t #t  
 #f #f #f #f  
 
-curl --data "(define (hello) (display \"Hello world\")) (hello)" localhost:8080
+curl --data "(define (hello) (display \"Hello world\" 1 '(1 2 3) 'a)) (hello)" localhost:8080
 λ
-1
 
+Writes:
+Hello world
+1
+(1 2 3)
+a
+
+curl --data "  
+(define (quotient x y) (car (div-mod x y)))
+(define (remainder x y) (cdr (div-mod x y)))
+(define (number->list n)
+  (let loop ((n n)
+             (acc '()))
+    (if (< n 10)
+        (cons n acc)
+        (loop (quotient n 10)
+              (cons (remainder n 10) acc)))))
+(number->list 1234567890)
+" localhost:8080 
+(1 2 3 4 5 6 7 8 9 0)
 

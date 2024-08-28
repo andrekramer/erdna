@@ -37,12 +37,12 @@ const formals = {
     "cond": evalRewrite(rewriteCond),
     "case": evalRewrite(rewriteCase),
     "letrec": evalRewrite(rewriteLetrec), "local": evalRewrite(rewriteLetrec),
+    "let": evalRewrite(rewriteLet), // alternatively: evalLet,
     "define": evalDefine,
     "lambda": evalLambda,
     "set!": evalSet,
     "quote": evalQuote,
     "quasiquote": evalQuasiquote,
-    "let": evalLet,
     "and": evalAnd,
     "or": evalOr,
     "eval": eval2
@@ -52,6 +52,7 @@ const rewrites = {
     "if": rewriteIf,
     "cond": rewriteCond,
     "case": rewriteCase,
+    "let": rewriteLet,
     "letrec": rewriteLetrec
 };
 
@@ -312,6 +313,9 @@ async function eval(exp, env) {
     if (type === EXP) {
         // console.log("eval expression");
 
+        if (exp.value.length === 0) { // '() null list
+            return exp;
+        }
         if (exp.value[0].type === ATOM) {
             const first = exp.value[0];
             const evalFormal = formals[first.value];
@@ -529,6 +533,79 @@ function evalRewrite(rewrite) {
     };
 }
 
+async function rewriteLet(exp, env) {
+    const letEnv =  { "__parent_scope": env, name: "let " + scopeId++ };
+
+    if (exp.value.length < 3) {
+        return [{ type: ERR, value: "let form needs a bind and one or more eval sub parts" }, env];
+    }
+    const binds = exp.value[1];
+    if (binds.type === ATOM) {
+        if (exp.value[2].type !== EXP || exp.value.length < 4) {
+            return [{ type: ERR, value: "named let needs args with initalizers and a body" }, env];
+        }
+
+        // console.log("named let " + binds.value);
+        const args = [];
+        const initValues = [];
+        for (const argInit of exp.value[2].value) {
+            if (argInit.type !== EXP || argInit.value.length !== 2 || argInit.value[0].type !== ATOM) {
+                return [{ type: ERR, value: "arg initializers must be pairs of arg and initial value" }, env];
+            }
+            args.push(argInit.value[0]);
+            const initValue = await eval(argInit.value[1], env);
+            // console.log("arg init " + argInit.value[0].value + " = " + JSON.stringify(initValue));
+            initValues.push(initValue);
+        }
+       
+        const lambda = [{ type: ATOM, value: "lambda" }, { type: EXP, value: args }];
+        for (let i = 3; i < exp.value.length; i++) {
+            lambda.push(exp.value[i]);
+        }
+        // console.log("named let lambda " + JSON.stringify(lambda));
+       
+        const closure = await eval({ type: EXP, value: lambda }, env);
+        env[binds.value] = closure;
+
+        const namedLetExp = { type: EXP, value: [ binds ] };
+        for (const initValue of initValues) {
+            namedLetExp.value.push(initValue);
+        }
+        
+        // console.log("named let exp " + JSON.stringify(namedLetExp));
+        return [namedLetExp, letEnv];
+    }
+    if (binds.type !== EXP) {
+        return [{ type: ERR, value: "let bind expression expected" }, env];
+    }
+    for (const bind of binds.value) {
+        if (bind.type !== EXP || bind.value.length !== 2) {
+            return [{ type: ERR, value: "let bind must be an expression pair" }, env];
+        }
+        if (bind.value[0].type !== ATOM) {
+            return [{ type: ERR, value: "let bind must be atom and expression pair" } , env];
+        }
+ 
+        const variable = bind.value[0].value;
+        // console.log("let var " + variable);
+        
+        const value = await eval(bind.value[1], env);
+        if (value.type === ERR) {
+            return [{ type: ERR, value: "let bind eval fails" }, env];
+        }
+        letEnv[variable] = value;
+    }
+    for (let i = 2; i < exp.value.length - 1; i++) {
+        const result = await eval(exp.value[i], letEnv);
+        if (result.type === ERR) {
+            return [result, env];
+        }
+    }
+    const letExp = exp.value[exp.value.length - 1];
+    // console.log("let exp " + JSON.stringify(letrecExp));
+    return [letExp, letEnv];
+}
+
 async function rewriteLetrec(exp, env) {
     const letrecEnv =  { "__parent_scope": env, name: "letrec " + scopeId++ };
 
@@ -712,6 +789,7 @@ async function evalDefine(exp, env) {
 }
 
 async function evalLet(exp, env) {
+    // This version of evalLet re-wites let as a lambda
     if (exp.value.length < 3) {
         return { type: ERR, value: "let form needs a bind and one or more eval sub parts" };
     }
@@ -720,7 +798,6 @@ async function evalLet(exp, env) {
         return { type: ERR, value: "let bind expression expected" };
     }
 
-    // rewrite as lambda
     const lambda = { type: ATOM, value: "lambda" };
     const params = [];
     const args = [];
