@@ -120,14 +120,18 @@ function greaterThan(args, env) {
     return trueValue;
 }
 
-async function applyToList(args, env, evalExp) {
+async function applyLambda(args, env, evalExp) {
     if (args.length !== 2) {
         return { type: ERR, value: "apply takes 2 arguments" };
     }
     expValue = [args[0]];
+    if (args[1].type !== PAIR) {
+        return { type: ERR, value: "apply requires a list as second argument" };
+    }
     for (let head = args[1]; head.type === PAIR; head = head.rest) {
         expValue.push(head.value);
     }
+
     const exp = { type: EXP, value: expValue };
     // console.log("apply " + JSON.stringify(exp));
     return await evalExp(exp, env);
@@ -419,7 +423,7 @@ exports.append = append
 exports.begin = begin
 exports.lessThan = lessThan
 exports.greaterThan = greaterThan
-exports.applyToList = applyToList
+exports.applyLambda = applyLambda
 exports.equal = equal
 exports.numberEqual = numberEqual
 exports.plus = plus

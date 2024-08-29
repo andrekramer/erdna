@@ -82,3 +82,13 @@ curl --data "
 " localhost:8080
 13
 
+curl --data "(apply-promise (lambda (x y z) (display x) z) '(1 2 'a))" localhost:8080
+a
+
+curl --data "(begin (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 2000)) (display y) z) '(1 2 'a)) (display 3) 4)" localhost:8080 
+4
+displays:
+3
+1
+2 
+

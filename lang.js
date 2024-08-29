@@ -4,13 +4,14 @@ const {
     cons, car, cdr,
     append,begin,
     lessThan, greaterThan,
-    applyToList,
+    applyLambda,
     equal, numberEqual,
     plus, minus, multiply, divide, divmod,
     strLength, strSlice, strConcat, strIndexOf,
     typeOf, print, error, printValue
 } = require("./buildins.js");
-const promises = require("./async.js");
+
+const { sleepPromise, fetchPromise, applyPromise, resolve } = require("./async.js");
 
 const buildIns = {
     "+": plus, "-": minus, "*": multiply, "/": divide, "div-mod": divmod,
@@ -20,16 +21,18 @@ const buildIns = {
     "append": append,
     "begin": begin,
     "<": lessThan, ">": greaterThan,
-    "apply": applyToList,
+    "apply": applyLambda,
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
     "type-of": typeOf, "print": print, "error": error,
-    "sleep-promise": promises.sleep, "fetch-promise": promises.fetchPromise, "resolve": promises.resolve,
+    "sleep-promise": sleepPromise, "fetch-promise": fetchPromise, 
+    "apply-promise": applyPromise, "resolve": resolve,
     "read": readExp, "display": display
 };
 
 const asyncBuildIns = {
-    "apply": applyToList,
-    "resolve": promises.resolve
+    "apply": applyLambda,
+    "apply-promise": applyPromise,
+    "resolve": resolve
 };
 
 const formals = {
@@ -591,7 +594,7 @@ async function rewriteLet(exp, env) {
         
         const value = await eval(bind.value[1], env);
         if (value.type === ERR) {
-            return [{ type: ERR, value: "let bind eval fails" }, env];
+            return [{ type: ERR, value: "let bind eval fails: " + value.value }, env];
         }
         letEnv[variable] = value;
     }
@@ -622,7 +625,7 @@ async function rewriteLetrec(exp, env) {
             // allow defines to add to local env
             const v = await eval(bind, letrecEnv);
             if (v.type === ERR) {
-                return [{ type: ERR, value: "letrec define eval fails" }, env];
+                return [{ type: ERR, value: "letrec define eval fails: " + v.value }, env];
             }
             continue;
         }
@@ -639,7 +642,7 @@ async function rewriteLetrec(exp, env) {
         
         const value = await eval(bind.value[1], letrecEnv);
         if (value.type === ERR) {
-            return [{ type: ERR, value: "letrec bind eval fails" }, env];
+            return [{ type: ERR, value: "letrec bind eval fails: " + value.value}, env];
         }
         letrecEnv[variable] = value;
     }
@@ -899,6 +902,9 @@ async function apply(proc, args, env) {
     const buildIn = buildIns[proc.value];
     if (buildIn !== undefined) {
         if (asyncBuildIns[proc.value] !== undefined) {
+            if (proc.value === "apply-promise") {
+                return buildIn(args,env, eval);
+            }
             return await buildIn(args, env, eval);
         }
         return buildIn(args, env);

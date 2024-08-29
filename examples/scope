@@ -94,3 +94,14 @@ curl --data-raw "
 " localhost:8080
 ("pong" "ping" "pong" "ping" "pong" "ping" "pong" "ping" "pong" "ping")
 
+curl --data-raw "
+(letrec ((x 2)
+         (y (+ x x)))
+  (+ x y))
+(letrec ((x (- y 2))
+         (y (+ x x)))
+  (+ x y))
+" localhost:8080
+6
+
+letrec bind eval fails Unbound variable y
