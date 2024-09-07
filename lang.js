@@ -433,12 +433,14 @@ async function eval(exp, env) {
                                 if (macro !== undefined) {
                                     const macroExp = { type: EXP, value: [macro, { type: EXP, value: [ QUOTE, target] }] };
                                     let rewrite = await eval(macroExp, macro.scope);
-                                    console.log("macro rewrite " + JSON.stringify(rewrite));
+                                    // console.log("macro rewrite " + JSON.stringify(rewrite));
                                     if (rewrite.type === PAIR) {
                                         rewrite = pairToExp(rewrite);
                                     }
-                                    const macroEnv = { "__parent_scope": env, name: "macro_rewrite_scope " + scopeId++ };
+                               
+                                    const macroEnv = { "__parent_scope": localEnv, name: "macro_rewrite_scope " + scopeId++ };
                                     target = await eval(rewrite, macroEnv);
+                                    // console.log("macro eval " + JSON.stringify(rewrite));
                                     localEnv = macroEnv;
                                     continue;
                                 }

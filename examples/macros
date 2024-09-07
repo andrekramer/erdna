@@ -9,10 +9,15 @@ curl  --data-raw "
                    (list (list 'temp a)) 
                    (list (append '(if temp temp) (list b)))))
       )))
-(or2 #f #f)
-(or2 #t #f)
-(or2 #f #t)
-(or2 #t #t)
+(define (repeat n b) (if (equal? n 0) (or2 #f b) (repeat (- n 1) (not b))))
+(repeat 0 #t)
+(repeat 1 #t)
+(repeat 0 #f)
+(repeat 1 #f)
+(let ((temp1 #f) (temp2 #f)) (or2 temp1 temp2))
+(let ((temp1 #f) (temp2 #t)) (or2 temp1 temp2))
+(let ((temp1 #t) (temp2 #f)) (or2 temp1 temp2))
+(let ((temp1 #t) (temp2 #t)) (or2 temp1 temp2))
 " localhost:8080
 
 curl  --data-raw "
