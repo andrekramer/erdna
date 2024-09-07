@@ -2,7 +2,7 @@ const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, trueValue, falseVal
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
-       const value = [exp.value];
+       const value = [pairToExp(exp.value)];
        let head = exp.rest;
         while (head.type === PAIR) {
             value.push(pairToExp(head.value));

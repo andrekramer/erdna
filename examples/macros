@@ -1,0 +1,32 @@
+
+curl  --data-raw "
+(define-rewriter or2
+   (lambda (expr)
+      (let ((a (cadr expr))
+            (b (caddr expr)))
+           (cons 'let 
+                 (cons 
+                   (list (list 'temp a)) 
+                   (list (append '(if temp temp) (list b)))))
+      )))
+(or2 #f #f)
+(or2 #t #f)
+(or2 #f #t)
+(or2 #t #t)
+" localhost:8080
+
+curl  --data-raw "
+(define-rewriter xor
+   (lambda (expr)
+      (let ((a (cadr expr))
+            (b (caddr expr)))
+           (cons 'let (list 
+                        (list (list 'temp a) (list 'temp2 b))
+                        (list 'if 'temp 
+                          (list 'if 'temp2 #f 'temp) 
+                          (list 'if 'temp2 'temp2 #f)))))))
+(xor #f #f)
+(xor #t #f)
+(xor #f #t)
+(xor #t #t)
+" localhost:8080

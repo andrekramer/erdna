@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, trueValue, falseValue, PROMISE } = require("./constants.js");
+const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, trueValue, falseValue, PROMISE, nullList } = require("./constants.js");
 const {
     listify, pairToExp,
     cons, car, cdr,
@@ -48,7 +48,8 @@ const formals = {
     "quasiquote": evalQuasiquote,
     "and": evalAnd,
     "or": evalOr,
-    "eval": eval2
+    "eval": eval2,
+    "define-rewriter": evalRewrite(macroRewriter)
 };
 
 const rewrites = {
@@ -59,8 +60,14 @@ const rewrites = {
     "letrec": rewriteLetrec
 };
 
+const macros = {
+};
+
 let scopeId = 1;
 const tailCalls = true;
+const MACRO_REWRITE_ONLY = false;
+
+const QUOTE = { type: ATOM, value: "quote" };
 
 function read(text) {
     // console.log("read " + text);
@@ -162,7 +169,7 @@ function readExpressionOrAtom(text, pos) {
         pos = p;
     } else if (ch === "'") {
         const [r, p] = readExpressionOrAtom(text, ++pos);
-        const quote = [{ type: ATOM, value: "quote" }];
+        const quote = [ QUOTE ];
         quote.push(r);
         result = { type: EXP, value: quote };
         pos = p;
@@ -325,6 +332,22 @@ async function eval(exp, env) {
             if (evalFormal !== undefined) {
                 return await evalFormal(exp, env);
             }
+            const macro = macros[first.value];
+            if (macro !== undefined) {
+                const macroExp = { type: EXP, value: [macro, { type: EXP, value: [QUOTE, exp] }] };
+                let rewrite = await eval(macroExp, macro.scope);
+                if (MACRO_REWRITE_ONLY) {
+                    return rewrite;
+                }
+                if (rewrite.type === PAIR) {
+                    rewrite = pairToExp(rewrite);
+                    // console.log("macro rewrite " + JSON.stringify(rewrite));
+                }
+                const macroEnv = { "__parent_scope": env, name: "macro_scope " + scopeId++ };
+                const result = await eval(rewrite, macroEnv);
+                // console.log("macro result " + JSON.stringify(result));
+                return result;
+            }
         }
 
         let proc = await eval(exp.value[0], env);
@@ -335,6 +358,7 @@ async function eval(exp, env) {
 
         let closureEnv = env;
         if (proc.type === CLOSURE) {
+            // console.log("closure");
             closureEnv = proc.scope;
             proc = proc.value;
         }
@@ -398,10 +422,24 @@ async function eval(exp, env) {
 
                         rewrite: while (true) {
                             if (target.type === EXP && target.value.length !== 0 && target.value[0].type === ATOM) {
-                                const rewrite = rewrites[target.value[0].value];
+                                const procName = target.value[0].value;
+                                const rewrite = rewrites[procName];
                                 if (rewrite !== undefined) {
                                     // console.log("tail " + target.value[0].value);
                                     [target, localEnv] = await rewrite(target, localEnv);
+                                    continue;
+                                }
+                                const macro = macros[procName];
+                                if (macro !== undefined) {
+                                    const macroExp = { type: EXP, value: [macro, { type: EXP, value: [ QUOTE, target] }] };
+                                    let rewrite = await eval(macroExp, macro.scope);
+                                    console.log("macro rewrite " + JSON.stringify(rewrite));
+                                    if (rewrite.type === PAIR) {
+                                        rewrite = pairToExp(rewrite);
+                                    }
+                                    const macroEnv = { "__parent_scope": env, name: "macro_rewrite_scope " + scopeId++ };
+                                    target = await eval(rewrite, macroEnv);
+                                    localEnv = macroEnv;
                                     continue;
                                 }
                             }
@@ -437,7 +475,7 @@ async function eval(exp, env) {
             }
         } else {
             if (proc.type !== ATOM) {
-                return { type: "erorr", value: "can't apply a " + proc.type };
+                return { type: ERR, value: "can't apply a " + proc.type };
             }
 
             // console.log("proc " + JSON.stringify(proc));
@@ -739,6 +777,15 @@ async function rewriteCase(exp, env) {
        }
     }
     return [falseValue, env];
+}
+
+async function macroRewriter(exp, env) {
+    // console.log("define-rewriter");
+    if (exp.value.length !== 3 || exp.value[1].type !== ATOM || exp.value[2].type !== EXP) {
+        return [{ type: ERR, value: "define-rewriter takes a name and an expression" }, env];
+    }
+    macros[exp.value[1].value] = { type: CLOSURE, value: {type: EXP, value: exp.value[2].value }, scope: env };
+    return [nullList, env];
 }
 
 async function evalCase(cond, env) {
