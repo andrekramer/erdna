@@ -1,7 +1,7 @@
 An interpreter for a Scheme -like language written in javascript hosted in a node web server.  
 The commit history builds up language features for the curl commands below
 and those in the examples directory.
-Macros and callcc are not covered.  
+Full Scheme macros and callcc are not covered.  
 Supports Promises via Javascript async so can request the Web (see examples/non-standard).  
 What if the Web was programmable in a uniform but flexible syntax?
 
