@@ -1,8 +1,10 @@
-An interpreter for a Scheme -like language written in javascript hosted in a node web server.  
-The commit history builds up language features for the curl commands below
-and those in the examples directory.
+An interpreter for a Scheme -like language written in Javascript hosted in a Node web server.  
+Loosely based on
+[An Introduction to Scheme and its Implemementation] (https://docs.scheme.org/schintro/schintro_toc.html)
+The commit history builds up language features for the example curl commands below
+and those in file in the examples directory.
 Full Scheme macros and callcc are not covered.  
-Supports Promises via Javascript async so can request the Web (see examples/non-standard).  
+Supports Promises via Javascript async/await so can request the Web (see examples/non-standard).  
 What if the Web was programmable in a uniform but flexible syntax?
 
 to clone:
