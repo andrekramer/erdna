@@ -22,7 +22,7 @@ to run:
 
 node index.js
 
-try it out in another shell using the curl command to post a script to the server:
+try it out in another shell using the following curl command to post a script to the server:
 
 curl --data "(+ 1 2)" localhost:8080    
 3 

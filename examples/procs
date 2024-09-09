@@ -34,8 +34,10 @@ curl --data-raw "
        ((equal? count 0) l)
        (else (make (- count 1) (cons count l)))
    ))
-   (quicksort (reverse (make 1000 '())))
+   (define list-to-sort (reverse (make 1000 '())))
 " localhost:8080
+
+curl --data-raw "(quicksort list-to-sort)" localhost:8080
 
 To increase stack size use, e.g.:
 node --stack-size=1000000 index.js 
