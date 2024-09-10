@@ -61,3 +61,25 @@ displays:
 1
 2 
 
+curl --data "
+(define (resolve-all l) 
+  (cond 
+    ((null? l) '())
+    (else (begin (display (resolve (car l))) (resolve-all (cdr l)))) 
+  )
+)
+(resolve-all (list 
+  (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 100)) (display y) z) '(1 2 3))
+  (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 200)) (display y) z) '(4 5 6)) 
+  (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 300)) (display y) z) '(7 8 9)) 
+))" localhost:8080
+displays:  
+1
+4
+7
+2
+3
+5
+6
+8
+9

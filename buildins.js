@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, trueValue, falseValue, nullList } = require("./constants.js");
+const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, trueValue, falseValue, nullList } = require("./constants.js");
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
@@ -373,6 +373,9 @@ function printValue(value) {
     }
     if (value.type === VOID) {
         return "";
+    }
+    if (value.type === PROMISE ) {
+        return "promise";
     }
     if (value.type === EXP && value.value.length === 0) {
         return "()";
