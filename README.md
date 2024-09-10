@@ -1,10 +1,10 @@
 An interpreter for a Scheme -like language written in Javascript hosted in a Node web server.  
 Loosely based on
-[An Introduction to Scheme and its Implemementation] (https://docs.scheme.org/schintro/schintro_toc.html)  
+[An Introduction to Scheme and its Implemementation](https://docs.scheme.org/schintro/schintro_toc.html)  
 The commit history builds up language features for the example curl commands below
-and those in file in the examples directory.  
+and those in the files in the examples directory.  
 Full Scheme macros and callcc are not covered.  
-Supports Promises via Javascript async/await so can request the Web (see examples/non-standard).  
+Supports Promises via Javascript async/await and so can request the Web (see examples/async).  
 What if the Web was programmable in a uniform but flexible syntax?
 
 to clone:
@@ -15,7 +15,6 @@ cd erdna
 to install:
 
 npm init
-
 npm install express
 
 to run:
