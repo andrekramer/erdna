@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, trueValue, falseValue, nullList } = require("./constants.js");
+const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList } = require("./constants.js");
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
@@ -60,7 +60,7 @@ function cdr(args, env) {
 function append(args, env) {
     const list = [];
     for (l of args) {
-        if (l.type === EXP && l.value.length === 0) {
+        if (isNullList(l)) {
             continue;
         }
         if (l.type !== PAIR) {
@@ -146,8 +146,7 @@ function equal(args, env) {
         return falseValue;
     }
 
-    // () empty list is expression with value []
-    if (args[0].type === EXP && args[0].value.length === 0) {
+    if (isNullList(args[0])) {
         return args[1].value.length === 0 ? trueValue : falseValue;
     }
 
@@ -377,7 +376,10 @@ function printValue(value) {
     if (value.type === PROMISE ) {
         return "promise";
     }
-    if (value.type === EXP && value.value.length === 0) {
+    if (value.type === OBJ) {
+        return "object";
+    }
+    if (isNullList(value)) {
         return "()";
     }
     if (value.type === PAIR) {

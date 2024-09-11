@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, trueValue, falseValue, PROMISE, nullList } = require("./constants.js");
+const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, OBJ, trueValue, falseValue, PROMISE, nullList, displayType, isNullList } = require("./constants.js");
 const {
     listify, pairToExp,
     cons, car, cdr,
@@ -49,7 +49,8 @@ const formals = {
     "and": evalAnd,
     "or": evalOr,
     "eval": eval2,
-    "define-rewriter": evalRewrite(macroRewriter)
+    "define-rewriter": evalRewrite(macroRewriter),
+    "make": make
 };
 
 const rewrites = {
@@ -477,7 +478,7 @@ async function eval(exp, env) {
             }
         } else {
             if (proc.type !== ATOM) {
-                return { type: ERR, value: "can't apply a " + proc.type };
+                return { type: ERR, value: "can't apply a " + displayType(proc.type) };
             }
 
             // console.log("proc " + JSON.stringify(proc));
@@ -925,6 +926,35 @@ async function eval2(exp, env) {
     }
     const exp2 = await eval(exp.value[1], env);
     return await eval(exp2, closure.scope);
+}
+
+async function make(exp, env) {
+    if (exp.value.length < 3 || exp.value[1].type !== ATOM || (exp.value[2].type !== ATOM && !isNullList(exp.value[2]))) {
+        return { type: ERR, value: "make requires a name and a prototype with optional field initializers" };
+    }
+    const name = exp.value[1].value;
+    const obj = {};
+
+    if (exp.value[2].type === ATOM) {
+        console.log("make with base " + exp.value[2].value);
+        const base = lookup(exp.value[2].value, env);
+        if (base === undefined || base.type !== OBJ) {
+            return { type: ERR, value: "super must be an object for make" };
+        }
+        obj["super"] = base;
+    }
+    for (let i = 3; i < exp.value.length; i++) {
+        const v = exp.value[i];
+        if (v.type !== EXP || v.value.length !== 2 || v.value[0].type !== ATOM) {
+            return { type: ERR, value: "make takes a name and optional (member value) initializers" };
+        }
+        obj[v.value[0].value] = await eval(v.value[1], env);
+    }
+    
+    console.log("made " + name + " = " + JSON.stringify(obj));
+    const result = { type: OBJ, value: obj };
+    env[name] = result;
+    return result;
 }
 
 function write(result) {

@@ -31,3 +31,21 @@ curl --data "(eval (read \"(+ 1 2) '(a b) (* 1 2)\") (lambda () ()))"  localhost
 curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080
 15
 
+# make an object called obj1 with no or default base
+curl --data "(make obj1 ())"  localhost:8080
+object
+
+# make an object called obj2 with obj1 as base
+curl --data "(make obj1 ())(make obj2 obj1)"  localhost:8080
+object
+object
+
+# make an object called obj1 with fields x and y initialized to 1 and 2 respetively
+curl --data "(make obj1 () (x 1) (y 2))"  localhost:8080
+object
+
+# make an object obj2 that extends obj1 with a z field initialized to 3
+curl --data "(make obj1 () (x 1) (y 2))(make obj2 obj1 (z 3))"  localhost:8080
+object
+object
+

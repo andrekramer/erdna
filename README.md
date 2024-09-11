@@ -5,6 +5,7 @@ The commit history builds up language features for the example curl commands bel
 and those in the files in the examples directory.  
 Full Scheme macros and callcc are not covered.  
 Supports Promises via Javascript async/await and so can request the Web (see examples/async).  
+Bootstraps a simple object system so that functional, procedural and object-orientated programming can be used,
 What if the Web was programmable in a uniform but flexible syntax?
 
 to clone:
@@ -308,7 +309,7 @@ curl --data "
         (cons n acc)
         (loop (quotient n 10)
               (cons (remainder n 10) acc)))))
-(number->list 1234567890)
-" localhost:8080 
+(number->list 1234567890)  
+" localhost:8080  
 (1 2 3 4 5 6 7 8 9 0)
 
