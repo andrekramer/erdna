@@ -50,7 +50,9 @@ const formals = {
     "or": evalOr,
     "eval": eval2,
     "define-rewriter": evalRewrite(macroRewriter),
-    "make": make
+    "make": evalMake,
+    "@": evalAt,
+    "@!": evalAtSet
 };
 
 const rewrites = {
@@ -928,7 +930,7 @@ async function eval2(exp, env) {
     return await eval(exp2, closure.scope);
 }
 
-async function make(exp, env) {
+async function evalMake(exp, env) {
     if (exp.value.length < 3 || exp.value[1].type !== ATOM || (exp.value[2].type !== ATOM && !isNullList(exp.value[2]))) {
         return { type: ERR, value: "make requires a name and a prototype with optional field initializers" };
     }
@@ -936,7 +938,7 @@ async function make(exp, env) {
     const obj = {};
 
     if (exp.value[2].type === ATOM) {
-        console.log("make with base " + exp.value[2].value);
+        // console.log("make with base " + exp.value[2].value);
         const base = lookup(exp.value[2].value, env);
         if (base === undefined || base.type !== OBJ) {
             return { type: ERR, value: "super must be an object for make" };
@@ -951,10 +953,65 @@ async function make(exp, env) {
         obj[v.value[0].value] = await eval(v.value[1], env);
     }
     
-    console.log("made " + name + " = " + JSON.stringify(obj));
+    // console.log("made " + name + " = " + JSON.stringify(obj));
     const result = { type: OBJ, value: obj };
     env[name] = result;
     return result;
+}
+
+async function evalAt(exp, env) {
+    if (exp.value.length != 3) {
+        return { type: ERR, value: "@ requires an object and field name" };
+    }
+    let obj = await eval(exp.value[1], env);
+    if (obj.type !== OBJ) {
+        return { type: ERR, value: "@ requires a first argument that evaluates to an object" };
+    }
+    const name = exp.value[2];
+    if (name.type !== ATOM) {
+        return { type: ERR, value: "@ requires a second argument that evaluates to a field name" };
+    }
+    while (true) {
+        const value = obj.value[name.value];
+        if (value !== undefined) {
+            return value;
+        }
+        const base = obj.value["super"];
+        if (base === undefined) {
+            return { type: ERR, value: "@ field to get not found" };
+        }
+        obj = base;
+    }
+}
+
+async function evalAtSet(exp, env) {
+    if (exp.value.length != 4) {
+        return { type: ERR, value: "@! requires an object, field name and value" };
+    }
+    let obj = await eval(exp.value[1], env);
+    if (obj.type !== OBJ) {
+        return { type: ERR, value: "@! requires a first argument that evaluates to an object" };
+    }
+    const name = exp.value[2];
+    if (name.type !== ATOM) {
+        return { type: ERR, value: "@! requires a second argument that evaluates to a field name" };
+    }
+    while (true) {
+        const value = obj.value[name.value];
+        if (value !== undefined) {
+            const update = await eval(exp.value[3], env);
+            if (update.type === ERR) {
+                return { type: ERR, value: "@! could not evaluate value to set field to" };
+            }
+            obj.value[name.value] = update;
+            return value;
+        }
+        const base = obj.value["super"];
+        if (base === undefined) {
+            return { type: ERR, value: "@! field to set not found" };
+        }
+        obj = base;
+    }
 }
 
 function write(result) {

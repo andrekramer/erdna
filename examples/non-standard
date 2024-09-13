@@ -49,3 +49,34 @@ curl --data "(make obj1 () (x 1) (y 2))(make obj2 obj1 (z 3))"  localhost:8080
 object
 object
 
+curl --data "(make obj1 () (x 1) (y 2)) (@ obj1 x) (@ obj1 y) (@ obj1 z)"  localhost:8080
+object
+1
+2
+
+@ field not found 
+
+curl --data "(make obj1 () (x 1) (y 2))(make obj2 obj1 (z 3)) (@ obj2 z) (@ obj2 y) (@ obj2 x)"  localhost:8080
+object
+object
+3
+2
+1
+
+curl --data "(make obj1 () (x 1) (y 2)) (@! obj1 x -1) (@! obj1 y -2) (@ obj1 x) (@ obj1 y)"  localhost:8080
+object
+1
+2
+-1
+-2
+
+curl --data "(make obj1 () (x 1) (y 2))(make obj2 obj1 (z 3)) (@! obj2 x -1) (@! obj2 z -3) (@ obj2 z) (@ obj2 y) (@ obj2 x)"  localhost:8080
+curl --data "(make obj1 () (x 1) (y 2))(make obj2 obj1 (z 3)) (@! obj2 x -1) (@! obj2 z -3) (@ obj2 z) (@ obj2 y) (@ obj2 x)"  localhost:8080
+object
+object
+1
+3
+-3
+2
+-1
+
