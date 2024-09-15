@@ -55,17 +55,23 @@ curl --data-raw "
 2
 
 curl --data-raw "
-(define (member m l)
+(define (member? m l)
   (cond ((null? l) #f)
         ((equal? m (car l)) l) 
-        (else (member m (cdr l)))
+        (else (member? m (cdr l)))
   )
 )
-(member 0 '(1 #t 2 3 (4 5)))
-(member 2 '(1 #t 2 3 (4 5)))
+(member? 0 '(1 #t 2 3 (4 5)))
+(member? 2 '(1 #t 2 3 (4 5)))
+(define (beatle? person)
+  (member? person '(john paul george ringo)))
+(beatle? 'paul)
+(beatle? 'elvis)
 " localhost:8080
 false
 (2 3 (4 5))
+(paul george ringo)
+#f
 
 curl --data-raw "
 (define (map f l) 

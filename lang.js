@@ -339,6 +339,9 @@ async function eval(exp, env) {
             if (macro !== undefined) {
                 const macroExp = { type: EXP, value: [macro, { type: EXP, value: [QUOTE, exp] }] };
                 let rewrite = await eval(macroExp, macro.scope);
+                if (rewrite.type === ERR) {
+                    return rewrite;
+                }
                 if (MACRO_REWRITE_ONLY) {
                     return rewrite;
                 }
@@ -436,6 +439,9 @@ async function eval(exp, env) {
                                 if (macro !== undefined) {
                                     const macroExp = { type: EXP, value: [macro, { type: EXP, value: [ QUOTE, target] }] };
                                     let rewrite = await eval(macroExp, macro.scope);
+                                    if (rewrite.type === ERR) {
+                                        return rewrite;
+                                    }
                                     // console.log("macro rewrite " + JSON.stringify(rewrite));
                                     if (rewrite.type === PAIR) {
                                         rewrite = pairToExp(rewrite);
@@ -443,6 +449,9 @@ async function eval(exp, env) {
                                
                                     const macroEnv = { "__parent_scope": localEnv, name: "macro_rewrite_scope " + scopeId++ };
                                     target = await eval(rewrite, macroEnv);
+                                    if (target.type === ERR) {
+                                        return target;
+                                    }
                                     // console.log("macro eval " + JSON.stringify(rewrite));
                                     localEnv = macroEnv;
                                     continue;
@@ -456,6 +465,9 @@ async function eval(exp, env) {
                             // Call to same proc can be optimized to avoid stack growing.
                             if (target.value[0].type === ATOM && target.value[0].value === exp.value[0].value) {
                                 proc = await eval(target.value[0], env);
+                                if (proc.type === ERR) {
+                                    return proc;
+                                }
                                 if (proc.type === CLOSURE) {
                                     closureEnv = proc.scope;
                                     proc = proc.value;
@@ -529,6 +541,9 @@ async function evalQuasiquote(exp, env) {
                 }
                 const unquoteExp = subExp.value[1];
                 const r = await eval(unquoteExp, env);
+                if (r.type === ERR) {
+                    return r;
+                }
                 resultList.push(r);
             } else {
                 resultList.push(subExp);
@@ -600,6 +615,9 @@ async function rewriteLet(exp, env) {
             }
             args.push(argInit.value[0]);
             const initValue = await eval(argInit.value[1], env);
+            if (initValue.type === ERR) {
+                return [initValue, env];
+            }
             // console.log("arg init " + argInit.value[0].value + " = " + JSON.stringify(initValue));
             initValues.push(initValue);
         }
@@ -611,6 +629,9 @@ async function rewriteLet(exp, env) {
         // console.log("named let lambda " + JSON.stringify(lambda));
        
         const closure = await eval({ type: EXP, value: lambda }, env);
+        if (closure.type === ERR) {
+            return [closure, env];
+        }
         env[binds.value] = closure;
 
         const namedLetExp = { type: EXP, value: [ binds ] };
@@ -745,6 +766,9 @@ async function rewriteCond(exp, env) {
             return [cond.value[1], env];
         }
         const test = await eval(cond.value[0], env);
+        if (test.type === ERR) {
+            return [test, env];
+        }
         if (!(test.type === BOOL && test.value === false)) {
             return [cond.value[1], env];
         }
@@ -757,6 +781,9 @@ async function rewriteCase(exp, env) {
         return [{ type: ERR, value: "case needs expression and one or more conditions" }, env];
     }
     const selector = await eval(exp.value[1], env);
+    if (selector.type === ERR) {
+        return [selector, env];
+    }
     // console.log("selector " + JSON.stringify(selector));
     for (let i = 2; i < exp.value.length; i++) {
        const cond = exp.value[i];
@@ -797,7 +824,7 @@ async function evalCase(cond, env) {
     for (let c = 1; c < cond.value.length - 1; c++) {
         const result = await eval(cond.value[c], env);
         if (result.type === ERR) {
-            return error;
+            return [result, env];
         }
     }
     return [cond.value[cond.value.length - 1], env];
@@ -815,6 +842,9 @@ async function evalDefine(exp, env) {
         }
         const arg = exp.value[2];
         const result = await eval(arg, env);
+        if (result.type === ERR) {
+            return result;
+        }
         // console.log("eval define arg result " +  JSON.stringify(result));
         env[def.value] = result;
         return result;
@@ -836,6 +866,9 @@ async function evalDefine(exp, env) {
         }
         // console.log("define proc " + JSON.stringify(lambda));
         const closure = await eval({ type: EXP, value: lambda }, env);
+        if (closure.type === ERR) {
+            return closure;
+        }
         env[proc.value] = closure;
         return closure;
     } else {
@@ -887,6 +920,9 @@ async function evalAnd(exp, env) {
     let result = trueValue;
     for (let i = 1; i < exp.value.length; i++) {
         result = await eval(exp.value[i], env);
+        if (result.type === ERR) {
+            return result;
+        }
         if (result.type === BOOL && result.value === false) {
             return falseValue;
         }
@@ -898,6 +934,9 @@ async function evalOr(exp, env) {
     let result = falseValue;
     for (let i = 1; i < exp.value.length; i++) {
         result = await eval(exp.value[i], env);
+        if (result.type === ERR) {
+            return result;
+        }
         if (!(result.type === BOOL && result.value === false)) {
             return trueValue;
         }
@@ -950,7 +989,11 @@ async function evalMake(exp, env) {
         if (v.type !== EXP || v.value.length !== 2 || v.value[0].type !== ATOM) {
             return { type: ERR, value: "make takes a name and optional (member value) initializers" };
         }
-        obj[v.value[0].value] = await eval(v.value[1], env);
+        const result = await eval(v.value[1], env);
+        if (result.type === ERR) {
+            return result;
+        }
+        obj[v.value[0].value] = result;
     }
     
     // console.log("made " + name + " = " + JSON.stringify(obj));
@@ -964,6 +1007,9 @@ async function evalAt(exp, env) {
         return { type: ERR, value: "@ requires an object and field name" };
     }
     let obj = await eval(exp.value[1], env);
+    if (obj.type === ERR) {
+        return obj;
+    }
     if (obj.type !== OBJ) {
         return { type: ERR, value: "@ requires a first argument that evaluates to an object" };
     }
@@ -989,6 +1035,9 @@ async function evalAtSet(exp, env) {
         return { type: ERR, value: "@! requires an object, field name and value" };
     }
     let obj = await eval(exp.value[1], env);
+    if (obj.type === ERR) {
+        return obj;
+    }
     if (obj.type !== OBJ) {
         return { type: ERR, value: "@! requires a first argument that evaluates to an object" };
     }
