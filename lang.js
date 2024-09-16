@@ -1013,10 +1013,17 @@ async function evalAt(exp, env) {
     if (obj.type !== OBJ) {
         return { type: ERR, value: "@ requires a first argument that evaluates to an object" };
     }
-    const name = exp.value[2];
+    let name = exp.value[2];
+    if (name.type === EXP && name.value.length === 2 && name.value[0].type === ATOM && name.value[0].value === "quote") {
+        name = await eval(name.value[1], env);
+        if (name.type === ERR) {
+            return name;
+        }
+    }
     if (name.type !== ATOM) {
         return { type: ERR, value: "@ requires a second argument that evaluates to a field name" };
     }
+    // console.log("get " + name.value);
     while (true) {
         const value = obj.value[name.value];
         if (value !== undefined) {
@@ -1041,7 +1048,13 @@ async function evalAtSet(exp, env) {
     if (obj.type !== OBJ) {
         return { type: ERR, value: "@! requires a first argument that evaluates to an object" };
     }
-    const name = exp.value[2];
+    let name = exp.value[2];
+    if (name.type === EXP && name.value.length === 2 && name.value[0].type === ATOM && name.value[0].value === "quote") {
+        name = await eval(name.value[1], env);
+        if (name.type === ERR) {
+            return name;
+        }
+    }
     if (name.type !== ATOM) {
         return { type: ERR, value: "@! requires a second argument that evaluates to a field name" };
     }

@@ -89,7 +89,7 @@ curl --data "
            (else (newton's-method xn guess error)))
    )
 )
-(define (sqrt n) (newton's-method n n 0.000001))
+(define (sqrt n) (newton's-method (+ n 0.000001) (+ n 0.000001) 0.000001))
 ;; try some maths examples
 (sqrt 2)
 (define (square x) (* x x))
@@ -109,9 +109,10 @@ curl --data "
   (z 3) 
   (length (lambda (self) 
             (sqrt (+ (square (@ self x)) (square (@ self y)) (square (@ self z))))))) 
-;; do some gets oon second point
+;; do some gets on second point
 (@ point2 x) (@ point2 y) (@ point2 z) 
 ((@ point2 length) point2)
+;; define a colored 2D point
 "  localhost:8080
 
 λ
@@ -130,3 +131,64 @@ object
 2
 3
 3.7416573867739458
+
+# next examples build on previously defined procs and point1
+
+curl --data "
+;; define a colored 2D point
+(make point3 point1 (colour 'red))
+(@ point3 colour)
+(@ (@ point3 super) y)
+(@! point3 y 1)
+((@ point3 length) point3)
+(@ (@ point3 super) y)
+" localhost:8080
+
+object
+red
+2
+2
+1.414213562373095
+1
+
+# Alternative syntax for "sending messages" to an object with first arg set to self
+
+curl --data "
+((@ point1 length) point1)
+(define (send obj method . args)
+  (apply (@ obj 'method) (cons obj args))
+)
+(send point1 'length)
+" localhost:8080
+
+2.236067977499978
+λ
+2.236067977499978
+
+
+curl --data "
+(make point4 () (x 1) (y 1))
+(make point5 () (x 0) (y 0)
+  (distance (lambda (self other) 
+     (sqrt (+ 
+       (square (- (@ other x) (@ self x)))
+       (square (- (@ other y) (@ self y)))))))
+  (distance-to-x-y (lambda (self x y) 
+     (sqrt (+ 
+       (square (- x (@ self x)))
+       (square (- y (@ self y)))))))
+)
+((@ point5 distance) point5 point4)
+(send point5 'distance point4)
+(send point5 'distance point5)
+(send point5 'distance-to-x-y 1 1)
+" localhost:8080
+
+object
+object
+1.4142170979025814
+λ
+1.4142170979025814
+0.003162277666486375
+1.4142170979025814
+

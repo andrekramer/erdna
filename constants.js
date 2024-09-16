@@ -6,10 +6,10 @@ const NUM = 2;
 const STR = 3;
 const BOOL = 4;
 const CLOSURE = 5;
-const PROMISE = 6;
-const VOID = 7;
-const PAIR = 8;
-const OBJ = 9;
+const OBJ = 6;
+const PROMISE = 7;
+const VOID = 8;
+const PAIR = 9;
 
 function displayType(t) {
     switch(t) {
@@ -21,10 +21,10 @@ function displayType(t) {
         case STR: return "string";
         case BOOL: return "boolean";
         case CLOSURE: return "closure";
+        case OBJ: return "object";
         case PROMISE: return "promise";
         case VOID: return "void";
         case PAIR: return "pair";
-        case OBJ: return "object";
         default: return "unkown";
     }
 }
