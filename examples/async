@@ -19,9 +19,9 @@ curl --data '(resolve (fetch-promise "http://localhost:8081" "" "(+ 1 2 3)" ))' 
 
 curl --data "
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
-(resolve (remote-promise \"http://localhost:8081\" \"\" '(+ 1 2 3) ))
+(resolve (remote-promise \"http://localhost:8081\" \"\" '(+ 1 2 3 4) ))
 " localhost:8080
-"6\n"
+"10\n"
 
 curl --data "
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))

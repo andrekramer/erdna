@@ -20,6 +20,18 @@ curl  --data-raw "
 (let ((temp1 #t) (temp2 #t)) (or2 temp1 temp2))
 " localhost:8080
 
+()
+λ
+#t
+#f
+#f
+#t
+#f
+#t
+#t
+#t
+
+
 curl  --data-raw "
 (define-rewriter xor
    (lambda (expr)
@@ -35,3 +47,9 @@ curl  --data-raw "
 (xor #f #t)
 (xor #t #t)
 " localhost:8080
+
+()
+#f
+#t
+#t
+#f

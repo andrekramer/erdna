@@ -29,12 +29,12 @@ curl --data-raw "
 (-1 0 1 1.1 2 2 3 4 4 5 7 8 9 12)
 
 curl --data-raw "
-   (define (make count l) 
+   (define (make-integer-list count l) 
      (cond 
        ((equal? count 0) l)
-       (else (make (- count 1) (cons count l)))
+       (else (make-integer-list (- count 1) (cons count l)))
    ))
-   (define list-to-sort (reverse (make 1000 '())))
+   (define list-to-sort (reverse (make-integer-list 1000 '())))
 " localhost:8080
 
 curl --data-raw "(quicksort list-to-sort)" localhost:8080
@@ -109,8 +109,7 @@ curl --data-raw "
                   [else y]))
           (define (helper nums)
             (cond [(null? (rest nums)) (first nums)]
-                  [(cons (rest nums))
-                   (bigger (first nums) (helper (rest nums)))]))]
+                  [else (bigger (first nums) (helper (rest nums)))]))]
     (helper nums)))
 (largest (list 5 15 12 13 14 11 3 9 8 7 6 16 4 10 2 1))
 " localhost:8080
