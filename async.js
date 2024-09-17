@@ -1,4 +1,5 @@
-const { EXP, ERR, NUM, STR, PAIR, PROMISE } = require("./constants.js");
+const { EXP, ERR, NUM, STR, PAIR, PROMISE, nullList } = require("./constants.js");
+const fs = require('node:fs/promises');
 
 function sleepPromise(args, env) {
     const ret = { type: PROMISE };
@@ -49,6 +50,26 @@ async function fetchPromise(args, env) {
     return ret;
 }
 
+async function readFilePromise(args, env) {
+    const result = { type: PROMISE };
+    if (args.length !== 1 || args[0].type !== STR) {
+        return { type: ERR, value: "read-file--promise expect a file name as argument" };
+    }
+    const promise = fs.readFile(args[0].value, { encoding: 'utf8' }).then(r => result.value = { type: STR, value: r });
+    result.promise = promise;
+    return result;
+}
+
+async function writeFilePromise(args, env) {
+    const result = { type: PROMISE };
+    if (args.length !== 2 || args[0].type !== STR || args[1].type !== STR) {
+        return { type: ERR, value: "write-file--promise expect a file name and a string to write as the file content as argument" };
+    }
+    const promise = fs.writeFile(args[0].value, args[1].value).then(r => result.value = nullList );
+    result.promise = promise;
+    return result;
+}
+
 async function applyPromise(args, env, eval) {
     const result = { type: PROMISE };
     if (args.length !== 2) {
@@ -89,3 +110,5 @@ exports.sleepPromise = sleepPromise
 exports.resolve = resolve
 exports.fetchPromise = fetchPromise
 exports.applyPromise = applyPromise
+exports.readFilePromise = readFilePromise
+exports.writeFilePromise = writeFilePromise

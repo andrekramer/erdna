@@ -376,8 +376,8 @@ function printValue(value) {
     if (value.type === PROMISE ) {
         return "promise";
     }
-    if (value.type === OBJ) {
-        return "object";
+    if (value.type === EXP) {
+        return "expression";
     }
     if (isNullList(value)) {
         return "()";

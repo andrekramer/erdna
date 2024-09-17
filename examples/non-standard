@@ -31,3 +31,10 @@ curl --data "(eval (read \"(+ 1 2) '(a b) (* 1 2)\") (lambda () ()))"  localhost
 curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080
 15
 
+curl --data "(resolve (read-file-promise \"file1\"))"  localhost:8080
+"coola boola\n"
+
+curl --data "(resolve (write-file-promise \"file2\" \"hello erdna\"))"  localhost:8080
+cat file2 
+hello erdna 
+
