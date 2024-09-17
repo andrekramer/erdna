@@ -5,44 +5,49 @@ The commit history builds up language features for the example curl commands bel
 and those in the files in the examples directory.  
 Full Scheme macros and callcc are not covered.  
 Supports Promises via Javascript async/await and so can request the Web (see examples/async).  
-Bootstraps a simple object system so that functional, procedural and object-orientated programming can be used,
-What if the Web was programmable in a uniform but flexible syntax?
+Bootstraps a simple object system so that object-orientated programming can be used (examples/objects),  
+as well as functional, procdural and symbolic programming.   
+What if the Web was programmable in a uniform but flexible syntax?  
 
-to clone:
+To clone:
 
-git@github.com:andrekramer/erdna.git  
-cd erdna
+git clone git@github.com:andrekramer/erdna.git  
+cd erdna  
 
-to install:
+To install:  
 
-npm init
-npm install express
+Follow instructions on [node.js](https://nodejs.org/en/download/package-manager) to install node and npm.  
 
-to run:
+Then in a command shell:  
 
-node index.js
+npm init  
+npm install express  
 
-try it out in another shell using the following curl command to post a script to the server:
+To run node:  
+
+node index.js   
+
+Try it out in another shell using the following curl command to post a script to the server running on 8080:  
 
 curl --data "(+ 1 2)" localhost:8080    
-3 
+3   
 
-or 
+or with a Scheme style comment:    
 
 curl --data-raw " 
 
- (+ 1 2 3 4 5) ; adds 1 and 2 
+ (+ 1 2 3 4 5) ; adds 1 and 2   
 
 " localhost:8080    
-15
+15  
 
-or ...
+or any of the following examples ...  
 
 curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080    
-48
+48  
 
 curl --data '((lambda (a b) (+ a b)) 1 2 )'  localhost:8080    
-3
+3  
 
 curl --data '(define a (+ 1 2)) (+ a a 4)' localhost:8080    
 3
