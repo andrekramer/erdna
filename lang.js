@@ -528,14 +528,10 @@ async function evalQuote(exp, env) {
     return result;
 }
 
-async function evalQuasiquote(exp, env) {
-    if (exp.value.length !== 2) {
-        return { type: ERR, value: "Can only quasi-quote one value" };
-    }
-    let result = exp.value[1];
+async function unquote(result, env) {
     if (result.type === EXP) {
         const resultList = [];
-        for (const subExp of exp.value[1].value) {
+        for (const subExp of result.value) {
             if (subExp.type === EXP && subExp.value[0].type === ATOM && subExp.value[0].value === "unquote") {
                 if (subExp.value.length !== 2) {
                     return { type: ERR, value: "Can only unquote one value"};
@@ -547,13 +543,21 @@ async function evalQuasiquote(exp, env) {
                 }
                 resultList.push(r);
             } else {
-                resultList.push(subExp);
+                resultList.push(await unquote(subExp, env));
             }
         }
         result = listify(resultList);
     }
     // console.log("quasiquoted " + JSON.stringify(result));
     return result;
+}
+
+async function evalQuasiquote(exp, env) {
+    if (exp.value.length !== 2) {
+        return { type: ERR, value: "Can only quasi-quote one value" };
+    }
+    let result = exp.value[1];
+    return await unquote(result, env);
 }
 
 async function evalSet(exp, env) {

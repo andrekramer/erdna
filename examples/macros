@@ -53,3 +53,23 @@ curl  --data-raw "
 #t
 #t
 #f
+
+export bq='`';curl  --data-raw "
+(define-rewriter xor
+   (lambda (expr)
+      (let ((a (cadr expr))
+            (b (caddr expr)))
+        $bq(let ((temp ,a)  
+                 (temp2 ,b))  
+                (if temp (if temp2 #f temp) (if temp2 temp2 #f))))) )
+(xor #f #f)
+(xor #t #f)
+(xor #f #t)
+(xor #t #t)
+" localhost:8080
+
+expression
+#f
+#t
+#t
+#f
