@@ -9,6 +9,8 @@ Bootstraps a simple object system so that object-orientated programming can be u
 as well as functional, procdural and symbolic programming.   
 What if the Web was programmable in a uniform but flexible syntax?  
 
+The code was written in small parts over the summer of 2024 without AI input and is free for non commercial use.  
+
 To clone:
 
 git clone git@github.com:andrekramer/erdna.git  
