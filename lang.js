@@ -503,7 +503,7 @@ async function eval(exp, env) {
             if (args["type"] === ERR) {
                 return args;
             }
-            return await apply(proc, args, env);
+            return await applyBuildin(proc, args, env);
         }
     }
 
@@ -1103,7 +1103,7 @@ function lookup(symbol, env) {
     return undefined;
 }
 
-async function apply(proc, args, env) {
+async function applyBuildin(proc, args, env) {
     const buildIn = buildIns[proc.value];
     if (buildIn !== undefined) {
         if (asyncBuildIns[proc.value] !== undefined) {
