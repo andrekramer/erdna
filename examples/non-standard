@@ -40,13 +40,6 @@ curl --data "(eval (read \"(+ 1 2) '(a b) (* 1 2)\") (lambda () ()))"  localhost
 curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080
 15
 
-curl --data "(resolve (read-file-promise \"file1\"))"  localhost:8080
-"coola boola\n"
-
-curl --data "(resolve (write-file-promise \"file2\" \"hello erdna\"))"  localhost:8080
-cat file2 
-hello erdna 
-
 curl --data "
 (define erdna (resolve (read-file-promise \"file3\"))) 
 (eval (read erdna) (lambda () ())) test
@@ -55,4 +48,10 @@ curl --data "
 "(define test \"this is a test\")\n(display \"echo\")\n"
 
 "this is a test"
+
+curl --data "
+(define (load file) (eval (read (resolve (read-file-promise file))) '()) )
+(load \"file4\")
+(triple 4)
+"  localhost:8080
 

@@ -83,3 +83,11 @@ displays:
 6
 8
 9
+
+curl --data "(resolve (read-file-promise \"file1\"))"  localhost:8080
+"coola boola\n"
+
+curl --data "(resolve (write-file-promise \"file2\" \"hello erdna\"))"  localhost:8080
+cat file2 
+hello erdna 
+

@@ -35,7 +35,8 @@ const procs = `
 `;
 
 function seed() {
-    const topLevelEnv = { name: "top level scope with predefines"};
+    const topLevelEnv = lang.topLevelEnv;
+    topLevelEnv.name = topLevelEnv.name + " with predefined procs";
     const exps = lang.read(procs);
     for (const exp of exps) {
         const result = lang.eval(exp, topLevelEnv);

@@ -66,6 +66,8 @@ const rewrites = {
     "letrec": rewriteLetrec
 };
 
+const topLevelEnv = { name: "top level env" };
+
 const macros = {
 };
 
@@ -968,12 +970,18 @@ async function eval2(exp, env) {
     if (exp.value.length !== 3) {
         return { type: ERR, value: "eval takes an expression to evaluate and a closure to borrow an environment from" };
     }
+    let scope;
     const closure = await eval(exp.value[2], env);
-    if (closure.type !== CLOSURE) {
+    if (isNullList(closure)) {
+        scope = topLevelEnv;
+    } else if (closure.type !== CLOSURE) {
         return { type: ERR, value: "eval requires a closure as second arg to provide an environment to evaluate in" };
+    } else {
+        scope = closure.scope;
     }
+
     const exp2 = await eval(exp.value[1], env);
-    return await eval(exp2, closure.scope);
+    return await eval(exp2, scope);
 }
 
 async function evalMake(exp, env) {
@@ -1148,3 +1156,4 @@ function display(args, env) {
 exports.read = read;
 exports.eval = eval;
 exports.write = write;
+exports.topLevelEnv = topLevelEnv;

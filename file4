@@ -1,0 +1,2 @@
+(load "file5")
+(define (triple n) (+ n (double n)))

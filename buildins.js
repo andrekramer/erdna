@@ -397,11 +397,14 @@ function printValue(value) {
     if (value.type === PROMISE ) {
         return "promise";
     }
+    if (isNullList(value)) {
+        return "()";
+    }
     if (value.type === EXP) {
         return "expression";
     }
-    if (isNullList(value)) {
-        return "()";
+    if (value.type === OBJ) {
+        return "object";
     }
     if (value.type === PAIR) {
         let str = "(";
