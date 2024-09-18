@@ -7,6 +7,7 @@ const {
     applyLambda,
     equal, numberEqual,
     plus, minus, multiply, divide, divmod,
+    sqrt, floor, random,
     strLength, strSlice, strConcat, strIndexOf,
     typeOf, print, error, printValue
 } = require("./buildins.js");
@@ -15,6 +16,7 @@ const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFileProm
 
 const buildIns = {
     "+": plus, "-": minus, "*": multiply, "/": divide, "div-mod": divmod,
+    "sqrt": sqrt, "floor": floor, "random": random,
     "=": numberEqual, "equal?": equal,
     "list": (args, env) => listify(args),
     "cons": cons, "car": car, "first": car, "cdr": cdr, "rest": cdr,

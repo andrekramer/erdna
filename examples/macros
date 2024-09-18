@@ -31,6 +31,7 @@ curl  --data-raw "
 #t
 #t
 
+# xor using lists and quotes
 
 curl  --data-raw "
 (define-rewriter xor
@@ -53,6 +54,8 @@ curl  --data-raw "
 #t
 #t
 #f
+
+# xor using quasiquote and unquote
 
 export bq='`';curl  --data-raw "
 (define-rewriter xor

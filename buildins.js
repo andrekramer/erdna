@@ -269,6 +269,27 @@ function divmod(args, env) {
     return { type: PAIR, value: { type: NUM, value: Math.floor(x / y)}, rest:  { type: NUM, value: x % y} };
 }
 
+function sqrt(args, env) {
+    if (args.length !== 1 || args[0].type !== NUM) {
+        return { type: ERR, value: "sqrt takes one number" };
+    }
+    return { type: NUM, value: Math.sqrt(args[0].value) };
+}
+
+function floor(args, env) {
+    if (args.length !== 1 || args[0].type !== NUM) {
+        return { type: ERR, value: "floor takes one number" };
+    }
+    return { type: NUM, value: Math.floor(args[0].value) };
+}
+
+function random(args, env) {
+    if (args.length !== 0)  {
+        return { type: ERR, value: "random takes no arguments" };
+    }
+    return { type: NUM, value: Math.random() };
+}
+
 function strLength(args, env) {
     if (args.length !== 1 || args[0].type !== STR) {
         return { type: ERR, value: "string-length expectes one string argument" };
@@ -436,6 +457,9 @@ exports.minus = minus
 exports.multiply = multiply
 exports.divide = divide
 exports.divmod = divmod
+exports.sqrt = sqrt
+exports.floor = floor
+exports.random = random
 exports.strLength = strLength
 exports.strSlice = strSlice
 exports.strConcat = strConcat

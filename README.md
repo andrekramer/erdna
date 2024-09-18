@@ -3,7 +3,7 @@ Loosely based on
 [An Introduction to Scheme and its Implemementation](https://docs.scheme.org/schintro/schintro_toc.html)  
 The commit history builds up language features for the example curl commands below
 and those in the files in the examples directory.  
-Full Scheme macros and callcc are not covered.  
+Full Scheme macros (see examples/macros for lisp style macros) and callcc are not covered.  
 Supports Promises via Javascript async/await and so can request the Web (see examples/async).  
 Bootstraps a simple object system so that object-orientated programming can be used (examples/objects),  
 as well as functional, procdural and symbolic programming.   
