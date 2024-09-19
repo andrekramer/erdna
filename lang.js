@@ -12,7 +12,7 @@ const {
     typeOf, print, error, printValue
 } = require("./buildins.js");
 
-const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, resolve } = require("./async.js");
+const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, promptPromise, resolve } = require("./async.js");
 
 const buildIns = {
     "+": plus, "-": minus, "*": multiply, "/": divide, "div-mod": divmod,
@@ -27,7 +27,8 @@ const buildIns = {
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
     "type-of": typeOf, "print": print, "error": error,
     "sleep-promise": sleepPromise, "fetch-promise": fetchPromise, 
-    "read-file-promise": readFilePromise, "write-file-promise": writeFilePromise,
+    "read-file-promise": readFilePromise, "write-file-promise": writeFilePromise, 
+    "prompt-promise": promptPromise,
     "apply-promise": applyPromise, "resolve": resolve,
     "read": readExp, "display": display
 };

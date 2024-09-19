@@ -1,5 +1,8 @@
 const { EXP, ERR, NUM, STR, PAIR, PROMISE, nullList } = require("./constants.js");
 const fs = require('node:fs/promises');
+const readline = require('node:readline/promises');
+
+const { stdin: input, stdout: output } = require('node:process');
 
 function sleepPromise(args, env) {
     const ret = { type: PROMISE };
@@ -53,7 +56,7 @@ async function fetchPromise(args, env) {
 async function readFilePromise(args, env) {
     const result = { type: PROMISE };
     if (args.length !== 1 || args[0].type !== STR) {
-        return { type: ERR, value: "read-file--promise expect a file name as argument" };
+        return { type: ERR, value: "read-file-promise expect a file name as argument" };
     }
     const promise = fs.readFile(args[0].value, { encoding: 'utf8' }).then(r => result.value = { type: STR, value: r });
     result.promise = promise;
@@ -63,9 +66,21 @@ async function readFilePromise(args, env) {
 async function writeFilePromise(args, env) {
     const result = { type: PROMISE };
     if (args.length !== 2 || args[0].type !== STR || args[1].type !== STR) {
-        return { type: ERR, value: "write-file--promise expect a file name and a string to write as the file content as argument" };
+        return { type: ERR, value: "write-file-promise expect a file name and a string to write as the file content as argument" };
     }
     const promise = fs.writeFile(args[0].value, args[1].value).then(r => result.value = nullList );
+    result.promise = promise;
+    return result;
+}
+
+async function promptPromise(args, env) {
+    const result = { type: PROMISE };
+    if (args.length !== 1 || args[0].type !== STR) {
+        return { type: ERR, value: "prompt-promise requires a string prompt" };
+    }
+    const rl = readline.createInterface({ input, output });
+
+    const promise = rl.question(args[0].value).then(r => { result.value = { type: STR, value: r }; rl.close(); } );
     result.promise = promise;
     return result;
 }
@@ -112,3 +127,4 @@ exports.fetchPromise = fetchPromise
 exports.applyPromise = applyPromise
 exports.readFilePromise = readFilePromise
 exports.writeFilePromise = writeFilePromise
+exports.promptPromise = promptPromise

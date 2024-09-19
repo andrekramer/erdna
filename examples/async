@@ -91,3 +91,6 @@ curl --data "(resolve (write-file-promise \"file2\" \"hello erdna\"))"  localhos
 cat file2 
 hello erdna 
 
+curl --data "(resolve (prompt-promise \"Who are you?\"))"  localhost:8080
+
+
