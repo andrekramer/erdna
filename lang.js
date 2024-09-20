@@ -9,7 +9,8 @@ const {
     plus, minus, multiply, divide, divmod,
     sqrt, floor, random,
     strLength, strSlice, strConcat, strIndexOf,
-    typeOf, print, error, printValue
+    typeOf, symbolToString, stringToSymbol,
+    print, error, printValue
 } = require("./buildins.js");
 
 const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, promptPromise, resolve } = require("./async.js");
@@ -26,6 +27,7 @@ const buildIns = {
     "apply": applyLambda,
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
     "type-of": typeOf, "print": print, "error": error,
+    "symbol->string": symbolToString, "string->symbol": stringToSymbol,
     "sleep-promise": sleepPromise, "fetch-promise": fetchPromise, 
     "read-file-promise": readFilePromise, "write-file-promise": writeFilePromise, 
     "prompt-promise": promptPromise,

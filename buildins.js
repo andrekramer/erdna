@@ -337,6 +337,20 @@ function typeOf(args, env) {
     return { type: NUM, value: args[0].type };
 }
 
+function symbolToString(args, env) {
+    if (args.length !== 1 || args[0].type !== ATOM) {
+        return { type: ERR, value: "symbol->string takes a symbol as argument" };
+    }
+    return { type: STR, value: args[0].value};
+}
+
+function stringToSymbol(args, env) {
+    if (args.length !== 1 || args[0].type !== STR) {
+        return { type: ERR, value: "string->symbol takes a string as argument" };
+    }
+    return { type: ATOM, value: args[0].value};
+}
+
 function error(args, env) {
     if (args.length === 1 && args[0].type === STR) {
         return { type: ERR, value: args[0].value };
@@ -468,6 +482,8 @@ exports.strSlice = strSlice
 exports.strConcat = strConcat
 exports.strIndexOf = strIndexOf
 exports.typeOf = typeOf
+exports.symbolToString = symbolToString
+exports.stringToSymbol = stringToSymbol
 exports.error = error
 exports.print = print
 exports.escape = escape

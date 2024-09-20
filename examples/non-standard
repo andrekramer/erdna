@@ -55,3 +55,11 @@ curl --data "
 (triple 4)
 "  localhost:8080
 
+curl --data "(string->symbol \"abc\");" localhost:8080
+abc
+
+curl --data "(symbol->string 'abc);" localhost:8080
+"abc"
+
+
+
