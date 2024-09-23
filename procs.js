@@ -29,7 +29,7 @@ const procs = `
 (define (<= n1 n2) (not (> n1 n2)))
 (define (symbol? x) (equal? (type-of x) 0))
 (define (number? x) (equal? (type-of x) 2))
-(define (pair? x) (equal? (type-of x) 8))
+(define (pair? x) (equal? (type-of x) 9))
 (define (string? x) (equal? (type-of x) 3))
 (define (boolean? x) (equal? (type-of x) 4))
 `;
