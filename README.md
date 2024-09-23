@@ -34,16 +34,18 @@ Try it out in another shell using the following curl command to post a script to
 curl --data "(+ 1 2)" localhost:8080    
 3   
 
-or with a Scheme style comment:    
+or multi-line with a Scheme style comment:    
 
 curl --data-raw " 
 
- (+ 1 2 3 4 5) ; adds 1 and 2   
+ (+ 1 2 3 4 5) ; adds the first 5 numbers together   
 
 " localhost:8080    
 15  
 
-or any of the following examples ...  
+There is a REPL (read evaluate print loop) that can be started using curl in examples/non-standard and examples/repl.   
+
+or use curl to post any of the following examples ...  
 
 curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080    
 48  
@@ -145,6 +147,14 @@ curl --data "
   [(equal? apple 'delicious) 'right]
   [else 'not-sure])" localhost:8080  
 right
+
+curl --data "
+(define x 3) 
+(cond 
+  [(equal? x 1) 'ignore 'one]
+  [(equal? x 2) (display \"not here\") 'two]
+  [else (display \"say here\") 'other])" localhost:8080  
+other
 
 curl --data "
 (define (append2 list1 list2)

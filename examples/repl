@@ -1,0 +1,12 @@
+(define (repl) 
+  (let
+    ((exp (resolve (prompt-promise ">"))))
+    (cond 
+      ((equal? exp "(quit)") '())
+      ((equal? exp "") (repl))
+      (else 
+        (let 
+          ((result (error->string (eval (read exp) '()))))
+          (display result)
+          (repl))))))
+(repl)

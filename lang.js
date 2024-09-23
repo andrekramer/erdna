@@ -55,6 +55,7 @@ const formals = {
     "and": evalAnd,
     "or": evalOr,
     "eval": eval2,
+    "error->string": errorToString,
     "define-rewriter": evalRewrite(macroRewriter),
     "make": evalMake,
     "@": evalAt,
@@ -239,7 +240,7 @@ function readString(text, pos) {
     while (ch !== '"' && pos !== text.length) {
         if (ch === '\\') {
             if (pos + 1 === text.length) {
-                return ["Incomplete string escape  " + pos, pos, true];
+                return ["Incomplete string escape at " + pos, pos, true];
             }
             pos++;
             switch (text.charAt(pos)) {
@@ -254,7 +255,7 @@ function readString(text, pos) {
                 case '\f': str += '`\f'; break;
                 case '\v': str += '`\v'; break;
                 default:
-                    return ["Unknown string escape  " + pos, pos, true];
+                    return ["Unknown string escape at " + pos, pos, true];
             }
             pos++;
             ch = text.charAt(pos);
@@ -287,7 +288,7 @@ function readObject(text, pos) {
         pos += 2;
         result = trueValue;
     } else {
-        result = { type: ERR, value: "Unknown # object " + pos };
+        result = { type: ERR, value: "Unknown # object at " + pos };
     }
     return [result, pos];
 }
@@ -295,7 +296,7 @@ function readObject(text, pos) {
 function readNumber(atom, text, pos) {
     const number = Number(atom);
     if (Number.isNaN(number)) {
-        result = { type: ERR, value: "Not a number " + pos };
+        result = { type: ERR, value: "Not a number at " + pos };
     } else {
         // console.log("number " + atom);
         result = { type: NUM, value: number };
@@ -766,8 +767,8 @@ async function rewriteCond(exp, env) {
 
     for (let i = 1; i < exp.value.length; i++) {
         const cond = exp.value[i];
-        if (cond.type !== EXP && cond.value.length !== 2) {
-            return [{ type: ERR, value: "cond arg must be expression pair" }, env];
+        if (cond.type !== EXP || cond.value.length < 2) {
+            return [{ type: ERR, value: "cond must be a test and expression pair or test and expressions" }, env];
         }
         // console.log("condition " + JSON.stringify(cond.value[0]));
         const defaultElse = cond.value[0];
@@ -775,14 +776,14 @@ async function rewriteCond(exp, env) {
             if (i !== exp.value.length - 1) {
                 return [{ type: ERR, value: "else must be last arg to cond" }, env];
             }
-            return [cond.value[1], env];
+            return await evalRewriteCondCase(cond, env);
         }
         const test = await eval(cond.value[0], env);
         if (test.type === ERR) {
             return [test, env];
         }
         if (!(test.type === BOOL && test.value === false)) {
-            return [cond.value[1], env];
+            return await evalRewriteCondCase(cond, env);
         }
     }
     return [falseValue, env];
@@ -808,7 +809,7 @@ async function rewriteCase(exp, env) {
             if (i !== exp.value.length - 1) {
                 return [{ type: ERR, value: "else must be last case" }, env];
             }
-            return await evalCase(cond);
+            return await evalRewriteCondCase(cond, env);
        }
        if (condCase.type !== EXP) {
           return [{ type: ERR, value: "cond case must be a list" }, env];
@@ -816,7 +817,7 @@ async function rewriteCase(exp, env) {
        for (let i = 0; i < condCase.value.length; i++) {
            if (equal([selector, condCase.value[i]], env).value === true) {
               // console.log("case match");
-              return await evalCase(cond);
+              return await evalRewriteCondCase(cond, env);
            }
        }
     }
@@ -832,7 +833,7 @@ async function macroRewriter(exp, env) {
     return [nullList, env];
 }
 
-async function evalCase(cond, env) {
+async function evalRewriteCondCase(cond, env) {
     for (let c = 1; c < cond.value.length - 1; c++) {
         const result = await eval(cond.value[c], env);
         if (result.type === ERR) {
@@ -985,6 +986,17 @@ async function eval2(exp, env) {
 
     const exp2 = await eval(exp.value[1], env);
     return await eval(exp2, scope);
+}
+
+async function errorToString(exp, env) {
+    if (exp.value.length !== 2) {
+        return { type: ERR, value: "error->string takes a single argument" };
+    }
+    const result = await eval(exp.value[1], env);
+    if (result.type === ERR) {
+        return { type: STR, value: "Error: " + result.value };
+    }
+    return result;
 }
 
 async function evalMake(exp, env) {
