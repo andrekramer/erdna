@@ -4,6 +4,7 @@ const {
     cons, car, cdr,
     append,begin,
     lessThan, greaterThan,
+    makeVector, vectorSet, vectorRef, vectorLength,
     applyLambda,
     equal, numberEqual,
     plus, minus, multiply, divide, divmod,
@@ -24,6 +25,7 @@ const buildIns = {
     "append": append,
     "begin": begin,
     "<": lessThan, ">": greaterThan,
+    "make-vector": makeVector, "vector-set!": vectorSet, "vector-ref": vectorRef, "vector-length": vectorLength,
     "apply": applyLambda,
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
     "type-of": typeOf, "print": print, "error": error,
@@ -309,7 +311,7 @@ async function eval(exp, env) {
     
     let type = exp.type;
 
-    if (type >= NUM && type <= PROMISE ) {
+    if (type >= NUM && type < PAIR ) {
         // primitive eval returns self
         return exp;
     } else if (type === PAIR) {
@@ -1109,6 +1111,7 @@ async function evalAtSet(exp, env) {
 function write(result) {
     const str = printValue(result);
     if (str === undefined) {
+        // console.log(JSON.stringify(result));
         return "undefined";
     }
     return str;

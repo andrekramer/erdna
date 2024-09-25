@@ -75,8 +75,7 @@ false
 
 curl --data-raw "
 (define (map f l) 
-  (if (null? l) '() (cons (f (car l)) (map f (cdr l))))
-)
+  (if (null? l) '() (cons (f (car l)) (map f (cdr l)))))
 (map (lambda (a) (+ a 1)) '(1 2 3 4 5))  
 " localhost:8080
 (2 3 4 5 6)

@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList } = require("./constants.js");
+const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList, VECTOR } = require("./constants.js");
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
@@ -290,6 +290,70 @@ function random(args, env) {
     return { type: NUM, value: Math.random() };
 }
 
+function makeVector(args, env) {
+    if ((args.length !== 1 && args.length !== 2) || args[0].type !== NUM)  {
+        return { type: ERR, value: "make-vector takes a length argument and an optional initializer" };
+    }
+    const len = args[0].value;
+    if (len < 0 || Math.floor(len) !== len) {
+        return { type: ERR, value: "Can't make a vector with less than 0 or non-integer entries" };
+    }
+   
+    const vector = new Array(len);
+    if (args.length === 2) {
+        for (let i = 0; i < len; i++) {
+            vector[i] = args[1];
+        }
+    }
+    return { type: VECTOR, value: vector};
+}
+
+function vectorSet(args, env) {
+    if (args.length < 1 || args[0].type !== VECTOR) {
+        return { type: ERR, value: "vector-set! requires a vector as first argument" };
+    }
+    if (args.length < 2 || args[1].type !== NUM) {
+        return { type: ERR, value: "vector-set! requires an integer index as second argument" };
+    }
+    const index = args[1].value;
+    if (index < 0 || Math.floor(index) !== index) {
+        return { type: ERR, value: "vector-set! requires an integer index" };
+    }
+    if (args.length !== 3) {
+        return { type: ERR, value: "vector-set! requires a value to set entry to" };
+    }
+
+    const value = args[2];
+    args[0].value[index] = value;
+    return nullList;
+}
+
+function vectorRef(args, env) {
+    if (args.length < 1 || args[0].type !== VECTOR) {
+        return { type: ERR, value: "vector-ref requires a vector as first argument" };
+    }
+    if (args.length !== 2 || args[1].type !== NUM) {
+        return { type: ERR, value: "vector-ref requires an integer index as second argument" };
+    }
+    const index = args[1].value;
+    if (index < 0 || Math.floor(index) !== index) {
+        return { type: ERR, value: "vector-ref requires an integer index" };
+    }
+
+    const result = args[0].value[index];
+    if (result === undefined) {
+        return { type: ERR, value: "vector has no value at index " + index};
+    }
+    return result;
+}
+
+function vectorLength(args, env) {
+    if (args.length < 1 || args[0].type !== VECTOR) {
+        return { type: ERR, value: "vector-length requires a vector as first argument" };
+    }
+    return { type: NUM, value: args[0].value.length };
+}
+
 function strLength(args, env) {
     if (args.length !== 1 || args[0].type !== STR) {
         return { type: ERR, value: "string-length expectes one string argument" };
@@ -420,6 +484,9 @@ function printValue(value) {
     if (value.type === OBJ) {
         return "object";
     }
+    if (value.type === VECTOR) {
+        return "vector";
+    }
     if (value.type === PAIR) {
         let str = "(";
         let once = false;
@@ -477,6 +544,10 @@ exports.divmod = divmod
 exports.sqrt = sqrt
 exports.floor = floor
 exports.random = random
+exports.makeVector = makeVector
+exports.vectorSet = vectorSet
+exports.vectorRef = vectorRef
+exports.vectorLength = vectorLength
 exports.strLength = strLength
 exports.strSlice = strSlice
 exports.strConcat = strConcat

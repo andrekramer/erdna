@@ -7,9 +7,10 @@ const STR = 3;
 const BOOL = 4;
 const CLOSURE = 5;
 const OBJ = 6;
-const PROMISE = 7;
-const VOID = 8;
+const VECTOR = 7;
+const PROMISE = 8;
 const PAIR = 9;
+const VOID = 10;
 
 function displayType(t) {
     switch(t) {
@@ -25,6 +26,7 @@ function displayType(t) {
         case PROMISE: return "promise";
         case VOID: return "void";
         case PAIR: return "pair";
+        case VECTOR: return "vector";
         default: return "unkown";
     }
 }
@@ -47,6 +49,7 @@ exports.STR = STR
 exports.BOOL = BOOL
 exports.CLOSURE = CLOSURE
 exports.PAIR = PAIR
+exports.VECTOR = VECTOR
 exports.VOID = VOID
 exports.PROMISE = PROMISE
 exports.OBJ = OBJ

@@ -14,12 +14,9 @@ const procs = `
 (define (length l)
   (define (len l n)
     (if (equal? l '())
-      n
-      (len (cdr l) (+ n 1))
-    )
-  )
-  (len l 0)
-)
+        n
+        (len (cdr l) (+ n 1))))
+  (len l 0))
 (define (caar l) (car (car l)))
 (define (cadr l) (car (cdr l)))
 (define (cdar l) (cdr (car l)))
@@ -32,6 +29,12 @@ const procs = `
 (define (pair? x) (equal? (type-of x) 9))
 (define (string? x) (equal? (type-of x) 3))
 (define (boolean? x) (equal? (type-of x) 4))
+(define (map f l) 
+  (if (null? l) '() (cons (f (car l)) (map f (cdr l)))))
+(define (reduce fn l r)
+  (if (null? l) r
+      (fn (car l)
+          (reduce fn (cdr l) r))))
 `;
 
 function seed() {
