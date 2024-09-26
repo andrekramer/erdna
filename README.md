@@ -51,8 +51,14 @@ curl --data-raw "
 " localhost:8080    
 25
 
-There is a REPL (read evaluate print loop) that can be started using curl in 
-examples/non-standard (which loads examples/repl).    
+There is a REPL (read evaluate print loop) that can be started in a server using curl 
+with the ./erdna script (which loads examples/repl into the already running server).    
+
+in one cmd window / shell run:
+
+node --trace-uncaught --stack-size=100000 index.js 
+
+and then ./erdna in another cmd window shell.
 
 or use curl to post any of the other code samples in file in the example directory.  
   

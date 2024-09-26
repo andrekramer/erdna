@@ -68,10 +68,3 @@ curl --data "(error->string '())" localhost:8080
 curl --data "(error->string (eval '(xxx) '()))" localhost:8080    
 "Error: Unbound variable xxx"
 
-# Load and run a REPL 
-curl --data "
-(define (load file) (eval (read (resolve (read-file-promise file))) '())) 
-(load \"examples/repl\")
-"  localhost:8080
-#type expressions at prompt or "(quit)" to exit the repl
-
