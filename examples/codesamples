@@ -183,7 +183,10 @@ curl --data "(apply + '(1 2 3))" localhost:8080
 6
 
 curl --data "(apply (lambda (. x) x) '(1 2 3 4))" localhost:8080  
+curl --data "((lambda (. x) x) 1 2 3 4)" localhost:8080 
+curl --data "((lambda x x) 1 2 3 4)" localhost:8080  
 (1 2 3 4)
+
 
 curl --data "(quasiquote (a 1 ,(+ 1 2)))" localhost:8080  
 export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080  

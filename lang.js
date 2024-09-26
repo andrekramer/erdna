@@ -384,7 +384,7 @@ async function eval(exp, env) {
             tail: while (true) {
                 // console.log("lambda " + JSON.stringify(proc));
 
-                if (proc.value.length < 2 && proc.value[1].type !== EXP) {
+                if (proc.value.length < 2 || (proc.value[1].type !== EXP && proc.value[1].type !== ATOM)) {
                     return { type: ERR, value: "lambda needs formal params" };
                 }
                 if (proc.value.length < 3) {
@@ -393,6 +393,11 @@ async function eval(exp, env) {
                 const args = await evalArgs(exp, env);
                 if (args["type"] === ERR) {
                     return args;
+                }
+                if (proc.value[1].type === ATOM) {
+                    // console.log("single formal => (. formal)");
+                    const singleFormal = { type: EXP, value: [{ type: ATOM, value: "." }, proc.value[1]]};
+                    proc.value[1] = singleFormal;
                 }
                 const formalsCount = proc.value[1].value.length;
                 const formals = proc.value[1].value;
