@@ -54,11 +54,11 @@ curl --data-raw "
 There is a REPL (read evaluate print loop) that can be started in a server using curl 
 with the ./erdna script (which loads examples/repl into the already running server).    
 
-in one cmd window / shell run:
+in one cmd window / shell run:  
 
-node --trace-uncaught --stack-size=100000 index.js 
+node --trace-uncaught --stack-size=100000 index.js   
 
-and then ./erdna in another cmd window shell.
+and then ./erdna in another cmd window shell to start the ">" prompt in the node server.  
 
 or use curl to post any of the other code samples in file in the example directory.  
   
