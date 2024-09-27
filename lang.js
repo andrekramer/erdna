@@ -43,16 +43,20 @@ const asyncBuildIns = {
     "resolve": resolve
 };
 
+const evalRewriteLetrec = evalRewrite(rewriteLetrec);
+const evalRewriteLet = evalRewrite(rewriteLet);
+
 const formals = {
     "if": evalRewrite(rewriteIf),
     "cond": evalRewrite(rewriteCond),
     "case": evalRewrite(rewriteCase),
-    "letrec": evalRewrite(rewriteLetrec), "local": evalRewrite(rewriteLetrec),
-    "let": evalRewrite(rewriteLet), // alternatively: evalLet,
+    "letrec": evalRewriteLetrec, "local": evalRewriteLetrec, 
+    "let": evalRewriteLet, // alternatively without tail call optimisation: evalLet,
     "define": evalDefine,
     "lambda": evalLambda,
     "set!": evalSet,
     "quote": evalQuote,
+    "unquote": evalUnquote,
     "quasiquote": evalQuasiquote,
     "and": evalAnd,
     "or": evalOr,
@@ -63,6 +67,12 @@ const formals = {
     "@": evalAt,
     "@!": evalAtSet
 };
+
+if (true) {
+  //  loosely equivalent to letrec
+  formals["letrec*"] = evalRewriteLetrec;
+  formals["let*"] = evalRewriteLetrec;
+}
 
 const rewrites = {
     "if": rewriteIf,
@@ -543,6 +553,20 @@ async function evalQuote(exp, env) {
     return result;
 }
 
+async function evalUnquote(exp, env) {
+    if (exp.value.length !== 2) {
+        return { type: ERR, value: "Can only uquote one value" };
+    }
+    let value = exp.value[1];
+    // console.log("unquote " + JSON.stringify(value));
+    const result = await eval(value, env);
+    if (result.type === ERR) {
+        return result;
+    }
+    const result2 = await eval(result, env);
+    return result2;
+}
+
 async function unquote(result, env) {
     if (result.type === EXP) {
         const resultList = [];
@@ -599,7 +623,7 @@ async function evalSet(exp, env) {
         return { type: ERR, value: "Could not evaluate value to set!" };
     }
 
-    // console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update));
+    // console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update) + " was " + JSON.stringify(value));
     e[symbol.value] = update;
     return value;
 }

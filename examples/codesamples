@@ -25,6 +25,21 @@ curl --data '(equal? #f (equal? 1 2))' localhost:8080
 curl --data '(if (equal? "abc" "abc") (+ 2 3) (+ 4 5))' localhost:8080  
 5
 
+curl --data "
+(define reverse-subtract (lambda (x y) (- y x))) 
+(reverse-subtract 7 10)
+" localhost:8080  
+3
+
+curl --data "
+(define add4
+(let ((x 4))
+(lambda (y) (+ x y))))
+(add4 6)
+" localhost:8080  
+10
+
+
 curl --data-raw '
   (define (! n)   
     (if (equal? n 0) 
@@ -169,6 +184,11 @@ curl --data "(>)(> 1)(> 2 1)(> 1 2)(> 4 3 2)"  localhost:8080
 #t  
 
 curl --data "
+((lambda (x y . z) z) 3 4 5 6)
+" localhost:8080  
+(5 6)
+
+curl --data "
 (define (variable-args a b . c) (cons a (cons b c)))
 (variable-args 1 2 '(3 4 5))
 (define (variable-args-only . x) x)
@@ -191,6 +211,11 @@ curl --data "((lambda x x) 1 2 3 4)" localhost:8080
 curl --data "(quasiquote (a 1 ,(+ 1 2)))" localhost:8080  
 export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080  
 (a 1 3)
+
+export bq='`'; curl --data "
+(let ((name 'a)) $bq(list ,name ',name))
+" localhost:8080
+(list a (quasiquote a))
 
 curl --data "'(a 1 ,(+ 1 2))" localhost:8080  
 (a 1 (unquote (+ 1 2)))

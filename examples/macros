@@ -76,3 +76,18 @@ expression
 #t
 #t
 #f
+
+export bq='`';curl  --data-raw "
+(define-rewriter swap
+   (lambda (expr)
+      (let ((t1 (unquote (cadr expr)))
+            (t2 (unquote (caddr expr))))
+        (let ((a (cadr expr))
+              (b (caddr expr)))
+             $bq(begin (set! ,a ,t2) (set! ,b ,t1))))))
+(define x 1)
+(define y 2)
+(swap x y)
+x
+y
+" localhost:8080

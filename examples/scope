@@ -1,3 +1,39 @@
+
+curl --data "
+(let ((x 2) (y 3))
+     (let ((x 7)
+           (z (+ x y)))
+          (* z x))) 
+" localhost:8080
+35
+
+curl --data "
+(let* ((x 2) (y (+ x 2)))
+     (let ((x 6)
+           (z (+ x y)))
+          (* z x)))
+" localhost:8080
+36
+
+curl --data "
+(letrec* ((x 2) (y (+ x 2)))
+     (let ((x 6)
+           (z (+ x y)))
+          (* z x)))
+" localhost:8080
+36
+
+curl --data-raw '
+(define (zero? x) (equal? x 0))
+(letrec ((even?
+  (lambda (n)
+    (if (zero? n) #t (odd? (- n 1)))))
+  (odd?  (lambda (n) (if (zero? n) #f (even? (- n 1))))))
+(even? 88))
+' localhost:8080
+#t
+
+
 curl --data-raw '
 (define a 
  (lambda ()
@@ -105,3 +141,32 @@ curl --data-raw "
 6
 
 letrec bind eval fails Unbound variable y
+
+curl --data-raw "
+(letrec
+  ((complement
+     (lambda (p)
+       (lambda (x)
+         (not (p x)))))
+   (non-zero? (complement zero?)))
+  (non-zero? 5))
+" localhost:8080
+#t
+
+curl --data-raw "
+(let ((x 5))
+(define foo (lambda (y) (bar x y)))
+(define bar (lambda (a b) (+ (* a b) a)))
+(foo (+ x 3)))
+" localhost:8080
+45
+
+curl --data-raw "
+(let ((x 5))
+(letrec* ((foo (lambda (y) (bar x y)))
+(bar (lambda (a b) (+ (* a b) a))))
+(foo (+ x 3))))
+" localhost:8080
+
+45
+
