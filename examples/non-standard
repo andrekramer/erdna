@@ -68,3 +68,10 @@ curl --data "(error->string '())" localhost:8080
 curl --data "(error->string (eval '(xxx) '()))" localhost:8080    
 "Error: Unbound variable xxx"
 
+# using unquote to force an eval
+curl  --data-raw " (unquote '(+ 1 2)) " localhost:8080
+3
+curl  --data-raw "(define a 1) (unquote 'a) " localhost:8080
+1
+
+

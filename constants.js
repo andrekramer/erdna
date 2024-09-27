@@ -35,6 +35,7 @@ const trueValue = { type: BOOL, value: true };
 const falseValue = { type: BOOL, value: false };
 
 const nullList = { type: EXP, value: [] };
+const voidValue = { type: VOID, value: undefined };
 
 function isNullList(exp) {
     return exp.type === EXP && exp.value.length === 0;
@@ -59,3 +60,4 @@ exports.falseValue = falseValue
 exports.nullList = nullList
 exports.displayType = displayType
 exports.isNullList = isNullList
+exports.voidValue = voidValue

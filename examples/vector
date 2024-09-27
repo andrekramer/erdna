@@ -16,15 +16,15 @@ curl --data-raw "
 (vector-ref v3 101)
 " localhost:8080
 vector
-()
+
 1
 vector
 0
-()
+
 100
 vector
-()
-()
+
+
 a
 b
 c

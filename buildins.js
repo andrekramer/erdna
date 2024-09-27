@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList, VECTOR } = require("./constants.js");
+const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList, VECTOR, voidValue } = require("./constants.js");
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
@@ -325,7 +325,7 @@ function vectorSet(args, env) {
 
     const value = args[2];
     args[0].value[index] = value;
-    return nullList;
+    return voidValue;
 }
 
 function vectorRef(args, env) {

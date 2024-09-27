@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, OBJ, trueValue, falseValue, PROMISE, nullList, displayType, isNullList } = require("./constants.js");
+const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, OBJ, trueValue, falseValue, PROMISE, nullList, displayType, isNullList, voidValue} = require("./constants.js");
 const {
     listify, pairToExp,
     cons, car, cdr,
@@ -1197,7 +1197,7 @@ function display(args, env) {
             }
         }
     }
-    return { type: VOID, value: undefined };
+    return voidValue;
 }
 
 exports.read = read;
