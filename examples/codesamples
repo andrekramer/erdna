@@ -39,7 +39,6 @@ curl --data "
 " localhost:8080  
 10
 
-
 curl --data-raw '
   (define (! n)   
     (if (equal? n 0) 
@@ -207,7 +206,6 @@ curl --data "((lambda (. x) x) 1 2 3 4)" localhost:8080
 curl --data "((lambda x x) 1 2 3 4)" localhost:8080  
 (1 2 3 4)
 
-
 curl --data "(quasiquote (a 1 ,(+ 1 2)))" localhost:8080  
 export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080  
 (a 1 3)
@@ -219,7 +217,6 @@ export bq='`'; curl --data "
 
 curl --data "'(a 1 ,(+ 1 2))" localhost:8080  
 (a 1 (unquote (+ 1 2)))
-
 
 curl --data '
 (let ((number 4))

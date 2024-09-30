@@ -1,4 +1,5 @@
-# the '#(1 2 3) syntax for vector literals is not implemented. Can use list->vector (below) instead.
+# the '#(1 2 3) syntax for vector literals is not implemented. 
+# Can use list->vector (below) instead.
 
 curl --data-raw "
 (define v (make-vector 1))

@@ -103,7 +103,6 @@ undefined
 3
 3.7416575204045643
 
-
 # next examples build on previously defined procs and point1
 
 curl --data "
@@ -136,7 +135,6 @@ curl --data "
 1.4142139159264415
 λ
 1.4142139159264415
-
 
 curl --data "
 (make point4 () (x 1) (y 1))

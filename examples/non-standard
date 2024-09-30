@@ -20,7 +20,7 @@ curl --data "(floor (sqrt 2))" localhost:8080
 1
 
 curl --data "(random)" localhost:8080
-
+0 <= result <= 1
 
 curl --data "(type-of 'a)" localhost:8080  
 0
@@ -73,5 +73,4 @@ curl  --data-raw " (unquote '(+ 1 2)) " localhost:8080
 3
 curl  --data-raw "(define a 1) (unquote 'a) " localhost:8080
 1
-
 
