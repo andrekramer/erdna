@@ -3,11 +3,25 @@ curl --data-raw "
   (define (fil f l l2) 
     (cond ((equal? l '()) l2)
           ((f (car l))  (fil f (cdr l) (cons (car l) l2)) )
-          (else  (fil f (cdr l) l2))))
+          (else (fil f (cdr l) l2))))
   (fil f l '()))
 (filter (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
 " localhost:8080
  (9 8 7 6 8)
+
+# if we don't mind the result being reversed (or can apply O(n) reverse) we can use tail recursion.
+curl --data-raw "
+(define (filter2 f lst)
+  (define (iter lst result)
+    (cond
+      ((null? lst) result)
+      ((f (car lst)) (iter (cdr lst)
+                           (cons (car lst) result)))
+      (else (iter (cdr lst)
+                  result))))
+  (iter lst '()))
+(filter2 (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
+" localhost:8080
 
 curl --data-raw "
 (define (quick-sort xs)
@@ -15,12 +29,12 @@ curl --data-raw "
       (let ((x (car xs))
             (xs' (cdr xs)) )
          (append (quick-sort
-                    (filter (lambda (x')
+                    (filter2 (lambda (x')
                                (< x' x) )
                             xs'))
                  (list x)
                  (quick-sort
-                    (filter (lambda (x')
+                    (filter2 (lambda (x')
                                (not (< x' x)) )
                             xs'))))))
 (quick-sort '(3 5 4 7 1 9 2 12 4 8 1.1 0 -1 2))
@@ -33,7 +47,7 @@ curl --data-raw "
        ((equal? count 0) l)
        (else (make-integer-list (- count 1) (cons count l)))
    ))
-   (define list-to-sort (reverse (make-integer-list 1000 '())))
+   (define list-to-sort (reverse (make-integer-list 100 '())))
 " localhost:8080
 
 curl --data-raw "(quick-sort list-to-sort)" localhost:8080
@@ -99,6 +113,21 @@ curl --data-raw "(merge-sort2 list-to-sort)" localhost:8080
 
 To increase stack size use, e.g.:
 node --stack-size=1000000 index.js 
+
+curl --data-raw "
+(define (random-int max) (floor (* (random) max)))
+(define (make-random-integer-list count l) 
+  (cond 
+    ((equal? count 0) l)
+    (else (make-random-integer-list (- count 1) (cons (random-int 10000) l)))
+))
+(define random-list-to-sort (make-random-integer-list 10000 '()))
+" localhost:8080
+
+curl --data-raw "(quick-sort random-list-to-sort)" localhost:8080
+curl --data-raw "(merge-sort random-list-to-sort)" localhost:8080
+curl --data-raw "(merge-sort2 random-list-to-sort)" localhost:8080
+
 
 curl --data-raw "
 (define (min . l) 
