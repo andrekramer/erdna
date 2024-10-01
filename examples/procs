@@ -4,27 +4,26 @@ curl --data-raw "
     (cond ((equal? l '()) l2)
           ((f (car l))  (fil f (cdr l) (cons (car l) l2)) )
           (else  (fil f (cdr l) l2))))
-  (fil f l '())
-)
+  (fil f l '()))
 (filter (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
 " localhost:8080
  (9 8 7 6 8)
 
 curl --data-raw "
-(define (quicksort xs)
+(define (quick-sort xs)
    (if (null? xs) '()
       (let ((x (car xs))
             (xs' (cdr xs)) )
-         (append (quicksort
+         (append (quick-sort
                     (filter (lambda (x')
                                (< x' x) )
                             xs'))
                  (list x)
-                 (quicksort
+                 (quick-sort
                     (filter (lambda (x')
                                (not (< x' x)) )
                             xs'))))))
-(quicksort '(3 5 4 7 1 9 2 12 4 8 1.1 0 -1 2))
+(quick-sort '(3 5 4 7 1 9 2 12 4 8 1.1 0 -1 2))
 " localhost:8080
 (-1 0 1 1.1 2 2 3 4 4 5 7 8 9 12)
 
@@ -37,7 +36,66 @@ curl --data-raw "
    (define list-to-sort (reverse (make-integer-list 1000 '())))
 " localhost:8080
 
-curl --data-raw "(quicksort list-to-sort)" localhost:8080
+curl --data-raw "(quick-sort list-to-sort)" localhost:8080
+
+curl --data-raw "
+(define (merge l m)
+  (if (null? l) m
+    (if (null? m) l
+      (if (< (car l) (car m))
+        (cons (car l) (merge (cdr l) m))
+        (cons (car m) (merge (cdr m) l))))))
+
+(define (left l)
+  (if (null? l) '()
+    (if (null? (cdr l)) (list (car l))
+      (cons (car l) (left (cddr l))))))
+
+(define (right l)
+  (if (null? l) '()
+    (if (null? (cdr l)) '()
+      (cons (cadr l) (right (cddr l))))))
+
+(define (split l)
+  (cons (left l) (cons (right l) '())))
+
+(define (merge-sort l)
+  (if (null? l) l
+    (if (null? (cdr l)) l
+      (merge (merge-sort (car (split l)))
+             (merge-sort (cadr (split l)))))))
+(merge-sort '(6 2 3 5 4 1 8 7 9 0))
+" localhost:8080
+
+curl --data-raw "(merge-sort list-to-sort)" localhost:8080
+
+curl --data-raw "
+(define (merge2 l m)
+  (if (null? l) m
+    (if (null? m) l
+      (if (< (car l) (car m))
+        (cons (car l) (merge2 (cdr l) m))
+        (cons (car m) (merge2 (cdr m) l))))))
+
+(define (split2 l) 
+  (define (sp l left right odd?)
+    (if (null? l) 
+      (cons left (cons right '()))
+      (if odd?
+         (sp (cdr l) (cons (car l) left) right #f)
+         (sp (cdr l) left (cons (car l) right) #t)
+      )))
+  (sp l '() '() #t))
+
+(define (merge-sort2 l)
+  (if (null? l) l
+    (if (null? (cdr l)) l
+      (merge2 (merge-sort2 (car (split2 l)))
+             (merge-sort2 (cadr (split2 l)))))))
+(merge-sort2 '(6 2 3 5 4 1 8 7 9 0))
+" localhost:8080
+
+curl --data-raw "(merge-sort2 list-to-sort)" localhost:8080
 
 To increase stack size use, e.g.:
 node --stack-size=1000000 index.js 
@@ -80,7 +138,7 @@ curl --data-raw "
 " localhost:8080
 (2 3 4 5 6)
 
-curl --data-raw "; reduce right associative
+curl --data-raw "; reduce right associative aka foldr
 (define (reduce fn l r)
   (if (null? l) r
       (fn (car l)
@@ -91,12 +149,12 @@ curl --data-raw "; reduce right associative
 120
 145
 
-curl --data-raw "; reduce left associative
-(define (reduce2 fn r l)
+curl --data-raw "; reduce left associative aka foldl
+(define (reduce-left fn r l)
   (if (null? l) r
-      (reduce2 fn (fn r (car l)) (cdr l))))
-(reduce2 / 1.0  '(1 2 3 4 5))
-(reduce2 - 0.0 '(100 20 30 5 40))
+      (reduce-left fn (fn r (car l)) (cdr l))))
+(reduce-left / 1.0  '(1 2 3 4 5))
+(reduce-left - 0.0 '(100 20 30 5 40))
 " localhost:8080
 0.008333333333333333
 -195
@@ -113,3 +171,79 @@ curl --data-raw "
 (largest (list 5 15 12 13 14 11 3 9 8 7 6 16 4 10 2 1))
 " localhost:8080
 16
+
+curl --data-raw "
+(define curry
+ (lambda (f)
+   (lambda (x)
+     (lambda (y) (f x y)))))
+(((curry +) 1) 2)
+" localhost:8080
+λ
+3
+
+curl --data-raw "
+(define o (lambda (f g)
+ (lambda (x) (f (g x)))))
+(define (mod x y) (cdr (div-mod x y)))
+(define (even? n) (equal? 0 (mod n 2)))
+(define odd? (o not even?))
+(odd? 1013)
+(even? 222)
+(odd? 1018)
+(even? 111)
+" localhost:8080
+#t
+#t
+#f
+#f
+
+curl --data-raw "
+(define (all? p? xs)
+ (if (null? xs)
+  #t
+  (and (p? (car xs))
+    (all? p? (cdr xs)))))
+(all? even? '(2 4 6 8))
+(all? odd? '(1 3 4 7 9))
+" localhost:8080
+#t
+#f
+
+curl --data-raw "
+(define (any? p? xs)
+ (if (null? xs)
+  #f
+  (or (p? (car xs))
+    (any? p? (cdr xs)))))
+(any? even? '(1 3 6 7))
+(any? odd? '(2 20 200))
+(define contains?
+ (lambda (ele lis)
+  (any? (lambda (x) (equal? x ele))
+     lis)))
+(contains? 'a '(c b a ))
+" localhost:8080
+λ
+#t
+#f
+λ
+
+curl --data-raw "
+(define sum 
+ (lambda (f lower upper)
+  (if (> lower upper)
+    0
+    (+ (f lower) (sum f (+ 1 lower) upper)))))
+(sum (lambda (x) x) 1 10)
+" localhost:8080
+55
+
+curl --data-raw "
+(define (for-each f lis)
+   (cond 
+     ((null? lis) '())
+     (else (f (car lis)) (for-each f (cdr lis)))))
+(for-each (lambda (x) (display (* x 2))) '(1 2 3 4))
+" localhost:8080
+

@@ -56,12 +56,6 @@ curl --data "
 "  localhost:8080
 12
 
-curl --data "(string->symbol \"abc\");" localhost:8080
-abc
-
-curl --data "(symbol->string 'abc);" localhost:8080
-"abc"
-
 curl --data "(error->string '())" localhost:8080  
 ()
 

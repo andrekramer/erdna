@@ -1,0 +1,22 @@
+curl --data "
+(define (string-ref str i) (slice str i (+ i 1)))
+(define s \"abcdef\")
+(string-ref s 0)
+(string-ref s 4)
+(string-ref s 5)
+(string-ref s 6)
+" localhost:8080
+λ
+"abcdef"
+"a"
+"e"
+"f"
+""     
+
+curl --data "(string->symbol \"abc\");" localhost:8080
+abc
+
+curl --data "(symbol->string 'abc);" localhost:8080
+"abc"
+
+
