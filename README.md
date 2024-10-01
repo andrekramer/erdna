@@ -4,12 +4,12 @@ Loosely based on
 The commit history builds up language features for the example curl commands below
 and those in the files in the examples directory.  
 Full Scheme macros and callcc are not covered (see examples/macros for lisp style macros).  
-Supports Promises via Javascript async/await and so can send request the Web (see examples/async).  
-Bootstraps a simple object system so that object-orientated programming can be used (examples/objects),  
-as well as functional, procedural and symbolic programming.   
+Supports Promises via Javascript async/await and so can request the Web (see examples/async).  
+Bootstraps a simple object system so that object-oriented programming can be used (examples/objects),  
+as well as allowing experimenting with functional, procedural and symbolic programming.   
 What if the Web was programmable in a uniform but flexible syntax?  
 
-The v1 code was written in small parts over the summer of 2024 without AI input and is free for non commercial use.  
+The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use.  
 
 To clone:
 
@@ -25,7 +25,7 @@ Then in a command shell:
 npm init  
 npm install express  
 
-To run node:  
+To run node and start the expression evaluation server:  
 
 node index.js   
 
@@ -42,7 +42,7 @@ curl --data-raw "
 " localhost:8080    
 15  
 
-or define and call a function:
+or to define and call a function:
 
 curl --data-raw "  
 (define (square x) (* x x))  
@@ -59,5 +59,5 @@ node --trace-uncaught --stack-size=100000 index.js
   
 and then ./erdna in another cmd window shell to start the ">" prompt in the node server.  
 
-or use curl to post any of the code samples in files in the example directory.  
+or use curl to post any of the code samples in the files in the example directory.  
   
