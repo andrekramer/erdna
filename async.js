@@ -1,4 +1,4 @@
-const { EXP, ERR, NUM, STR, PAIR, PROMISE, nullList } = require("./constants.js");
+const { EXP, ERR, NUM, STR, PAIR, PROMISE, nullList, voidValue } = require("./constants.js");
 const fs = require('node:fs/promises');
 const readline = require('node:readline/promises');
 
@@ -107,6 +107,30 @@ async function applyPromise(args, env, eval) {
     return result;
 }
 
+async function messagePromise(args, env, eval) {
+    const result = { type: PROMISE };
+   
+    result.promise = new Promise( (resolve) => {
+        result.wakeup = () => { 
+            resolve(true);
+        }
+    });
+    return result;
+}
+
+async function sendToPromise(args, env, eval) {
+    if (args.length !== 2 || args[0].type !== PROMISE) {
+        return { type: ERR, value: "sendPromise expects a promise and a message as argument" };
+    }
+    const msgPromise = args[0];
+    if (msgPromise.wakeup === undefined) {
+        return { type: ERR, value: "Can't send to a promise that is not promising a message" };
+    }
+    msgPromise.value = args[1];
+    msgPromise.wakeup();
+    return voidValue;
+}
+
 async function resolve(args, env, eval) {
     if (args.length !== 1 || args[0].type !== PROMISE) {
         return { type: ERR, value: "resolve expects a promise as argument" };
@@ -128,3 +152,5 @@ exports.applyPromise = applyPromise
 exports.readFilePromise = readFilePromise
 exports.writeFilePromise = writeFilePromise
 exports.promptPromise = promptPromise
+exports.messagePromise = messagePromise
+exports.sendToPromise = sendToPromise

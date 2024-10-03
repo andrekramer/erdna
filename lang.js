@@ -14,7 +14,7 @@ const {
     print, error, printValue
 } = require("./buildins.js");
 
-const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, promptPromise, resolve } = require("./async.js");
+const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, promptPromise, messagePromise, sendToPromise, resolve } = require("./async.js");
 
 const buildIns = {
     "+": plus, "-": minus, "*": multiply, "/": divide, "div-mod": divmod,
@@ -33,6 +33,7 @@ const buildIns = {
     "sleep-promise": sleepPromise, "fetch-promise": fetchPromise, 
     "read-file-promise": readFilePromise, "write-file-promise": writeFilePromise, 
     "prompt-promise": promptPromise,
+    "message-promise": messagePromise, "send-to-promise": sendToPromise,
     "apply-promise": applyPromise, "resolve": resolve,
     "read": readExp, "display": display
 };

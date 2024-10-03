@@ -1,0 +1,43 @@
+
+# Define process and yield
+
+curl --data "
+(define (process f id) (apply-promise f (list id)) '())
+(define (yield) (resolve (sleep-promise 0)))
+(define (maybe-yield) (if (> (random) 0.5) (yield) '()))
+" localhost:8080
+
+# Simulating processes that yield
+
+curl --data "
+(define (looper id n)
+    (cond ((equal? n 0) '())
+          (else (maybe-yield) (display id) (looper id (- n 1)))
+    )
+)
+(process (lambda (id) (looper id 100)) \"p1\")
+(process (lambda (id) (looper id 100)) \"p2\")
+(process (lambda (id) (looper id 100)) \"p3\")
+" localhost:8080
+
+# Pass a message to a waiting child process
+
+curl --data "
+(let 
+  ((mp (message-promise)))
+
+  (display \"start child process\")
+
+  (process (lambda (id) 
+     (display \"child wait for message\")
+     (define msg (resolve mp))
+     (display (concat \"child woke: \" msg))
+  ) \"child\")
+
+  (display \"back in a bit to send message\")
+  (resolve (sleep-promise 1000))
+  (send-to-promise mp \"A Message to You, Rudy\")
+  (display \"message sent.\")
+)
+" localhost:8080
+
