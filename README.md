@@ -5,7 +5,7 @@ The commit history builds up language features for the example curl commands bel
 and those in the files in the examples directory.  
 Full Scheme macros and callcc are not covered (see examples/macros for lisp style macros).  
 Supports Promises via Javascript async/await and so can request the Web (see examples/async).  
-Remote code execution (see examples/async) and simulated concurrency (see examples/conc) are built on Javascript async/await.  
+Remote code execution (see examples/async) and simulated concurrency (see examples/conc) are built on Promises as examples.  
 
 Bootstraps a simple object system so that object-oriented programming can be used (examples/objects),  
 as well as allowing experimenting with functional, procedural and symbolic programming.   
