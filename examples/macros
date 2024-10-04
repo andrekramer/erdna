@@ -97,3 +97,35 @@ y
 2
 1
 
+curl  --data-raw "
+(define-rewriter when
+   (lambda (expr)
+      (list 'if (cadr expr) (append (list 'begin) (cddr expr)) '())
+))
+(when (equal? 1 1) (+ 1 2) (* 2 2))
+(when (null? '(1)) '(a b) '(1 2))
+(when (not (equal? 1 1)) (+ 1 2) 'a (* 2 2))
+(when (null? '()) '(a b) 1 '(1 2))
+" localhost:8080
+()
+4
+()
+()
+(1 2)
+
+curl  --data-raw "
+(define-rewriter unless
+   (lambda (expr)
+      (list 'if (cadr expr) '() (append (list 'begin) (cddr expr)))
+))
+(unless (equal? 1 1) (+ 1 2) (* 2 2))
+(unless (null? '(1)) '(a b) '(1 2))
+(unless (not (equal? 1 1)) (+ 1 2) 'a (* 2 2))
+(unless (null? '()) '(a b) 1 '(1 2))
+" localhost:8080
+()
+()
+(1 2)
+4
+()
+

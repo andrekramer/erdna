@@ -90,7 +90,7 @@ const macros = {
 
 let scopeId = 1;
 const tailCalls = true;
-const MACRO_REWRITE_ONLY = false;
+const macroRewriteOnly = (process.env.REWRITE_ONLY == 1) || false;
 
 const QUOTE = { type: ATOM, value: "quote" };
 
@@ -364,7 +364,7 @@ async function eval(exp, env) {
                 if (rewrite.type === ERR) {
                     return rewrite;
                 }
-                if (MACRO_REWRITE_ONLY) {
+                if (macroRewriteOnly) {
                     return rewrite;
                 }
                 if (rewrite.type === PAIR) {
