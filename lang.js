@@ -2,7 +2,8 @@ const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, OBJ, trueV
 const {
     listify, pairToExp,
     cons, car, cdr,
-    append,begin,
+    append, 
+    // begin,
     lessThan, greaterThan,
     makeVector, vectorSet, vectorRef, vectorLength,
     applyLambda,
@@ -23,7 +24,7 @@ const buildIns = {
     "list": (args, env) => listify(args),
     "cons": cons, "car": car, "first": car, "cdr": cdr, "rest": cdr,
     "append": append,
-    "begin": begin,
+    // "begin": begin,
     "<": lessThan, ">": greaterThan,
     "make-vector": makeVector, "vector-set!": vectorSet, "vector-ref": vectorRef, "vector-length": vectorLength,
     "apply": applyLambda,
@@ -51,6 +52,7 @@ const formals = {
     "if": evalRewrite(rewriteIf),
     "cond": evalRewrite(rewriteCond),
     "case": evalRewrite(rewriteCase),
+    "begin": evalRewrite(rewriteBegin),
     "letrec": evalRewriteLetrec, "local": evalRewriteLetrec, 
     "let": evalRewriteLet, // alternatively without tail call optimisation: evalLet,
     "define": evalDefine,
@@ -531,10 +533,10 @@ async function eval(exp, env) {
         }
     }
 
-    if (type === ERR) {
+    if (type === ERR || type === VOID) {
         return exp;
     }
-    return { type: "erorr", value: "Could not evaluate " + type };
+    return { type: ERR, value: "Could not evaluate " + displayType(type) };
 }
 
 async function evalLambda(exp, env) {
@@ -854,6 +856,21 @@ async function rewriteCase(exp, env) {
        }
     }
     return [falseValue, env];
+}
+
+async function rewriteBegin(exp, env) {
+    if (exp.value.length === 1) {
+        return [voidValue, env];
+    }
+
+    for (let i = 1; i < exp.value.length - 1; i++) {
+        const result = await eval(exp.value[i], env);
+        if (result.type === ERR) {
+            return [result, env];
+        }
+    }
+
+    return [exp.value[exp.value.length - 1], env];
 }
 
 async function macroRewriter(exp, env) {

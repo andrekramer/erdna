@@ -77,7 +77,7 @@ function append(args, env) {
 
 function begin(args, env) {
     if (args.length === 0) {
-        return { type: ERR, value: "begin needs at least one argument" };
+        return voidValue;
     }
     return args[args.length - 1];
 }

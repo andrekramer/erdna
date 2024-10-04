@@ -27,7 +27,7 @@ function displayType(t) {
         case VOID: return "void";
         case PAIR: return "pair";
         case VECTOR: return "vector";
-        default: return "unkown";
+        default: return "unkown " + t;
     }
 }
 
