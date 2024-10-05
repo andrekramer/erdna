@@ -15,6 +15,13 @@ curl --data-raw "
 (vector-ref v3 99)
 (vector-ref v3 100)
 (vector-ref v3 101)
+(equal? v v)
+(equal? v v2)
+(define v4 (make-vector 32 0))
+(define v5 (make-vector 32 0))
+(equal? v4 v5)
+(vector-set! v4 16 1)
+(equal? v4 v5)
 " localhost:8080
 vector
 
@@ -29,6 +36,21 @@ vector
 a
 b
 c
+#t
+#f
+vector
+vector
+#t
+
+#f
+
+curl --data-raw "
+(define v4 (make-vector 100))
+(define v5 (make-vector 100))
+(equal? v4 v5)
+(vector-set! v4 99 'different)
+(equal? v4 v5)
+" localhost:8080
 
 curl --data-raw "
 (define (list->vector l) 

@@ -140,32 +140,73 @@ async function applyLambda(args, env, evalExp) {
 function equal(args, env) {
     // console.log("equal? " + JSON.stringify(args));
     if (args.length != 2) {
-        return { type: ERR, value: "equal? requires two argumewnts" };
+        return { type: ERR, value: "equal? requires two and only two argumewnts" };
     }
-    if (args[0].type !== args[1].type) {
+
+    const value = args[0];
+    const otherValue = args[1];
+    const type = value.type;
+    if (type !== otherValue.type) {
         return falseValue;
     }
 
-    if (isNullList(args[0])) {
-        return args[1].value.length === 0 ? trueValue : falseValue;
+    if (value.value === otherValue.value) {
+        return trueValue;
     }
 
-    if (args[0].type === PAIR) {
-        let left = args[0];
-        let right = args[1];
+    if (isNullList(value)) {
+        return otherValue.value.length === 0 ? trueValue : falseValue;
+    }
+
+    if (type === PAIR) {
+        let left = value;
+        let right = otherValue;
         while (left.type === PAIR && right.type === PAIR) {
-            if (!equal([left.value, right.value], env).value === true) {
+            if (!equalValue(left.value, right.value)) {
                 return falseValue;
             }
             left = left.rest;
             right = right.rest;
         }
-        const result = left.type === right.type;
-        return { type: BOOL, value: result };
+        return { type: BOOL, value: equalValue(left, right) };
+    }
+    
+    if (type === VECTOR) {
+        const vector = value.value;
+        const otherVector =  otherValue.value;
+        if (vector.length !== otherVector.length) {
+            return falseValue;
+        }
+        
+        for (let i = 0; i < vector.length; i++) {
+            if (vector[i] === undefined) {
+                if (otherValue[i] !== undefined) {
+                    return falseValue;
+                }
+            } else if (otherVector[i] === undefined || !equalValue(vector[i], otherVector[i])) {
+                return falseValue;
+            }
+        }
+        return trueValue;
     }
 
-    const result = args[0].value === args[1].value;
-    return { type: BOOL, value: result };
+    return falseValue;
+}
+
+function equalValue(value, otherValue) {
+    if (value.type !== otherValue.type) {
+        return false;
+    }
+    if (value.value === otherValue.value) {
+        return true;
+    }
+    if (isNullList(value)) {
+        return otherValue.value.length === 0 ? trueValue : falseValue;
+    }
+    if (value.type === PAIR || value.type === VECTOR) {
+        return equal([value, otherValue]).value !== false;
+    }
+    return false;
 }
 
 function numberEqual(args, env) {
