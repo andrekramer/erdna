@@ -2,6 +2,7 @@ const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, OBJ, trueV
 const {
     listify, pairToExp,
     cons, car, cdr,
+    setCar, setCdr,
     append, 
     // begin,
     lessThan, greaterThan,
@@ -23,6 +24,7 @@ const buildIns = {
     "=": numberEqual, "equal?": equal,
     "list": (args, env) => listify(args),
     "cons": cons, "car": car, "first": car, "cdr": cdr, "rest": cdr,
+    "set-car!": setCar, "set-cdr!": setCdr,
     "append": append,
     // "begin": begin,
     "<": lessThan, ">": greaterThan,

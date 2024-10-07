@@ -38,23 +38,35 @@ function cons(args, env) {
 }
 
 function car(args, env) {
-    if (args.length !== 1) {
-        return { type: ERR, value: "car requires a single arguments" };
-    }
-    if (args[0].type !== PAIR) {
+    if (args.length !== 1 || args[0].type !== PAIR) {
         return { type: ERR, value: "car requires a non empty list or pair" };
     }
     return args[0].value;
 }
 
 function cdr(args, env) {
-    if (args.length !== 1) {
-        return { type: ERR, value: "cdr requires a single arguments" };
-    }
-    if (args[0].type !== PAIR) {
+    if (args.length !== 1 || args[0].type !== PAIR) {
         return { type: ERR, value: "cdr requires a non empty list or pair" };
     }
     return args[0].rest;
+}
+
+function setCar(args, env) {
+    if (args.length !== 2 || args[0].type !== PAIR) {
+        return { type: ERR, value: "setCar! requires a non empty list or pair and a value" };
+    }
+    const value = args[0].value;
+    args[0].value = args[1];
+    return value;
+}
+
+function setCdr(args, env) {
+    if (args.length !== 2 || args[0].type !== PAIR) {
+        return { type: ERR, value: "setCdr! requires a non empty list or pair and a value" };
+    }
+    const value = args[0].rest;
+    args[0].rest = args[1];
+    return value;
 }
 
 function append(args, env) {
@@ -140,11 +152,12 @@ async function applyLambda(args, env, evalExp) {
 function equal(args, env) {
     // console.log("equal? " + JSON.stringify(args));
     if (args.length != 2) {
-        return { type: ERR, value: "equal? requires two and only two argumewnts" };
+        return { type: ERR, value: "equal? takes two and only two argumewnts" };
     }
 
     const value = args[0];
     const otherValue = args[1];
+
     const type = value.type;
     if (type !== otherValue.type) {
         return falseValue;
@@ -570,6 +583,8 @@ exports.pairToExp = pairToExp
 exports.cons = cons
 exports.car = car
 exports.cdr = cdr
+exports.setCar = setCar
+exports.setCdr = setCdr
 exports.append = append
 exports.begin = begin
 exports.lessThan = lessThan
