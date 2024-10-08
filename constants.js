@@ -9,8 +9,8 @@ const CLOSURE = 5;
 const OBJ = 6;
 const VECTOR = 7;
 const PROMISE = 8;
-const PAIR = 9;
-const VOID = 10;
+const VOID = 9;
+const PAIR = 10;
 
 function displayType(t) {
     switch(t) {

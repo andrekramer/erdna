@@ -61,3 +61,132 @@ c
 (1 4 5)
 (4 5)
 (1)
+
+curl --data "
+(define (make-stack) 
+  (letrec
+    ((stack '()))
+    (define (push value) (set! stack (cons value stack)))
+    (define (pop) 
+      (if (empty) 
+        (error \"stack is empty\") 
+        (let 
+          ((top (car stack))) 
+          (set! stack (cdr stack)) 
+          top)))
+    (define (peek) 
+      (if (empty) 
+        (error \"stack is empty\") 
+        (car stack)))
+    (define (empty) (null? stack))
+    (lambda (op)
+      (case op
+        (('push) push)
+        (('pop) pop)
+        (('peek) peek)
+        (('empty) empty)
+        (else (error \"no such message for stacks\"))
+      )
+    )
+  )
+)
+(define stack (make-stack))
+((stack 'push) 1)
+((stack 'push) 2)
+((stack 'push) 3)
+((stack 'pop))
+((stack 'pop))
+((stack 'empty))
+((stack 'pop))
+((stack 'empty))
+((stack 'push) \"an stack item\")
+((stack 'peek))
+((stack 'pop))
+((stack 'pop))
+" localhost:8080
+
+λ
+λ
+
+()
+(1)
+(2 1)
+3
+2
+#f
+1
+#t
+()
+"an stack item"
+
+curl --data "
+(define (make-queue) 
+  (letrec
+    ((front '()) (rear '()))
+    (define (flip) 
+      (if (null? front) 
+        (begin 
+          (set! front (reverse rear)) 
+          (set! rear '())
+)))
+    (define (enqueue value) (set! rear (cons value rear)))
+    (define (dequeue) 
+      (if (empty) 
+        (error \"queue is empty\") 
+        (begin 
+          (flip)
+          (let 
+            ((item (car front))) 
+            (set! front (cdr front)) 
+            item))))
+    (define (peek) 
+      (if (empty) 
+        (error \"queue is empty\") 
+        (begin (flip) (car front))))
+    (define (empty) (and (null? front) (null? rear)))
+    (lambda (op)
+      (case op
+        (('enqueue) enqueue)
+        (('dequeue) dequeue)
+        (('peek) peek)
+        (('empty) empty)
+        (else (error \"no such message for queues\"))
+      )
+    )
+  )
+)
+(define queue (make-queue))
+((queue 'enqueue) 1)
+((queue 'enqueue) 2)
+((queue 'enqueue) 3)
+((queue 'dequeue))
+((queue 'dequeue))
+((queue 'empty))
+((queue 'dequeue))
+((queue 'empty))
+((queue 'enqueue) \"a queue item\")
+((queue 'peek))
+((queue 'dequeue))
+((queue 'enqueue) 4)
+((queue 'dequeue))
+((queue 'dequeue))
+" localhost:8080
+
+
+λ
+λ
+()
+(1)
+(2 1)
+1
+2
+#f
+3
+#t
+()
+"a queue item"
+"a queue item"
+()
+4
+
+queue is empty     

@@ -395,7 +395,7 @@ async function eval(exp, env) {
             proc = proc.value;
         }
 
-        if (proc.type === EXP && proc.value[0].type === ATOM && proc.value[0].value === "lambda") {
+        if (proc.type === EXP && proc.value.length > 0 && proc.value[0].type === ATOM && proc.value[0].value === "lambda") {
             tail: while (true) {
                 // console.log("lambda " + JSON.stringify(proc));
 
@@ -851,7 +851,8 @@ async function rewriteCase(exp, env) {
           return [{ type: ERR, value: "cond case must be a list" }, env];
        }
        for (let i = 0; i < condCase.value.length; i++) {
-           if (equal([selector, condCase.value[i]], env).value === true) {
+           const condCaseValue = await eval(condCase.value[i], env);
+           if (equal([selector, condCaseValue], env).value === true) {
               // console.log("case match");
               return await evalRewriteCondCase(cond, env);
            }
