@@ -98,6 +98,8 @@ const macroRewriteOnly = (process.env.REWRITE_ONLY == 1) || false;
 
 const QUOTE = { type: ATOM, value: "quote" };
 
+const SET_ANY_FIELD_ON_BASE = true;
+
 function read(text) {
     // console.log("read " + text);
     let result = [];
@@ -1119,6 +1121,8 @@ async function evalAt(exp, env) {
     }
 }
 
+const SET_FIELD_VALUE_ERROR = { type: ERR, value: "@! could not evaluate value to set field to" };
+
 async function evalAtSet(exp, env) {
     if (exp.value.length != 4) {
         return { type: ERR, value: "@! requires an object, field name and value" };
@@ -1130,6 +1134,8 @@ async function evalAtSet(exp, env) {
     if (obj.type !== OBJ) {
         return { type: ERR, value: "@! requires a first argument that evaluates to an object" };
     }
+    const target = obj;
+    
     let name = exp.value[2];
     if (name.type === EXP && name.value.length === 2 && name.value[0].type === ATOM && name.value[0].value === "quote") {
         name = await eval(name.value[1], env);
@@ -1145,13 +1151,22 @@ async function evalAtSet(exp, env) {
         if (value !== undefined) {
             const update = await eval(exp.value[3], env);
             if (update.type === ERR) {
-                return { type: ERR, value: "@! could not evaluate value to set field to" };
+                return SET_FIELD_VALUE_ERROR;
             }
             obj.value[name.value] = update;
             return value;
         }
         const base = obj.value["super"];
         if (base === undefined) {
+            if (SET_ANY_FIELD_ON_BASE && obj === target) {
+                // Allow any field to be set on objects that don't have a super.
+                const update = await eval(exp.value[3], env);
+                if (update.type === ERR) {
+                    return SET_FIELD_VALUE_ERROR;
+                }
+                obj.value[name.value] = update;
+                return voidValue;
+            }
             return { type: ERR, value: "@! field to set not found" };
         }
         obj = base;

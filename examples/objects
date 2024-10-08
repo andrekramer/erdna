@@ -161,3 +161,26 @@ object
 0.0010000001533016628
 1.4142139159264415
 
+# Objects without a "super" allow any field to be set
+curl --data "
+(make map ())
+(@! map key \"value\")
+(@ map key)
+" localhost:8080
+
+# A base can be used as a map and extended directly but not via children
+curl --data "
+(make map ())
+(make obj map)
+(@! map key \"value\")
+(@ obj key)
+(@! obj key2 \"value2\")
+" localhost:8080
+
+object
+object
+
+"value"
+
+@! field to set not found%     
+
