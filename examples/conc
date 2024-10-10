@@ -48,3 +48,41 @@ back in a bit to send message ...
 message sent.
 child woke: A Message to You, Rudy
 
+curl --data "
+(let 
+  ((mq (message-promise)))
+
+  (define (recv-actor id n)
+      (cond ((equal? n 0) '())
+             (else 
+               (display (receive-message mq)) 
+               (recv-actor id (- n 1)))))
+  (process (lambda (id) (recv-actor id 3)) \"actor1\")
+  (send-message mq \"hello actor\")
+  (send-message mq \"hello actor again\")
+  (send-message mq \"hello actor 3rd time\"))
+" localhost:8080
+
+curl --data "
+(let 
+  ((mq (message-promise)) (count 100))
+
+  (define (recv-actor id n)
+      (cond ((equal? n 0) '())
+             (else 
+               (display (receive-message mq)) 
+               (recv-actor id (- n 1)))))
+  (define (send-actor id n)
+      (cond ((equal? n 0) '())
+             (else 
+               (send-message mq (concat \"hello actor \" (- count n))) 
+               (send-actor id (- n 1)))))
+  (process (lambda (id) (recv-actor id count)) \"actor2\")
+  (process (lambda (id) (send-actor id count)) \"actor3\"))
+" localhost:8080
+
+hello actor 0
+hello actor 1
+hello actor 2
+...
+

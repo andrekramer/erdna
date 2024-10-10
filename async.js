@@ -108,19 +108,24 @@ async function applyPromise(args, env, eval) {
 }
 
 async function messagePromise(args, env, eval) {
-    const result = { type: PROMISE };
+    if (args.length !== 0) {
+        return { type: ERR, value: "message-promise takes no arguments" };
+    }
+    const result = { type: PROMISE, queue: [] };
    
     result.promise = new Promise( (resolve) => {
         result.wakeup = () => { 
             resolve(true);
         }
     });
+
     return result;
 }
 
+// One shot send to promise. Enables subsequent resolve of the promise to return the value sent.
 async function sendToPromise(args, env, eval) {
     if (args.length !== 2 || args[0].type !== PROMISE) {
-        return { type: ERR, value: "sendPromise expects a promise and a message as argument" };
+        return { type: ERR, value: "send-promise expects a promise and a message as arguments" };
     }
     const msgPromise = args[0];
     if (msgPromise.wakeup === undefined) {
@@ -131,9 +136,50 @@ async function sendToPromise(args, env, eval) {
     return voidValue;
 }
 
+async function sendMessage(args, env, eval) {
+    if (args.length !== 2 || args[0].type !== PROMISE) {
+        return { type: ERR, value: "send-message expects a promise and a message as arguments" };
+    }
+    const msgQueuePromise = args[0];
+    if (msgQueuePromise.queue === undefined) {
+        return { type: ERR, value: "Not a queue promise" };
+    }
+    msgQueuePromise.queue.push(args[1]);
+    if (msgQueuePromise.promise !== undefined && msgQueuePromise.wakeup !== undefined) {
+        msgQueuePromise.value = voidValue;
+        msgQueuePromise.wakeup();
+    }
+    return voidValue;
+}
+
+// Only a single receiever at a time is supported. A second receive for an empty queue will take over 
+// and crowd out a waiting first receiver.
+async function receiveMessage(args, env, eval) {
+    if (args.length !== 1 || args[0].type !== PROMISE) {
+        return { type: ERR, value: "receive-message expects (only) a promise as argument" };
+    }
+    const msgQueuePromise = args[0];
+    if (msgQueuePromise.queue === undefined) {
+        return { type: ERR, value: "Not a queue promise" };
+    }
+    while (msgQueuePromise.queue.length === 0) { // Some protection against messages being hijacked while waiting.
+        msgQueuePromise.wakeup = undefined;
+        msgQueuePromise.promise = new Promise( (resolve) => {
+            msgQueuePromise.wakeup = () => { 
+                resolve(true);
+            }
+        });
+        if (msgQueuePromise.queue.length !== 0) break;
+        await msgQueuePromise.promise;
+    }
+   
+    const result = msgQueuePromise.queue.shift(); // performance may be O(N)
+    return result;
+}
+
 async function resolve(args, env, eval) {
     if (args.length !== 1 || args[0].type !== PROMISE) {
-        return { type: ERR, value: "resolve expects a promise as argument" };
+        return { type: ERR, value: "resolve expects a promise as the single argument" };
     }
     const promise = args[0];
     try {
@@ -154,3 +200,5 @@ exports.writeFilePromise = writeFilePromise
 exports.promptPromise = promptPromise
 exports.messagePromise = messagePromise
 exports.sendToPromise = sendToPromise
+exports.sendMessage = sendMessage
+exports.receiveMessage = receiveMessage

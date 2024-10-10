@@ -9,7 +9,7 @@ Remote code execution (see examples/async) and simulated concurrency (see exampl
 
 Bootstraps a simple object system so that object-oriented programming can be used (examples/objects),  
 as well as allowing experimenting with functional, procedural and symbolic programming.   
-Some concurrent programming examples (Actors) are includes in examples/conc.  
+Some concurrent programming examples (Actors) are included in examples/conc.  
 
 What if the Web was programmable in a uniform but flexible syntax?  
 

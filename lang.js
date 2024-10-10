@@ -16,7 +16,7 @@ const {
     print, error, printValue
 } = require("./buildins.js");
 
-const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, promptPromise, messagePromise, sendToPromise, resolve } = require("./async.js");
+const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, promptPromise, messagePromise, sendToPromise, sendMessage, receiveMessage, resolve } = require("./async.js");
 
 const buildIns = {
     "+": plus, "-": minus, "*": multiply, "/": divide, "div-mod": divmod,
@@ -37,6 +37,7 @@ const buildIns = {
     "read-file-promise": readFilePromise, "write-file-promise": writeFilePromise, 
     "prompt-promise": promptPromise,
     "message-promise": messagePromise, "send-to-promise": sendToPromise,
+    "send-message": sendMessage, "receive-message": receiveMessage,
     "apply-promise": applyPromise, "resolve": resolve,
     "read": readExp, "display": display
 };
@@ -1135,7 +1136,7 @@ async function evalAtSet(exp, env) {
         return { type: ERR, value: "@! requires a first argument that evaluates to an object" };
     }
     const target = obj;
-    
+
     let name = exp.value[2];
     if (name.type === EXP && name.value.length === 2 && name.value[0].type === ATOM && name.value[0].value === "quote") {
         name = await eval(name.value[1], env);
