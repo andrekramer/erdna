@@ -86,3 +86,47 @@ hello actor 1
 hello actor 2
 ...
 
+
+curl --data "
+(define (actor behaviour) 
+  (let
+    ((mq (message-promise)))
+    (process behaviour mq) 
+    mq)) 
+
+(define (echo-actor inbox) 
+  (let 
+    ((msg (receive-message inbox)))
+    (display \"echo actor\")
+    (case (car msg)
+      ((\"display\") 
+        (display (cdr msg))
+        (echo-actor inbox))
+      ((\"call\") 
+        (let ((consumer (cadr msg)))
+             (display \"called\")
+             (send-message consumer \"reply\")
+             (echo-actor inbox)))
+      ((\"quit\") (display \"bye\") '())
+      (else (error \"message not understood\"))
+)))
+
+(process (lambda (id) 
+  (let 
+    ((inbox (actor echo-actor)))
+    (display \"send messages\")
+    (send-message inbox '(\"display\" . \"one\"))
+    (send-message inbox '(\"display\" . \"two\"))
+    (send-message inbox '(\"display\" . \"three\"))
+    (display \"rpc style\")
+    (let
+      ((consumer (message-promise)))
+      (send-message inbox (list \"call\" consumer '(\"some\" \"args\" \"here\"))) 
+      (display (receive-message consumer)))
+    (send-message inbox '(\"quit\" ))
+    (display \"done.\")
+)) \"create and interact with actor\")
+
+" localhost:8080
+
+
