@@ -96,5 +96,6 @@ cat file2
 hello erdna 
 
 # read a line from a prompt
-curl --data "(resolve (prompt-promise \"Who are you?\"))"  localhost:8080
+curl --data "(let ((name (resolve (prompt-promise \"Hi, who are you? \")))) 
+ (display (concat \"Hello, \" name))) " localhost:8080
 
