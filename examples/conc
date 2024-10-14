@@ -126,7 +126,65 @@ curl --data "
     (send-message inbox '(\"quit\" ))
     (display \"done.\")
 )) \"create and interact with actor\")
-
 " localhost:8080
 
+
+# Use api key XXX for a second erdna node listening on port 8081:
+export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js
+
+# Create an Actor in the remote node (8081) with the actor's inbox 
+# defined as "portal" in the top level env from first node (8080).  
+curl --data "
+(define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
+(resolve (remote-promise \"http://localhost:8081\" \"XXX\"  
+'(begin
+   (define (process f id) (apply-promise f (list id)) '())
+   (define (actor behaviour) 
+     (let
+       ((mq (message-promise)))
+       (process behaviour mq) 
+       mq)) 
+
+   (define count 0)
+   (define (portal-actor inbox) 
+     (let 
+       ((msg (receive-message inbox)))
+       (case (car msg)
+         ((\"display\") 
+           (display (cdr msg))
+           (set! count (+ count 1))
+           (portal-actor inbox))
+         ((\"call\") 
+           (let ((consumer (cadr msg)))
+             (display \"called\")
+             (send-message consumer count)
+             (portal-actor inbox)))
+         ((\"quit\") (display \"bye\") '())
+         (else (error \"message not understood\"))
+   )))
+
+   (define portal (actor portal-actor)) 
+   ())
+))" localhost:8080
+
+# Remote call that executes a script to send a message to the portal defined in previous step.
+curl --data "
+(display \"requesting remote promise\")
+(resolve (remote-promise \"http://localhost:8081\" \"XXX\" 
+'(send-message  portal '(\"display\" . \"hello\"))
+)) " localhost:8080
+
+# Ask for the count maintained by the remote actor and display and return it.
+curl --data "
+(resolve (remote-promise \"http://localhost:8081\" \"XXX\" 
+'(let
+   ((consumer (message-promise)))
+   (send-message portal (list \"call\" consumer ())) 
+   (let ((reply (receive-message consumer)))
+         (display reply)
+         reply))
+))" localhost:8080
+
+# Don't forget to tell the actor to quit - can go direct to 8081 to send the poison message.
+curl --header "apikey: XXX" --data "(send-message  portal '(\"quit\"))" localhost:8081
 

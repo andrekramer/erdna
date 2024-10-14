@@ -3,8 +3,8 @@ Loosely based on
 [An Introduction to Scheme and its Implemementation](https://docs.scheme.org/schintro/schintro_toc.html).  
 The commit history builds up language features for the example curl commands below
 and those in the files in the examples directory.  
-Full Scheme macros and callcc are not covered (see examples/macros for lisp style macros).  
-Supports Promises via Javascript async/await and so can request the Web (see examples/async).  
+Full Scheme macros and callcc are not covered (but see examples/macros for lisp style macros).  
+Supports Promises via Javascript async/await and so can request the Web (see examples/async) or background tasks.  
 Remote script execution and and concurrency examples (Actor model) are built on Promises   
 (see examples/async and examples/conc).  
 

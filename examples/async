@@ -36,8 +36,9 @@ curl --data "
 "8\n"
 
 # Use api key XXX
-export APIKEY=XXX; node --stack-size=1000000 index.js 
+export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js 
 curl --data '(resolve (fetch-promise "http://localhost:8081" "XXX"))' localhost:8080
+"erdna"
 
 # read and eval the result from a remote promise:
 curl --data "
