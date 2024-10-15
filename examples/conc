@@ -209,7 +209,7 @@ curl --data "
 # (using the one from above which happens to be named "portal").
 curl --data "
 (resolve (remote-promise \"http://localhost:8081?portal=portal\" \"XXX\" 
-'(cons \"display\" \"hello\")
+'(cons \"display\" \"hi\")
 )) " localhost:8080
 
 # Or with a helper function to do the send of the expression
@@ -217,7 +217,7 @@ curl --data "
 curl --data "
 (define (send-to-portal url portal apikey exp)
   (resolve (remote-promise (concat url \"?portal=\" portal) apikey exp))) 
-(send-to-portal \"http://localhost:8081\" \"portal\" \"XXX\" ''(\"display\" . \"hello\"))
+(send-to-portal \"http://localhost:8081\" \"portal\" \"XXX\" ''(\"display\" . \"hey\"))
  " localhost:8080
 
 # Don't forget to tell the actor to quit - can go direct to 8081 to send the poison message.
