@@ -68,6 +68,7 @@ const formals = {
     "or": evalOr,
     "eval": eval2,
     "error->string": errorToString,
+    "screen": screen,
     "define-rewriter": evalRewrite(macroRewriter),
     "make": evalMake,
     "@": evalAt,
@@ -1050,6 +1051,18 @@ async function errorToString(exp, env) {
     const result = await eval(exp.value[1], env);
     if (result.type === ERR) {
         return { type: STR, value: "Error: " + result.value };
+    }
+    return result;
+}
+
+async function screen(exp, env) {
+    if (exp.value.length !== 3) {
+        return { type: ERR, value: "screen takes two arguments" };
+    }
+    const result = await eval(exp.value[1], env);
+    if (result.type === ERR) {
+        env["last-error"] = { type: STR, value: result.value };
+        return await eval(exp.value[2], env);
     }
     return result;
 }

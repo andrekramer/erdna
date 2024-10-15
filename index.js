@@ -34,6 +34,7 @@ app.post("/", async (req, res) => {
   for (const exp of result) {
     let result = await lang.eval(exp, topLevelEnv);
     if (result.type === ERR) {
+      console.log("eval error: " + result.value);
       if (reply !== "") {
         res.send("" + reply + "\n" + result.value);
         return;

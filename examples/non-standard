@@ -56,11 +56,18 @@ curl --data "
 "  localhost:8080
 12
 
+# turn an error into a string
 curl --data "(error->string '())" localhost:8080  
 ()
 
 curl --data "(error->string (eval '(xxx) '()))" localhost:8080    
 "Error: Unbound variable xxx"
+
+# use screen to mask an error (last-error captures the last error raised)
+curl --data "
+(screen 
+  (eval '(xxx) '()) 
+  (display (concat \"Error: \" last-error)))" localhost:8080    
 
 # using unquote to force an eval
 curl  --data-raw " (unquote '(+ 1 2)) " localhost:8080
