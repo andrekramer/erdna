@@ -11,6 +11,7 @@ const apiKey = process.env.APIKEY || '';
 
 const topLevelEnv = procs.seed(); // Uncomment for no procs { name: "top level scope "};
 
+const { sendMessage } = require("./async.js");
 
 app.use((req, res, next) => {
   if (apiKey !== "" && req.headers["apikey"] !== apiKey) {
@@ -30,6 +31,23 @@ app.post("/", async (req, res) => {
   // console.log(text);
   result = lang.read(text);
   // console.log(JSON.stringify(result));
+
+  const portal = req.query.portal;
+  if (portal !== undefined) {
+    // console.log("send to portal: " + portal);
+    const messagePromise = topLevelEnv[portal];
+    if (messagePromise === undefined || messagePromise.type !== PROMISE) {
+      res.send("send failed.");
+      return;
+    }
+    const messageEnv = { "__parent_scope": topLevelEnv, name: "message-scope" };
+    const message = await await lang.eval(result[0], messageEnv);
+    // console.log("message " + JSON.stringify(message));
+    sendMessage([messagePromise, message], messageEnv, undefined);
+    res.send("message sent.");
+    return;
+  }
+
   reply = "";
   for (const exp of result) {
     let result = await lang.eval(exp, topLevelEnv);

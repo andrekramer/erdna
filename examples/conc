@@ -63,6 +63,10 @@ curl --data "
   (send-message mq \"hello actor 3rd time\"))
 " localhost:8080
 
+hello actor
+hello actor again
+hello actor 3rd time
+
 curl --data "
 (let 
   ((mq (message-promise)) (count 100))
@@ -128,6 +132,21 @@ curl --data "
 )) \"create and interact with actor\")
 " localhost:8080
 
+send messages
+echo actor
+one
+rpc style
+echo actor
+two
+echo actor
+three
+echo actor
+called
+reply
+echo actor
+done.
+bye
+
 
 # Use api key XXX for a second erdna node listening on port 8081:
 export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js
@@ -162,7 +181,7 @@ curl --data "
                (portal-actor inbox)))
            ((\"quit\") (display \"bye\") '())
            (else (error \"message not understood\")))) 
-       (display (concat \"Actor error: \" last-error))))
+       (begin (display (concat \"Actor error: \" last-error)) (portal-actor inbox))))
 
    (define portal (actor portal-actor)) 
    ())
@@ -185,6 +204,21 @@ curl --data "
          (display reply)
          reply))
 ))" localhost:8080
+
+# Use a post URL query param to send an expression to an actor portal 
+# (using the one from above which happens to be named "portal").
+curl --data "
+(resolve (remote-promise \"http://localhost:8081?portal=portal\" \"XXX\" 
+'(cons \"display\" \"hello\")
+)) " localhost:8080
+
+# Or with a helper function to do the send of the expression
+# and ' quoting the pair to be sent instead of using cons as above.
+curl --data "
+(define (send-to-portal url portal apikey exp)
+  (resolve (remote-promise (concat url \"?portal=\" portal) apikey exp))) 
+(send-to-portal \"http://localhost:8081\" \"portal\" \"XXX\" ''(\"display\" . \"hello\"))
+ " localhost:8080
 
 # Don't forget to tell the actor to quit - can go direct to 8081 to send the poison message.
 curl --header "apikey: XXX" --data "(send-message  portal '(\"quit\"))" localhost:8081

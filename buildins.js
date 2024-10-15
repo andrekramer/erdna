@@ -434,7 +434,7 @@ function strConcat(args, env) {
     let value = "";
     for (const arg of args) {
         if (!concatable(arg.type)) {
-            return { type: ERR, value: "concat requires valies that convert to string as arguments" };
+            return { type: ERR, value: "concat requires values that convert to string as arguments" };
         }
         value += arg.value;
     }
