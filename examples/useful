@@ -190,3 +190,45 @@ curl --data "
 4
 
 queue is empty     
+
+# Lazy style programming
+curl --data "
+(define a (delay (begin (display \"now\") (+ 1 2 10))))
+(display \"here\")
+(force a)
+" localhost:8080
+13
+
+curl --data "
+(define (lazy-car l) (car l))
+(define (lazy-cdr l) (force (cdr l)))
+(define (lazy-sequence n next) 
+  (cons (next n) (delay (lazy-sequence (next n) next))))
+
+(define integers (lazy-sequence 0 (lambda (n) (+ n 1))))
+
+(lazy-car integers)
+(define ints1 (lazy-cdr integers))
+(lazy-car ints1)
+(define ints2 (lazy-cdr ints1))
+(lazy-car ints2)
+(define ints3 (lazy-cdr ints2))
+(lazy-car ints3)
+
+(define (take-reverse n l)
+  (define (taker n l r)
+    (cond 
+      ((equal? n 0) r)
+      (else (taker (- n 1) (lazy-cdr l) (cons (lazy-car l) r)))))
+  (taker n l '()))
+(reverse (take-reverse 10 integers))
+
+(define (take n l)
+  (define (taker n l)
+    (cond 
+      ((equal? n 0) '())
+      (else (cons (lazy-car l) (taker (- n 1) (lazy-cdr l))))))
+  (taker n l))
+(take 100 integers)
+" localhost:8080
+

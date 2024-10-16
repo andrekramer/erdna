@@ -35,6 +35,7 @@ const procs = `
   (if (null? l) r
       (fn (car l)
           (reduce fn (cdr l) r))))
+(define (force f) (f))
 `;
 
 function seed() {

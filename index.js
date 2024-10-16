@@ -37,7 +37,7 @@ app.post("/", async (req, res) => {
     // console.log("send to portal: " + portal);
     const messagePromise = topLevelEnv[portal];
     if (messagePromise === undefined || messagePromise.type !== PROMISE) {
-      res.send("send failed.");
+      res.send("send failed - no such portal");
       return;
     }
     const messageEnv = { "__parent_scope": topLevelEnv, name: "message-scope" };

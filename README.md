@@ -9,7 +9,8 @@ Remote script execution and and concurrency examples (Actor model) are built on 
 (see examples/async and examples/conc).  
 
 Bootstraps a simple object system so that object-oriented programming can be used (examples/objects),  
-as well as allowing experimenting with functional, procedural and symbolic programming.   
+as well as allowing experimenting with functional, procedural and symbolic programming. See examples/useful for other techniques such as lazy evaluation. 
+    
 What if the Web was programmable in a uniform but flexible syntax?  
 
 The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use.  

@@ -56,6 +56,7 @@ const formals = {
     "cond": evalRewrite(rewriteCond),
     "case": evalRewrite(rewriteCase),
     "begin": evalRewrite(rewriteBegin),
+    "delay": evalRewrite(rewriteDelay),
     "letrec": evalRewriteLetrec, "local": evalRewriteLetrec, 
     "let": evalRewriteLet, // alternatively without tail call optimisation: evalLet,
     "define": evalDefine,
@@ -86,7 +87,10 @@ const rewrites = {
     "cond": rewriteCond,
     "case": rewriteCase,
     "let": rewriteLet,
-    "letrec": rewriteLetrec
+    "letrec": rewriteLetrec,
+    "define-rewriter": macroRewriter,
+    "begin": rewriteBegin,
+    "delay": rewriteDelay
 };
 
 const topLevelEnv = { name: "top level env" };
@@ -878,6 +882,14 @@ async function rewriteBegin(exp, env) {
     }
 
     return [exp.value[exp.value.length - 1], env];
+}
+
+async function rewriteDelay(exp, env) {
+    if (exp.value.length !== 2) {
+        return { type: ERR, value: "delay requires a single expression or value as argument" };
+    }
+    const thunk = { type: EXP, value: [{ type: ATOM, value: "lambda" }, { type: EXP, value: [] }, exp.value[1]]};
+    return [thunk, env];
 }
 
 async function macroRewriter(exp, env) {
