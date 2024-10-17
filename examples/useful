@@ -117,7 +117,11 @@ curl --data "
 1
 #t
 ()
+"an stack item" 
 "an stack item"
+
+stack is empty% 
+
 
 curl --data "
 (define (make-queue) 
@@ -233,4 +237,5 @@ curl --data "
   (taker n l))
 (take 100 integers)
 " localhost:8080
+returns list of first 100 integers
 

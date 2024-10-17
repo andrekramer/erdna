@@ -163,16 +163,19 @@ object
 
 # Objects without a "super" allow any field to be set
 curl --data "
-(make map ())
-(@! map key \"value\")
-(@ map key)
+(make amap ())
+(@! amap key \"value\")
+(@ amap key)
 " localhost:8080
+object
+
+"value"
 
 # A base can be used as a map and extended directly but not via children
 curl --data "
-(make map ())
-(make obj map)
-(@! map key \"value\")
+(make amap ())
+(make obj amap)
+(@! amap key \"value\")
 (@ obj key)
 (@! obj key2 \"value2\")
 " localhost:8080
