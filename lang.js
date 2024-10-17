@@ -531,7 +531,7 @@ async function eval(exp, env) {
             }
         } else {
             if (proc.type !== ATOM) {
-                return { type: ERR, value: "can't apply a " + displayType(proc.type) };
+                return { type: ERR, value: "can't apply " + displayType(proc.type) };
             }
 
             // console.log("proc " + JSON.stringify(proc));
@@ -953,7 +953,7 @@ async function evalDefine(exp, env) {
         env[proc.value] = closure;
         return closure;
     } else {
-        return { type: ERR, value: "Can't define a " + def.type };
+        return { type: ERR, value: "Can't define " + displayType(def.type) };
     }
 }
 
