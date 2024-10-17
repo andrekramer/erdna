@@ -1,0 +1,32 @@
+
+# Sieve of Eratosthenes
+curl --data "
+(define (remainder x y) (cdr (div-mod x y)))
+(define (min l) 
+  (define (m l r)
+    (cond ((null? l) r)
+          (else (let ((c (car l))) (m (cdr l) (if (< r c) r c))))))
+  (m (cdr l) (car l)))
+(min '(3 4 5 6 2 1 9))
+
+(define (odds n max) 
+  (cond ((> n max) '())
+        (else (cons n (odds (+ n 2) max )))))
+
+(begin (define first-n-odds (odds 3 1000)) '())
+
+(define (sieve-primes l primes)
+    (define (filter-multiples p l r) 
+      (cond ((null? l) r) 
+            (else (if (equal? 0 (remainder (car l) p))
+                      (filter-multiples p (cdr l) r)
+                      (filter-multiples p (cdr l) (cons (car l) r))))))
+    (cond ((null? l) (cons 2 (reverse primes)))
+          (else 
+             (let ((prime (min l)))
+                  ;;; (display (concat \"found prime \" prime))
+                  (sieve-primes (filter-multiples prime l '()) (cons prime primes))))))
+
+(sieve-primes first-n-odds '())
+" localhost:8080
+

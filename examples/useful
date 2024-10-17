@@ -196,8 +196,10 @@ curl --data "
 (define a (delay (begin (display \"now\") (+ 1 2 10))))
 (display \"here\")
 (force a)
+(force (delay ((lambda (n) (+ 1 n)) 10)))
 " localhost:8080
 13
+11
 
 curl --data "
 (define (lazy-car l) (car l))
