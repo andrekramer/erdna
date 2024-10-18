@@ -147,6 +147,40 @@ echo actor
 done.
 bye
 
+# Go Actor
+curl --data "
+(define (go-actor) 
+  (letrec
+    ((count 0))
+    (define (act inbox) 
+      (let 
+        ((msg (receive-message inbox)))
+        (case (car msg)
+          ((\"go\") 
+            (display (concat \"go \" (cdr msg)))
+            (send-message inbox (cons \"go\" count))
+            (set! count (+ count 1))
+            (maybe-yield) ;;; as concurrency is simulated rather than true non-determinism
+            (act inbox)
+          )
+          ((\"stop\") (display \"stopped.\") '())
+          (else (error \"message not understood\")))))
+   act))
+
+(let
+   ((inbox (actor (go-actor))))
+   (process (lambda (id) 
+     (begin 
+       (display \"send go\")
+       (send-message inbox '(\"go\" . \"initial\"))
+       (display \"sent go\"))) \"sent initial go\")
+   (resolve (sleep-promise 1000))
+   (process (lambda (id) 
+     (begin 
+       (display \"send stop\")
+       (send-message inbox '(\"stop\" ))
+       (display \"sent stop\"))) \"sent stop\"))
+" localhost:8080
 
 # Use api key XXX for a second erdna node listening on port 8081:
 export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js
