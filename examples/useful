@@ -239,3 +239,40 @@ curl --data "
 " localhost:8080
 returns list of first 100 integers
 
+curl --data "
+(define (memorize f args)  
+  (let 
+    ((value '()))
+    (lambda () 
+      (if (null? value) 
+        (begin (display \"...\") (set! value (apply f args)) value) 
+        value))))
+(define big-multiply (memorize * '(1000 1000)))
+(big-multiply)
+(big-multiply)
+(force big-multiply)
+
+(define (memorize-delay delay-exp)
+  (let 
+    ((value '()))
+    (lambda () 
+      (if (null? value) 
+        (begin (display \"...\") (set! value (force delay-exp)) value) 
+        value))))
+(define big-multiply-delay (memorize-delay (delay (* 1000 1000 1000))))
+(big-multiply-delay)
+(big-multiply-delay)
+(force big-multiply-delay)
+" localhost:8080
+
+
+λ
+λ
+1000000
+1000000
+1000000
+λ
+λ
+1000000000
+1000000000
+1000000000
