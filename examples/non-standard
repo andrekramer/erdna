@@ -75,3 +75,18 @@ curl  --data-raw " (unquote '(+ 1 2)) " localhost:8080
 curl  --data-raw "(define a 1) (unquote 'a) " localhost:8080
 1
 
+curl --data "(while (equal? #f #t) (error \"in body\"))" localhost:8080
+curl --data "(while #f (error \"in body\"))" localhost:8080
+#f
+#f
+
+curl --data "(while (null? '()) (display \"in body\") (error \"bomb\"))" localhost:8080
+curl --data "(while #t (display \"in body\") (error \"bomb\"))" localhost:8080
+bombbomb
+
+curl --data "(let ((i 0)) (while (< i 100) (display i) (set! i (+ i 1))) i)" localhost:8080
+100
+
+curl --data "(let ((i 0)) (while (< i 1000000) (set! i (+ i 1))) i)" localhost:8080
+1000000
+

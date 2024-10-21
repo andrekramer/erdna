@@ -3,7 +3,7 @@ const {
     listify, pairToExp,
     cons, car, cdr,
     setCar, setCdr,
-    append, 
+    append,
     // begin,
     lessThan, greaterThan,
     makeVector, vectorSet, vectorRef, vectorLength,
@@ -67,6 +67,7 @@ const formals = {
     "quasiquote": evalQuasiquote,
     "and": evalAnd,
     "or": evalOr,
+    "while": evalWhile,
     "eval": eval2,
     "error->string": errorToString,
     "screen": screen,
@@ -834,7 +835,7 @@ async function rewriteCond(exp, env) {
 }
 
 async function rewriteCase(exp, env) {
-    if (exp.value.length < 2) {
+    if (exp.value.length < 3) {
         return [{ type: ERR, value: "case needs expression and one or more conditions" }, env];
     }
     const selector = await eval(exp.value[1], env);
@@ -1023,6 +1024,31 @@ async function evalOr(exp, env) {
         }
     }
     return result;
+}
+
+async function evalWhile(exp, env) {
+    if (exp.value.length < 3) {
+        return [{ type: ERR, value: "while needs a condition and a body" }, env];
+    }
+    while (true) {
+        const condition = exp.value[1];
+        // console.log("while " + JSON.stringify(condition));
+        const result = await eval(condition, env);
+        if (result.type === ERR) {
+            return result;
+        }
+    
+        if (result.type === BOOL && result.value === false) {
+            return falseValue;
+        } else {
+            for (let i = 2; i < exp.value.length; i++) {
+                const result = await eval(exp.value[i], env);
+                if (result.type === ERR) {
+                    return result;
+                }
+            }
+        }
+    }
 }
 
 async function evalArgs(exp, env) {
