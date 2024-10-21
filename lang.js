@@ -68,6 +68,7 @@ const formals = {
     "and": evalAnd,
     "or": evalOr,
     "while": evalWhile,
+    "do": evalDo,
     "eval": eval2,
     "error->string": errorToString,
     "screen": screen,
@@ -1030,7 +1031,7 @@ async function evalWhile(exp, env) {
     if (exp.value.length < 3) {
         return [{ type: ERR, value: "while needs a condition and a body" }, env];
     }
-    while (true) {
+    loop: while (true) {
         const condition = exp.value[1];
         // console.log("while " + JSON.stringify(condition));
         const result = await eval(condition, env);
@@ -1046,7 +1047,48 @@ async function evalWhile(exp, env) {
                 if (result.type === ERR) {
                     return result;
                 }
+                if (result.type === ATOM) {
+                    if (result.value === "break") {
+                        return trueValue;
+                    }
+                    if (result.value === "continue") {
+                        continue loop;
+                    }
+                }
             }
+        }
+    }
+}
+
+async function evalDo(exp, env) {
+    if (exp.value.length < 3) {
+        return [{ type: ERR, value: "do needs a body and a condition" }, env];
+    }
+    loop: while (true) {
+        for (let i = 1; i < exp.value.length - 1; i++) {
+            const result = await eval(exp.value[i], env);
+            if (result.type === ERR) {
+                return result;
+            }
+            if (result.type === ATOM) {
+                if (result.value === "break") {
+                    return trueValue;
+                }
+                if (result.value === "continue") {
+                    continue loop;
+                }
+            }
+        }
+
+        const condition = exp.value[exp.value.length - 1];
+        // console.log("do " + JSON.stringify(condition));
+        const result = await eval(condition, env);
+        if (result.type === ERR) {
+            return result;
+        }
+    
+        if (result.type === BOOL && result.value === false) {
+            return falseValue;
         }
     }
 }

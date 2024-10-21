@@ -90,3 +90,39 @@ curl --data "(let ((i 0)) (while (< i 100) (display i) (set! i (+ i 1))) i)" loc
 curl --data "(let ((i 0)) (while (< i 1000000) (set! i (+ i 1))) i)" localhost:8080
 1000000
 
+curl --data "(let ((i 0)) (do (display i) (set! i (+ i 1)) (< i 100)) i)" localhost:8080
+curl --data "(let ((i 100)) (do (display i) (set! i (+ i 1)) (< i 100)) i)" localhost:8080
+100
+101
+
+curl --data "
+(let ((i 0)) 
+  (while #t 
+    (display i) 
+    (if (> i 100) (break)) 
+    (set! i (+ i 1))) 
+  i)" localhost:8080
+101
+
+curl --data "
+(let ((i 0) (j 0)) 
+  (while (< i 100) 
+    (set! i (+ i 1)) 
+    (if (> i 10) (continue)) 
+    (set! j (+ j 1)) 
+    (display j))
+  (cons i j))" localhost:8080
+(100 . 10)
+
+
+curl --data "
+(let ((i 0) (j 0))
+  (do 
+    (if (> i 100) (break)) 
+    (set! i (+ i 1)) 
+    (if (> i 10) (continue)) 
+    (set! j (+ j 1))
+    (display j) #t)
+  (cons i j))" localhost:8080
+(101 . 10)
+

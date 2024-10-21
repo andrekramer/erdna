@@ -36,6 +36,8 @@ const procs = `
       (fn (car l)
           (reduce fn (cdr l) r))))
 (define (force f) (f))
+(define (break) 'break)
+(define (continue) 'continue)
 `;
 
 function seed() {

@@ -169,6 +169,56 @@ curl --data-raw "
 " localhost:8080
 (2 3 4 5 6)
 
+curl --data-raw "
+(define (any-null? lists)
+   (cond ((null? lists) #f)
+          (else (if (null? (car lists)) #t (any-null? (cdr lists))))))
+(define (firsts lists)
+    (cond ((null? lists) '())
+          (else (cons (car (car lists)) (firsts (cdr lists))))))
+(define (rests lists)
+    (cond ((null? lists) '())
+          (else (cons (cdr (car lists)) (rests (cdr lists))))))
+(define (map-over-lists f lists)
+  (if (or (null? lists) (any-null? lists)) '() 
+      (cons (apply f (firsts lists)) (map-over-lists f (rests lists)))))
+(define (map2 f . lists) (map-over-lists f lists))
+
+\"testing\"
+(any-null? '((1 2 3) (1 2)))
+(any-null? '((1 2) ()))
+(any-null? '(1 2 3))
+(any-null? '())
+(firsts '((1 2 3) (1 2)))
+(rests '((1 2 3) (1 2)))
+(firsts '((1 2 3)))
+(rests '((1 2 3)))
+(map-over-lists (lambda (a) (+ a 1)) '((1 2 3 4 5)))  
+(map-over-lists + '((1 2 3) (2 3 4 5)))  
+\"map results\"
+(map2 (lambda (a) (+ a 1)) '(1 2 3 4 5))  
+(map2 (lambda (a) (+ a 1)) '() '(1 2))  
+(map2 + '(1 2 3) '(2 3 4 5))  
+(map2 * '(1 2 3 4) '(2 3 4 5) '(3 4 5 6))  
+" localhost:8080
+
+"testing"
+#f
+#t
+#f
+#f
+(1 1)
+((2 3) (2))
+(1)
+((2 3))
+(2 3 4 5 6)
+(3 5 7)
+"map results"
+(2 3 4 5 6)
+()
+(3 5 7)
+(6 24 60 120)
+
 curl --data-raw "; reduce right associative aka foldr
 (define (reduce fn l r)
   (if (null? l) r

@@ -13,7 +13,7 @@ as well as allowing experimenting with functional, procedural and symbolic progr
     
 What if the Web was programmable in a uniform but flexible syntax?  
 
-The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use.  
+The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use. More examples where added and some bugs fixed in later minor versions.
 
 To clone:
 
