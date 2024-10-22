@@ -287,9 +287,11 @@ hick
 curl --data "  
 (symbol? 'a) (number? 1) (pair? '(1 2)) (string? \"abc\") (boolean? #f)  
 (symbol? '1) (number? 'x) (pair? '()) (string? '(\"abc\")) (boolean? 0)  
+(list? '()) (list? '(1 2 3)) (list? '(a)) (list? 'a)
 " localhost:8080 
 #t #t #t #t #t  
 #f #f #f #f  
+#t #t #t #f
 
 curl --data "(define (hello) (display \"Hello world\" 1 '(1 2 3) 'a)) (hello)" localhost:8080
 λ

@@ -74,7 +74,9 @@ In one cmd window / shell run:
 node --trace-uncaught --stack-size=100000 index.js   
   
 and then ./erdna in another cmd window shell to start the ">" prompt in the node server.  
-A Scheme expression can then we entered on a single line at a time.
+A Scheme expression can then we entered on a single line at a time.  
+Try loading Conway's game of life with:   
+(load "game-of-life.scm")   
 
-or use curl to post any of the code samples in the files in the example directory to a running erdna server.   
+or use "curl" commands to post any of the code samples in the files in the example directory to a running erdna server.   
   

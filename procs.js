@@ -27,8 +27,11 @@ const procs = `
 (define (symbol? x) (equal? (type-of x) 0))
 (define (number? x) (equal? (type-of x) 2))
 (define (pair? x) (equal? (type-of x) 10))
+(define (list? x) (or (null? x) (equal? (type-of x) 10)))
+(define (vector? x) (equal? (type-of x) 7))
 (define (string? x) (equal? (type-of x) 3))
 (define (boolean? x) (equal? (type-of x) 4))
+
 (define (map f l) 
   (if (null? l) '() (cons (f (car l)) (map f (cdr l)))))
 (define (reduce fn l r)
