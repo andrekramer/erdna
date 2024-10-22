@@ -169,6 +169,7 @@ curl --data-raw "
 " localhost:8080
 (2 3 4 5 6)
 
+# Scheme's standard map can apply a function  to multiple lists. Here called map2:
 curl --data-raw "
 (define (any-null? lists)
    (cond ((null? lists) #f)
@@ -200,7 +201,12 @@ curl --data-raw "
 (map2 (lambda (a) (+ a 1)) '() '(1 2))  
 (map2 + '(1 2 3) '(2 3 4 5))  
 (map2 * '(1 2 3 4) '(2 3 4 5) '(3 4 5 6))  
+
+(define (transpose . lists) 
+   (map-over-lists list lists))
+(transpose '(1 2 3 4 5) '(6 7 8 9 0) '('a 'b 'c 'd 'e) '('u 'v 'x 'y 'w 'z ))
 " localhost:8080
+((1 6 a u) (2 7 b v) (3 8 c x) (4 9 d y) (5 0 e w))
 
 "testing"
 #f
