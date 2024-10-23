@@ -557,6 +557,16 @@ function stringToSymbol(args, env) {
     return { type: ATOM, value: args[0].value};
 }
 
+let gensymcounter = 1;
+
+function gensym(args, env) {
+    if (args.length !== 0 && (args.length !== 1 || args[0].type !== STR)) {
+         return { type: ERR, value: "gensym takes one optional string argument" };
+    }
+    const prefix = args.length === 0 ? "g" : args[0].value;
+    return { type: ATOM, value: prefix + gensymcounter++ };
+}
+
 function error(args, env) {
     if (args.length === 1 && args[0].type === STR) {
         return { type: ERR, value: args[0].value };
@@ -706,6 +716,7 @@ exports.strIndexOf = strIndexOf
 exports.typeOf = typeOf
 exports.symbolToString = symbolToString
 exports.stringToSymbol = stringToSymbol
+exports.gensym = gensym
 exports.error = error
 exports.print = print
 exports.escape = escape
