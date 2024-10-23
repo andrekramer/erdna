@@ -29,7 +29,7 @@ async function fetchPromise(args, env) {
         // console.log("fetch " + args[0].value);
         promise = fetch(args[0].value, { headers });
     } else if (args.length === 3) {
-        headers[ "Content-Type"] = "application/json";
+        headers[ "Content-Type"] = "application/text";
         if (args[2].type !== STR) {
             return { type: ERR, value: "fetch-promise expect a text body as optional 3rd argument" };
         }
