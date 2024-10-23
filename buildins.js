@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList, VECTOR, voidValue } = require("./constants.js");
+const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList, VECTOR, voidValue, BYTEVECTOR } = require("./constants.js");
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
@@ -186,7 +186,7 @@ function equal(args, env) {
     
     if (type === VECTOR) {
         const vector = value.value;
-        const otherVector =  otherValue.value;
+        const otherVector = otherValue.value;
         if (vector.length !== otherVector.length) {
             return falseValue;
         }
@@ -197,6 +197,20 @@ function equal(args, env) {
                     return falseValue;
                 }
             } else if (otherVector[i] === undefined || !equalValue(vector[i], otherVector[i])) {
+                return falseValue;
+            }
+        }
+        return trueValue;
+    }
+
+    if (type === BYTEVECTOR) {
+        const vector = value.value;
+        const otherVector = otherValue.value;
+        if (vector.length !== otherVector.length) {
+            return falseValue;
+        }
+        for (let i = 0; i < vector.length; i++) {
+            if (vector[i] !== otherVector[i]) {
                 return falseValue;
             }
         }
@@ -408,6 +422,80 @@ function vectorLength(args, env) {
     return { type: NUM, value: args[0].value.length };
 }
 
+function makeByteVector(args, env) {
+    if ((args.length !== 1 && args.length !== 2) || args[0].type !== NUM)  {
+        return { type: ERR, value: "make-vector takes a length argument and an optional initializer" };
+    }
+    const len = args[0].value;
+    if (len < 0 || Math.floor(len) !== len) {
+        return { type: ERR, value: "Can't make a vector with less than 0 or non-integer entries" };
+    }
+   
+    const buffer = new ArrayBuffer(len);
+    const vector = new Uint8Array(buffer);
+    if (args.length === 2) {
+        const value = args[1].value;
+        if (args[1].type !== NUM || value < 0 || value > 255) {
+            return { type: ERR, value: "make-byte-vector initializer must number in range be >= 0 and <= 255" };
+        }
+        for (let i = 0; i < len; i++) {
+            vector[i] = value;
+        }
+    }
+    return { type: BYTEVECTOR, value: vector};
+}
+
+function byteVectorSet(args, env) {
+    if (args.length < 1 || args[0].type !== BYTEVECTOR) {
+        return { type: ERR, value: "byte-vector-set! requires a byte vector as first argument" };
+    }
+    if (args.length < 2 || args[1].type !== NUM) {
+        return { type: ERR, value: "byte-vector-set! requires an integer index as second argument" };
+    }
+    const index = args[1].value;
+    if (index < 0 || index >= args[0].value.length) {
+         return { type: ERR, value: "byte-vector-set! index out of bounds" };
+    }
+    if (Math.floor(index) !== index) {
+        return { type: ERR, value: "byte-vector-set! requires an integer index" };
+    }
+    if (args.length !== 3) {
+        return { type: ERR, value: "byte-vector-set! requires a value to set entry to" };
+    }
+    const value = args[2].value;
+    if (args[2].type !== NUM || value < 0 || value > 255) {
+        return { type: ERR, value: "byte-vector-set! value must be >= 0 and <= 255" };
+    }
+
+    args[0].value[index] = value;
+    return voidValue;
+}
+
+function byteVectorRef(args, env) {
+    if (args.length < 1 || args[0].type !== BYTEVECTOR) {
+        return { type: ERR, value: "byte-vector-ref requires a vector as first argument" };
+    }
+    if (args.length !== 2 || args[1].type !== NUM) {
+        return { type: ERR, value: "byte-vector-ref requires an integer index as second argument" };
+    }
+    const index = args[1].value;
+    if (index < 0 || index >= args[0].value.length) {
+        return { type: ERR, value: "byte-vector-set! index out of bounds" };
+    }
+    if ( Math.floor(index) !== index) {
+        return { type: ERR, value: "byte-vector-ref requires an integer index" };
+    }
+    const result = args[0].value[index]; 
+    return { type: NUM, value: result };
+}
+
+function byteVectorLength(args, env) {
+    if (args.length < 1 || args[0].type !== BYTEVECTOR) {
+        return { type: ERR, value: "byte-vector-length requires a byte vector as first argument" };
+    }
+    return { type: NUM, value: args[0].value.length };
+}
+
 function strLength(args, env) {
     if (args.length !== 1 || args[0].type !== STR) {
         return { type: ERR, value: "string-length expectes one string argument" };
@@ -541,6 +629,9 @@ function printValue(value) {
     if (value.type === VECTOR) {
         return "vector";
     }
+    if (value.type === BYTEVECTOR) {
+        return "byte-vector";
+    }
     if (value.type === PAIR) {
         let str = "(";
         let once = false;
@@ -604,6 +695,10 @@ exports.makeVector = makeVector
 exports.vectorSet = vectorSet
 exports.vectorRef = vectorRef
 exports.vectorLength = vectorLength
+exports.makeByteVector = makeByteVector
+exports.byteVectorSet = byteVectorSet
+exports.byteVectorRef = byteVectorRef
+exports.byteVectorLength = byteVectorLength
 exports.strLength = strLength
 exports.strSlice = strSlice
 exports.strConcat = strConcat

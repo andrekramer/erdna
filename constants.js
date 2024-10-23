@@ -8,9 +8,10 @@ const BOOL = 4;
 const CLOSURE = 5;
 const OBJ = 6;
 const VECTOR = 7;
-const PROMISE = 8;
-const VOID = 9;
-const PAIR = 10;
+const BYTEVECTOR = 8;
+const PROMISE = 9;
+const VOID = 10;
+const PAIR = 11;
 
 function displayType(t) {
     switch(t) {
@@ -27,6 +28,7 @@ function displayType(t) {
         case VOID: return "void";
         case PAIR: return "pair";
         case VECTOR: return "vector";
+        case BYTEVECTOR: return "byte-vector";
         default: return "unkown " + t;
     }
 }
@@ -51,6 +53,7 @@ exports.BOOL = BOOL
 exports.CLOSURE = CLOSURE
 exports.PAIR = PAIR
 exports.VECTOR = VECTOR
+exports.BYTEVECTOR = BYTEVECTOR
 exports.VOID = VOID
 exports.PROMISE = PROMISE
 exports.OBJ = OBJ

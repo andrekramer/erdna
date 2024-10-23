@@ -18,11 +18,12 @@ curl --data-raw "
 (equal? v v)
 (equal? v v2)
 (define v4 (make-vector 32 0))
-(define v5 (make-vector 32 0))
+(define v5 (vector 32 0))
 (equal? v4 v5)
 (vector-set! v4 16 1)
 (equal? v4 v5)
 " localhost:8080
+
 vector
 
 1
@@ -46,11 +47,17 @@ vector
 
 curl --data-raw "
 (define v4 (make-vector 100))
-(define v5 (make-vector 100))
+(define v5 (vector 100))
 (equal? v4 v5)
 (vector-set! v4 99 'different)
 (equal? v4 v5)
 " localhost:8080
+
+vector
+vector
+#t
+
+#f
 
 curl --data-raw "
 (define (list->vector l) 
@@ -124,3 +131,60 @@ curl --data-raw "
 λ
 ((c . 5) (s . 8) (c . k) (s . 5) (h . k) (c . q) (s . 4) (d . 10) (c . a) (c . 2) (s . k) (c . 7) (s . a) (h . 5) (h . a) (d . k) (d . 7) (h . 2) (s . q) (s . 3) (d . 4) (h . 7) (h . 9) (d . j) (h . 6) (s . 6) (d . 5) (c . 6) (d . a) (s . j) (h . 4) (s . 10) (s . 2) (s . 9) (d . 3) (h . 10) (d . 2) (h . 3) (h . q) (c . 8) (h . j) (d . q) (c . 10) (c . 9) (c . 3) (d . 8) (c . j) (s . 7) (h . 8) (d . 6) (d . 9) (c . 4))
 
+curl --data-raw "
+(define v (make-byte-vector 1))
+(byte-vector-set! v 0 1)
+(byte-vector-ref v 0)
+(define v2 (make-byte-vector 10 0))
+(byte-vector-ref v2 1)
+(byte-vector-set! v2 1 100)
+(byte-vector-ref v2 1)
+(define v3 (make-byte-vector 1000 1))
+(byte-vector-set! v3 100 2)
+(byte-vector-set! v3 101 3)
+(byte-vector-ref v3 99)
+(byte-vector-ref v3 100)
+(byte-vector-ref v3 101)
+(equal? v v)
+(equal? v v2)
+(define v4 (make-byte-vector 32 0))
+(define v5 (byte-vector 32 0))
+(equal? v4 v5)
+(byte-vector-set! v4 16 1)
+(equal? v4 v5)
+" localhost:8080
+
+byte-vector
+
+1
+byte-vector
+0
+
+100
+byte-vector
+
+
+1
+2
+3
+#t
+#f
+byte-vector
+byte-vector
+#t
+
+#f
+
+curl --data-raw "
+(define v4 (make-byte-vector 100))
+(define v5 (byte-vector 100))
+(equal? v4 v5)
+(byte-vector-set! v4 99 1)
+(equal? v4 v5)
+" localhost:8080
+
+byte-vector
+byte-vector
+#t
+
+#f

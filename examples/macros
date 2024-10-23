@@ -64,7 +64,7 @@ export bq='`';curl  --data-raw "
             (b (caddr expr)))
         $bq(let ((temp ,a)  
                  (temp2 ,b))  
-                (if temp (if temp2 #f temp) (if temp2 temp2 #f))))) )
+                (if temp (if temp2 #f temp) (if temp2 temp2 #f))))))
 (xor #f #f)
 (xor #t #f)
 (xor #f #t)
@@ -100,8 +100,7 @@ y
 curl  --data-raw "
 (define-rewriter when
    (lambda (expr)
-      (list 'if (cadr expr) (append (list 'begin) (cddr expr)) '())
-))
+      (list 'if (cadr expr) (append (list 'begin) (cddr expr)) '())))
 (when (equal? 1 1) (+ 1 2) (* 2 2))
 (when (null? '(1)) '(a b) '(1 2))
 (when (not (equal? 1 1)) (+ 1 2) 'a (* 2 2))
@@ -116,8 +115,7 @@ curl  --data-raw "
 curl  --data-raw "
 (define-rewriter unless
    (lambda (expr)
-      (list 'if (cadr expr) '() (append (list 'begin) (cddr expr)))
-))
+      (list 'if (cadr expr) '() (append (list 'begin) (cddr expr)))))
 (unless (equal? 1 1) (+ 1 2) (* 2 2))
 (unless (null? '(1)) '(a b) '(1 2))
 (unless (not (equal? 1 1)) (+ 1 2) 'a (* 2 2))
