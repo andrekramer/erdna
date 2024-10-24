@@ -78,13 +78,12 @@ expression
 #f
 
 export bq='`';curl  --data-raw "
-(define (gensym) 'g1)
 (define-rewriter swap
    (lambda (expr)
       (let ((temp (gensym)))
         (let ((a (cadr expr))
               (b (caddr expr)))
-             $bq(let ((,temp a)) (set! ,a ,b) (set! ,b ,temp))))))
+             $bq(let ((,temp ,a)) (set! ,a ,b) (set! ,b ,temp))))))
 (define x 1)
 (define y 2)
 (swap x y)
