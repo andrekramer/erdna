@@ -68,7 +68,7 @@ async function writeFilePromise(args, env) {
     if (args.length !== 2 || args[0].type !== STR || args[1].type !== STR) {
         return { type: ERR, value: "write-file-promise expect a file name and a string to write as the file content as argument" };
     }
-    const promise = fs.writeFile(args[0].value, args[1].value).then(r => result.value = nullList );
+    const promise = fs.writeFile(args[0].value, args[1].value).then(r => result.value = nullList);
     result.promise = promise;
     return result;
 }
@@ -80,7 +80,7 @@ async function promptPromise(args, env) {
     }
     const rl = readline.createInterface({ input, output });
 
-    const promise = rl.question(args[0].value).then(r => { result.value = { type: STR, value: r }; rl.close(); } );
+    const promise = rl.question(args[0].value).then(r => { result.value = { type: STR, value: r }; rl.close(); });
     result.promise = promise;
     return result;
 }

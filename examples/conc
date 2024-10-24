@@ -12,9 +12,7 @@ curl --data "
 curl --data "
 (define (loops id n)
     (cond ((equal? n 0) '())
-          (else (maybe-yield) (display id) (loops id (- n 1)))
-    )
-)
+          (else (maybe-yield) (display id) (loops id (- n 1)))))
 (process (lambda (id) (loops id 100)) \"p1\")
 (process (lambda (id) (loops id 100)) \"p2\")
 (process (lambda (id) (loops id 100)) \"p3\")
@@ -32,8 +30,7 @@ curl --data "
   (process (lambda (id) 
      (display \"child wait for message\")
      (define msg (resolve mp))
-     (display (concat \"child woke: \" msg))
-  ) \"child\")
+     (display (concat \"child woke: \" msg))) \"child\")
 
   (display \"back in a bit to send message ...\")
   (resolve (sleep-promise 1000))
@@ -127,7 +124,7 @@ curl --data "
       ((consumer (message-promise)))
       (send-message inbox (list \"call\" consumer '(\"some\" \"args\" \"here\"))) 
       (display (receive-message consumer)))
-    (send-message inbox '(\"quit\" ))
+    (send-message inbox '(\"quit\"))
     (display \"done.\")
 )) \"create and interact with actor\")
 " localhost:8080
@@ -161,8 +158,7 @@ curl --data "
             (send-message inbox (cons \"go\" count))
             (set! count (+ count 1))
             (maybe-yield) ;;; as concurrency is simulated rather than true non-determinism
-            (act inbox)
-          )
+            (act inbox))
           ((\"stop\") (display \"stopped.\") '())
           (else (error \"message not understood\")))))
    act))
@@ -178,7 +174,7 @@ curl --data "
    (process (lambda (id) 
      (begin 
        (display \"send stop\")
-       (send-message inbox '(\"stop\" ))
+       (send-message inbox '(\"stop\"))
        (display \"sent stop\"))) \"sent stop\"))
 " localhost:8080
 

@@ -122,8 +122,7 @@ curl --data-raw '
 curl --data-raw "
 (letrec 
   ((ping (lambda (a l) (if (equal? a 0) l (pong (- a 1) (cons \"ping\" l)))))
-   (pong (lambda (a l) (if (equal? a 0) l (ping (- a 1) (cons \"pong\" l)))))
-  )
+   (pong (lambda (a l) (if (equal? a 0) l (ping (- a 1) (cons \"pong\" l))))))
   (ping 10 '())
 )
 " localhost:8080

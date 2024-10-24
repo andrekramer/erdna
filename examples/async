@@ -19,19 +19,19 @@ curl --data '(resolve (fetch-promise "http://worldtimeapi.org/api/timezone/Europ
 time in Dublin
 
 # evaluate an expression remotely
-curl --data '(resolve (fetch-promise "http://localhost:8081" "" "(+ 1 2 3)" ))' localhost:8080
+curl --data '(resolve (fetch-promise "http://localhost:8081" "" "(+ 1 2 3)"))' localhost:8080
 "6\n"
 
 curl --data "
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
-(resolve (remote-promise \"http://localhost:8081\" \"\" '(+ 1 2 3 4) ))
+(resolve (remote-promise \"http://localhost:8081\" \"\" '(+ 1 2 3 4)))
 " localhost:8080
 "10\n"
 
 curl --data "
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
 (resolve (remote-promise \"http://localhost:8081\" \"\"
-'(begin (define add1 (lambda (b) (+ 1 b))) (add1 7) )))
+'(begin (define add1 (lambda (b) (+ 1 b))) (add1 7))))
 " localhost:8080
 "8\n"
 
@@ -53,7 +53,7 @@ curl --data "
   '(letrec
      ((add1 (lambda (b) (+ 1 b))) 
       (x (add1 7))
-      (y (add1 1)) )
+      (y (add1 1)))
       (quasiquote (+ ,x ,y 3))))
 " localhost:8080
 13
@@ -74,9 +74,7 @@ curl --data "
 (define (resolve-all l) 
   (cond 
     ((null? l) '())
-    (else (begin (display (resolve (car l))) (resolve-all (cdr l)))) 
-  )
-)
+    (else (begin (display (resolve (car l))) (resolve-all (cdr l))))))
 (resolve-all (list 
   (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 100)) (display y) z) '(1 2 3))
   (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 200)) (display y) z) '(4 5 6)) 

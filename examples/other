@@ -11,7 +11,7 @@ curl --data "
 
 (define (odds n max) 
   (cond ((> n max) '())
-        (else (cons n (odds (+ n 2) max )))))
+        (else (cons n (odds (+ n 2) max)))))
 
 (begin (define first-n-odds (odds 3 1000)) '())
 

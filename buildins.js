@@ -614,7 +614,7 @@ function printValue(value) {
     if (value.type === STR) {
         return escape(value.value);
     }
-    if (value.type === ATOM ) {
+    if (value.type === ATOM) {
         return value.value;
     }
     if (value.type === CLOSURE) {
@@ -624,7 +624,7 @@ function printValue(value) {
     if (value.type === VOID) {
         return "";
     }
-    if (value.type === PROMISE ) {
+    if (value.type === PROMISE) {
         return "promise";
     }
     if (isNullList(value)) {

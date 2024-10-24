@@ -2,7 +2,7 @@ curl --data-raw "
 (define (filter f l) 
   (define (fil f l l2) 
     (cond ((equal? l '()) l2)
-          ((f (car l))  (fil f (cdr l) (cons (car l) l2)) )
+          ((f (car l))  (fil f (cdr l) (cons (car l) l2)))
           (else (fil f (cdr l) l2))))
   (fil f l '()))
 (filter (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
@@ -27,15 +27,15 @@ curl --data-raw "
 (define (quick-sort xs)
    (if (null? xs) '()
       (let ((x (car xs))
-            (xs' (cdr xs)) )
+            (xs' (cdr xs)))
          (append (quick-sort
                     (filter2 (lambda (x')
-                               (< x' x) )
+                               (< x' x))
                             xs'))
                  (list x)
                  (quick-sort
                     (filter2 (lambda (x')
-                               (not (< x' x)) )
+                               (not (< x' x)))
                             xs'))))))
 (quick-sort '(3 5 4 7 1 9 2 12 4 8 1.1 0 -1 2))
 " localhost:8080
@@ -45,8 +45,7 @@ curl --data-raw "
    (define (make-integer-list count l) 
      (cond 
        ((equal? count 0) l)
-       (else (make-integer-list (- count 1) (cons count l)))
-   ))
+       (else (make-integer-list (- count 1) (cons count l)))))
    (define list-to-sort (reverse (make-integer-list 100 '())))
 " localhost:8080
 
@@ -98,8 +97,7 @@ curl --data-raw "
       (cons left (cons right '()))
       (if odd?
          (sp (cdr l) (cons (car l) left) right #f)
-         (sp (cdr l) left (cons (car l) right) #t)
-      )))
+         (sp (cdr l) left (cons (car l) right) #t))))
   (sp l '() '() #t))
 
 (define (merge-sort2 l)
@@ -135,10 +133,8 @@ curl --data-raw "
 (define (min . l) 
   (define (min2 l m)
     (if (null? l) m 
-      (min2 (cdr l) (letrec ((h (car l))) (if (< h m) h m ))))
-  )
-  (min2 (cdr l) (car l))
-)
+      (min2 (cdr l) (letrec ((h (car l))) (if (< h m) h m)))))
+  (min2 (cdr l) (car l)))
 (min 4 5 2 7)
 " localhost:8080
 2
@@ -147,9 +143,7 @@ curl --data-raw "
 (define (member? m l)
   (cond ((null? l) #f)
         ((equal? m (car l)) l) 
-        (else (member? m (cdr l)))
-  )
-)
+        (else (member? m (cdr l)))))
 (member? 0 '(1 #t 2 3 (4 5)))
 (member? 2 '(1 #t 2 3 (4 5)))
 (define (beatle? person)
@@ -169,7 +163,7 @@ curl --data-raw "
 " localhost:8080
 (2 3 4 5 6)
 
-# Scheme's standard map can apply a function  to multiple lists. Here called map2:
+# Scheme's standard map can apply a function to multiple lists. Here called map2:
 curl --data-raw "
 (define (any-null? lists)
    (cond ((null? lists) #f)
@@ -204,7 +198,7 @@ curl --data-raw "
 
 (define (transpose . lists) 
    (map-over-lists list lists))
-(transpose '(1 2 3 4 5) '(6 7 8 9 0) '('a 'b 'c 'd 'e) '('u 'v 'x 'y 'w 'z ))
+(transpose '(1 2 3 4 5) '(6 7 8 9 0) '('a 'b 'c 'd 'e) '('u 'v 'x 'y 'w 'z))
 " localhost:8080
 ((1 6 a u) (2 7 b v) (3 8 c x) (4 9 d y) (5 0 e w))
 
@@ -309,7 +303,7 @@ curl --data-raw "
  (lambda (ele lis)
   (any? (lambda (x) (equal? x ele))
      lis)))
-(contains? 'a '(c b a ))
+(contains? 'a '(c b a))
 " localhost:8080
 λ
 #t

@@ -338,7 +338,7 @@ async function eval(exp, env) {
     
     let type = exp.type;
 
-    if (type >= NUM && type < PAIR ) {
+    if (type >= NUM && type < PAIR) {
         // primitive eval returns self
         return exp;
     } else if (type === PAIR) {

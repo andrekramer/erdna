@@ -68,11 +68,8 @@ curl --data-raw "
         ((null? l) v)
         (else 
           (vector-set! v n (car l))
-          (fill (cdr l) (+ n 1)))
-      )
-    )
-    (fill l 0)
-  ))
+          (fill (cdr l) (+ n 1)))))
+    (fill l 0)))
 (define (vector->list v) 
   (define (fill i l) 
     (cond ((equal? i 0) l)

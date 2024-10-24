@@ -2,7 +2,7 @@
 curl --data '(* 4 (+ 2 3 1) 2)'  localhost:8080    
 48  
 
-curl --data '((lambda (a b) (+ a b)) 1 2 )'  localhost:8080    
+curl --data '((lambda (a b) (+ a b)) 1 2)'  localhost:8080    
 3  
 
 curl --data '(define a (+ 1 2)) (+ a a 4)' localhost:8080    
@@ -43,9 +43,7 @@ curl --data-raw '
   (define (! n)   
     (if (equal? n 0) 
       1
-      (* n (! (- n 1)))
-    )
-  )
+      (* n (! (- n 1)))))
   (! 5)   
 ' localhost:8080  
 120
@@ -56,9 +54,7 @@ curl --data '(define x "abc") x (set! x 2) x' localhost:8080
 curl --data-raw '
 (define counter (lambda ()  
   (define x 0)
-  (lambda () (set! x (+ x 1)) x)
- )
-)
+  (lambda () (set! x (+ x 1)) x)))
 (define x (counter))
 (x)
 (x)
@@ -97,11 +93,8 @@ curl --data-raw "
   (define (len l n) 
     (if (equal? l '()) 
       n 
-      (len (cdr l) (+ n 1))
-    )
-  )
-  (len l 0)
-)
+      (len (cdr l) (+ n 1))))
+  (len l 0))
 (length2 '(1 2 3))
 " localhost:8080  
 3

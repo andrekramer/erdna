@@ -57,9 +57,7 @@ curl --data "
    (let ((xn (/ (+ x (/ guess x)) 2)))
      (display xn)
      (cond ((< (abs (- x xn)) error) xn)
-           (else (newton's-method xn guess error)))
-   )
-)
+           (else (newton's-method xn guess error)))))
 (define (sqrt n) (newton's-method (+ n 0.000001) (+ n 0.000001) 0.000001))
 ;; try some maths examples
 (sqrt 2)

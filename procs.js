@@ -7,10 +7,8 @@ const procs = `
   (define (rev l rl)
     (cond 
       ((null? l) rl)
-      (else (rev (cdr l) (cons (car l) rl)))
-    ))
-  (rev l '())
-)
+      (else (rev (cdr l) (cons (car l) rl)))))
+  (rev l '()))
 (define (length l)
   (define (len l n)
     (if (equal? l '())

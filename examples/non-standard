@@ -50,7 +50,7 @@ curl --data "
 "this is a test"
 
 curl --data "
-(define (load file) (eval (read (resolve (read-file-promise file))) '()) )
+(define (load file) (eval (read (resolve (read-file-promise file))) '()))
 (load \"file4\")
 (triple 4)
 "  localhost:8080

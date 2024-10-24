@@ -7,8 +7,7 @@ curl  --data-raw "
            (cons 'let 
                  (cons 
                    (list (list 'temp a)) 
-                   (list (append '(if temp temp) (list b)))))
-      )))
+                   (list (append '(if temp temp) (list b))))))))
 (define (repeat n b) (if (equal? n 0) (or2 #f b) (repeat (- n 1) (not b))))
 (repeat 0 #t)
 (repeat 1 #t)
