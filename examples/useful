@@ -1,4 +1,53 @@
 curl --data "
+(define (list-ref pos l) 
+  (cond ((< pos 0) (error \"list-ref index < 0\"))
+        ((null? l) (error \"list-ref list too short\"))
+        ((equal? pos 0) (car l))
+        (else (list-ref (- pos 1) (cdr l)))))
+
+(define t '(1 2 3 4))
+(list-ref 0 t)
+(list-ref 1 t)
+(list-ref 2 t)
+(list-ref 3 t)
+;; (list-ref 4 t)
+(list-ref 0 '(a . b))
+;; (list-ref 1 '())
+;; (list-ref -1 t)
+
+(define (list-tail pos l) 
+  (cond ((< pos 0) (error \"list-tail index < 0\"))
+        ((null? l) (error \"list-tail list too short\"))
+        ((equal? pos 0) (cdr l))
+        (else (list-tail (- pos 1) (cdr l)))))
+
+(list-tail 0 t)
+(list-tail 1 t)
+(list-tail 2 t)
+(list-tail 3 t)
+;; (list-tail 4 t)
+(list-tail 0 '(a . b))
+;; (list-tail 1 '())
+(list-tail -1 t)
+" localhost:8080
+λ
+(1 2 3 4)
+1
+2
+3
+4
+a
+λ
+(2 3 4)
+(3 4)
+(4)
+()
+b
+
+list-tail index < 0         
+
+
+curl --data "
 (define (string-ref str i) (slice str i (+ i 1)))
 (define s \"abcdef\")
 (string-ref s 0)
