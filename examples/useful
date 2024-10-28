@@ -46,7 +46,6 @@ b
 
 list-tail index < 0         
 
-
 curl --data "
 (define (last l) 
   (cond ((null? l) (error \"can't get last of empty list\"))
@@ -78,6 +77,15 @@ curl --data "
 λ
 ((1 2) (2 4) (3 6) (4 8))
 (1 2 2 4 3 6 4 8)
+
+curl --data "
+(define (funcall f . list) (apply f list))
+(funcall append '(1 2) '(3 4) '(5 6 7 8 9))
+(funcall + 1 2 3 4 5)
+" localhost:8080
+
+(1 2 3 4 5 6 7 8 9)
+15
 
 curl --data "
 (define (string-ref str i) (slice str i (+ i 1)))

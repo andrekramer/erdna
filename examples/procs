@@ -198,7 +198,7 @@ curl --data-raw "
 
 (define (transpose . lists) 
    (map-over-lists list lists))
-(transpose '(1 2 3 4 5) '(6 7 8 9 0) '('a 'b 'c 'd 'e) '('u 'v 'x 'y 'w 'z))
+(transpose '(1 2 3 4 5) '(6 7 8 9 0) '(a b c d e) '(u v x y w z))
 " localhost:8080
 ((1 6 a u) (2 7 b v) (3 8 c x) (4 9 d y) (5 0 e w))
 
