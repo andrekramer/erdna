@@ -219,6 +219,14 @@ curl --data-raw "
 (3 5 7)
 (6 24 60 120)
 
+curl --data "
+(define (dot-product a b) (apply + (map2 * a b)))
+(dot-product '(1 3 -5) '(4 -2 -1 ))
+(dot-product '(1 3 -5) '(1 3 -5))
+" localhost:8080
+3
+35
+
 curl --data-raw "; reduce right associative aka foldr
 (define (reduce fn l r)
   (if (null? l) r

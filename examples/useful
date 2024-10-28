@@ -47,6 +47,15 @@ b
 list-tail index < 0         
 
 curl --data "
+(define (random-int max) (floor (* (random) max)))
+(define (one-of l) 
+  (list-ref (random-int (length l)) l))
+
+;; simulate throw a die
+(one-of '(1 2 3 4 5 6))
+" localhost:8080
+
+curl --data "
 (define (last l) 
   (cond ((null? l) (error \"can't get last of empty list\"))
         ((null? (cdr l)) (car l))
@@ -86,6 +95,26 @@ curl --data "
 
 (1 2 3 4 5 6 7 8 9)
 15
+
+curl --data "
+(define (assoc obj l) 
+  (if (null? l) #f 
+    (let ((v (car l)))
+       (if (equal? obj (car v)) v (assoc obj (cdr l))))))
+(define e '((a 1) (b 2) (c 3)))
+(assoc 'a e)
+(assoc 'b e)
+(assoc 'c e)
+(assoc 'd e)
+(assoc (list 'b) '(((a)) ((b)) ((c))))
+" localhost:8080
+
+((a 1) (b 2) (c 3))
+(a 1)
+(b 2)
+(c 3)
+#f
+((b))
 
 curl --data "
 (define (string-ref str i) (slice str i (+ i 1)))
