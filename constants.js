@@ -43,6 +43,8 @@ function isNullList(exp) {
     return exp.type === EXP && exp.value.length === 0;
 }
 
+const QUOTE = { type: ATOM, value: "quote" };
+
 exports.ATOM = ATOM
 exports.EXP = EXP
 exports.ERR = ERR
@@ -64,3 +66,4 @@ exports.nullList = nullList
 exports.displayType = displayType
 exports.isNullList = isNullList
 exports.voidValue = voidValue
+exports.QUOTE = QUOTE

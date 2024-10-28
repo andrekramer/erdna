@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList, VECTOR, voidValue, BYTEVECTOR } = require("./constants.js");
+const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueValue, falseValue, nullList, isNullList, VECTOR, voidValue, BYTEVECTOR, QUOTE } = require("./constants.js");
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
@@ -141,7 +141,8 @@ async function applyLambda(args, env, evalExp) {
         return { type: ERR, value: "apply requires a list as second argument" };
     }
     for (let head = args[1]; head.type === PAIR; head = head.rest) {
-        expValue.push(head.value);
+        const quotedValue = { type: EXP, value: [ QUOTE, head.value ]};
+        expValue.push(quotedValue);
     }
 
     const exp = { type: EXP, value: expValue };

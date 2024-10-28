@@ -1,4 +1,4 @@
-const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, OBJ, trueValue, falseValue, PROMISE, nullList, displayType, isNullList, voidValue} = require("./constants.js");
+const { ATOM, EXP, ERR, COMMENT, NUM, STR, BOOL, CLOSURE, VOID, PAIR, OBJ, trueValue, falseValue, PROMISE, nullList, displayType, isNullList, voidValue, QUOTE } = require("./constants.js");
 const {
     listify, pairToExp,
     cons, car, cdr,
@@ -105,8 +105,6 @@ const macros = {
 let scopeId = 1;
 const tailCalls = true;
 const macroRewriteOnly = (process.env.REWRITE_ONLY == 1) || false;
-
-const QUOTE = { type: ATOM, value: "quote" };
 
 const SET_ANY_FIELD_ON_BASE = true;
 

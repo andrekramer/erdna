@@ -206,6 +206,9 @@ curl --data "((lambda (. x) x) 1 2 3 4)" localhost:8080
 curl --data "((lambda x x) 1 2 3 4)" localhost:8080  
 (1 2 3 4)
 
+curl --data "(apply append '((1 2) (3 4 5) (6 7 8 9)))" localhost:8080
+(1 2 3 4 5 6 7 8 9)
+
 curl --data "(quasiquote (a 1 ,(+ 1 2)))" localhost:8080  
 export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080  
 (a 1 3)

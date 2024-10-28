@@ -48,6 +48,38 @@ list-tail index < 0
 
 
 curl --data "
+(define (last l) 
+  (cond ((null? l) (error \"can't get last of empty list\"))
+        ((null? (cdr l)) (car l))
+        (else (last (cdr l)))))
+(last '(1 2 3 4))
+(last '(1 2 3))
+(last '(1 2))
+(last '(1))
+(last '(a . b))
+(last '())
+" localhost:8080
+
+λ
+(2 3)
+b
+
+can't get last of empty list   
+
+curl --data "
+(define (mappend f l) (apply append (map f l)))
+
+(define (self-and-double x) (list x (+ x x)))
+(map self-and-double '(1 2 3 4))
+(mappend self-and-double '(1 2 3 4))
+" localhost:8080
+
+λ
+λ
+((1 2) (2 4) (3 6) (4 8))
+(1 2 2 4 3 6 4 8)
+
+curl --data "
 (define (string-ref str i) (slice str i (+ i 1)))
 (define s \"abcdef\")
 (string-ref s 0)
