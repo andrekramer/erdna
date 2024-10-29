@@ -219,11 +219,21 @@ function readExpressionOrAtom(text, pos) {
         result = { type: EXP, value: quasiquote };
         pos = p;
     } else if (ch === ",") {
-        const [r, p] = readExpressionOrAtom(text, ++pos);
-        const unquote = [{ type: ATOM, value: "unquote" }];
-        unquote.push(r);
-        result = { type: EXP, value: unquote };
-        pos = p;
+        const next = pos + 1;
+        if (next === text.length || text.charAt(next) !== '@') {
+            const [r, p] = readExpressionOrAtom(text, ++pos);
+            const unquote = [{ type: ATOM, value: "unquote" }];
+            unquote.push(r);
+            result = { type: EXP, value: unquote };
+            pos = p;
+        } else {
+            pos += 2;
+            const [r, p] = readExpressionOrAtom(text, pos);
+            const unquoteList = [{ type: ATOM, value: "unquote-list" }];
+            unquoteList.push(r);
+            result = { type: EXP, value: unquoteList };
+            pos = p;
+        }
     } else {
         if ([')', ']', '}'].includes(ch)) {
             return [{ type: ERR, value: "Missing opening bracket for " + ch + " at " + pos }];
@@ -570,7 +580,7 @@ async function evalQuote(exp, env) {
 
 async function evalUnquote(exp, env) {
     if (exp.value.length !== 2) {
-        return { type: ERR, value: "Can only uquote one value" };
+        return { type: ERR, value: "Can only unquote one value" };
     }
     let value = exp.value[1];
     // console.log("unquote " + JSON.stringify(value));
@@ -586,16 +596,38 @@ async function unquote(result, env) {
     if (result.type === EXP) {
         const resultList = [];
         for (const subExp of result.value) {
-            if (subExp.type === EXP && subExp.value[0].type === ATOM && subExp.value[0].value === "unquote") {
+            if (subExp.type === EXP && subExp.value[0].type === ATOM && (subExp.value[0].value === "unquote" || subExp.value[0].value === "unquote-list")) {
                 if (subExp.value.length !== 2) {
                     return { type: ERR, value: "Can only unquote one value"};
                 }
-                const unquoteExp = subExp.value[1];
-                const r = await eval(unquoteExp, env);
-                if (r.type === ERR) {
-                    return r;
+                
+                if (subExp.value[0].value === "unquote-list") {
+                    const unquoteListExp = subExp.value[1];
+                    const r = await eval(unquoteListExp, env);
+                    if (r.type === ERR) {
+                        return r;
+                    }
+                    let first;
+                    if (r.type === EXP) {
+                        first = listify(r);
+                    } else if (r.type !== PAIR) {
+                        return { type: ERR, value: "Expected a list to splice"};
+                    } else {
+                        first = r;
+                    }
+                    
+                    while (first.type === PAIR) {
+                       resultList.push(first.value);
+                       first = first.rest;
+                    }
+                } else {
+                    const unquoteExp = subExp.value[1];
+                    const r = await eval(unquoteExp, env);
+                    if (r.type === ERR) {
+                        return r;
+                    }
+                    resultList.push(r);
                 }
-                resultList.push(r);
             } else {
                 resultList.push(await unquote(subExp, env));
             }
