@@ -1,15 +1,25 @@
 curl --data-raw "
-(define (filter f l) 
+(define (filter f l)
+  (if (null? l) '()
+    (let ((v (car l)) (r (cdr l)))
+       (cond ((f v) (cons v (filter f r)))
+             (else (filter f r ))))))
+(filter (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
+" localhost:8080
+(8 6 7 8 9)
+
+# if we don't mind the result being reversed (or can apply O(n) reverse) we can use tail recursion.
+curl --data-raw "
+(define (filter2 f l) 
   (define (fil f l l2) 
     (cond ((equal? l '()) l2)
           ((f (car l))  (fil f (cdr l) (cons (car l) l2)))
           (else (fil f (cdr l) l2))))
   (fil f l '()))
-(filter (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
+(filter2 (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
 " localhost:8080
  (9 8 7 6 8)
 
-# if we don't mind the result being reversed (or can apply O(n) reverse) we can use tail recursion.
 curl --data-raw "
 (define (filter2 f lst)
   (define (iter lst result)
