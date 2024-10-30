@@ -107,6 +107,8 @@ curl --data "
 (assoc 'c e)
 (assoc 'd e)
 (assoc (list 'b) '(((a)) ((b)) ((c))))
+(define p '((x . 1) (y . 2) (z . 3)))
+(assoc 'y p)
 " localhost:8080
 
 ((a 1) (b 2) (c 3))
@@ -115,6 +117,7 @@ curl --data "
 (c 3)
 #f
 ((b))
+(y . 2)
 
 curl --data "
 (define (string-ref str i) (slice str i (+ i 1)))
