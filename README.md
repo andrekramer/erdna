@@ -79,5 +79,8 @@ A Scheme expression can then we entered on a single line at a time.
 Try loading Conway's game of life with:   
 (load "game-of-life.scm")   
 
+Or GPS (General Problem Solver) from [Paradigms of AI Programming](https://en.wikipedia.org/wiki/Paradigms_of_AI_Programming):  
+(load "examples/gps.scm")   
+  
 or use "curl" commands to post any of the code samples in the files in the example directory to the running erdna server.   
   
