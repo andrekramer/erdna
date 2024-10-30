@@ -421,3 +421,22 @@ curl --data-raw "
 ()
 (400 20)
 
+
+curl --data-raw "
+(define (subset l ll) 
+  (cond ((null? l) #t)
+        ((member? (car l) ll) (subset (cdr l) ll))
+        (else #f)))
+(subset '(1 2) '(2 3 4))
+(subset '(1 2) '(2 3 1 4))
+(subset '(1 2) '(2 3 4))
+(subset '(1) '(3 2 1))
+" localhost:8080
+
+λ
+#f
+#t
+#f
+#t
+
+

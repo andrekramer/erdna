@@ -31,6 +31,11 @@
 (define (union l l2)
  (append l (set-difference l2 l)))
 
+(define (subset l ll) 
+  (cond ((null? l) #t)
+        ((member? (car l) ll) (subset (cdr l) ll))
+        (else #f)))
+
 (define (find-all f l)
    (define (find-all2 f l r)
      (cond ((null? l) r) 
@@ -109,4 +114,50 @@
 
 (define third-go (GPS '(son-at-school)))
 (display (concat "third solve was a " third-go))
+
+;;; The clobbered sibling problem
+
+(set! state '(son-at-home car-needs-battery have-money have-phone-book))
+(set! ops school-ops)
+
+(define go (GPS '(have-money son-at-school)))
+(display (concat "solve1 was a " go))
+
+(define (GPS-ALL goals) 
+  (define (achieve goal)
+    (define (appropriate? op) 
+      (member? goal (op-add-list op)))
+    (define (apply-op op)
+      (when (achieve-all (op-preconds op))
+        (display (concat "executing " (op-action op)))
+        (set! state (set-difference state (op-del-list op)))
+        (set! state (union state (op-add-list op)))
+        #t))
+    (or (member? goal state) (some apply-op (find-all appropriate? ops))))
+  (define (achieve-all goals) (and (every achieve goals) (subset goals state)))
+  (if (achieve-all goals) 'success))
+
+(set! state '(son-at-home car-needs-battery have-money have-phone-book))
+(set! ops school-ops)
+
+(define first-go (GPS-ALL '(son-at-school)))
+(display (concat "first solve2 was a " first-go))
+
+(set! state '(son-at-home car-needs-battery have-money))
+(set! ops school-ops)
+
+(define second-go (GPS-ALL '(son-at-school)))
+(display (concat "second solve2 was a " (if second-go second-go "fail")))
+
+(set! state '(son-at-home car-works))
+(set! ops school-ops)
+
+(define third-go (GPS-ALL '(son-at-school)))
+(display (concat "third solve2 was a " third-go))
+
+(set! state '(son-at-home car-needs-battery have-money have-phone-book))
+(set! ops school-ops)
+
+(define go (GPS-ALL '(have-money son-at-school)))
+(display (concat "solve2 was a " (if go go "fail")))
 
