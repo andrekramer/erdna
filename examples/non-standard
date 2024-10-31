@@ -41,7 +41,7 @@ curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080
 15
 
 curl --data "
-(define erdna (resolve (read-file-promise \"file3\"))) 
+(define erdna (resolve (read-file-promise \"data/file3\"))) 
 (eval (read erdna) (lambda () ())) test
 "  localhost:8080
 
@@ -51,7 +51,7 @@ curl --data "
 
 curl --data "
 (define (load file) (eval (read (resolve (read-file-promise file))) '()))
-(load \"file4\")
+(load \"data/file4\")
 (triple 4)
 "  localhost:8080
 12
