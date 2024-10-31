@@ -667,7 +667,7 @@ async function evalSet(exp, env) {
 
     const update = await eval(exp.value[2], env);
     if (update.type === ERR) {
-        return { type: ERR, value: "Could not evaluate value to set!" };
+        return { type: ERR, value: "Could not evaluate value to set! (" + update.value + ")"};
     }
 
     // console.log("set! " + symbol.value + " in " + e.name + " = " + JSON.stringify(update) + " was " + JSON.stringify(value));
