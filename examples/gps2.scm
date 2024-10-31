@@ -84,7 +84,7 @@
   '(shop-has-money)
   '(have-money))))
 
-(define (GPS state goals) (safe-remove-if symbol? (achieve-all (cons '(start) state) goals '())))
+(define (GPS2 state goals) (safe-remove-if symbol? (achieve-all (cons '(start) state) goals '())))
 
 (define (achieve-all state goals goal-stack)
   (let ((current-state state))
@@ -110,25 +110,25 @@
 (set! state '(son-at-home))
 (set! ops school-ops)
 
-(define go1 (GPS state '(son-at-school)))
+(define go1 (GPS2 state '(son-at-school)))
 
 (display "\nsecond solve\n")
 (set! state '(son-at-home car-needs-battery have-money have-phone-book))
 (set! ops school-ops)
 
-(define go2 (GPS state '(son-at-school)))
+(define go2 (GPS2 state '(son-at-school)))
 
 (display "\nsolve 3\n")
 (set! state '(son-at-home car-needs-battery have-money))
 (set! ops school-ops)
 
-(define go3 (GPS state '(son-at-school)))
+(define go3 (GPS2 state '(son-at-school)))
 
 (display "\nsolve 4\n")
 (set! state '(son-at-home car-works))
 (set! ops school-ops)
 
-(define go4 (GPS state '(son-at-school)))
+(define go4 (GPS2 state '(son-at-school)))
 
 ;;; The clobbered sibling problem
 
@@ -136,22 +136,22 @@
 (set! state '(son-at-home car-needs-battery have-money have-phone-book))
 (set! ops school-ops)
 
-(define go5 (GPS state '(have-money son-at-school)))
+(define go5 (GPS2 state '(have-money son-at-school)))
 
 (display "\nsolve 6\n")
 (set! state '(son-at-home car-needs-battery have-money have-phone-book))
 (set! ops school-ops)
 
-(define go6 (GPS state '(son-at-school have-money)))
+(define go6 (GPS2 state '(son-at-school have-money)))
 
 (display "\nsolve 7\n")
 (set! state '(son-at-home car-needs-battery have-money))
 (set! ops school-ops)
 
-(define go7 (GPS state '(son-at-school)))
+(define go7 (GPS2 state '(son-at-school)))
 
 (display "\nsolve 8\n")
 (set! state '(son-at-school))
 (set! ops school-ops)
 
-(define go8 (GPS state '(son-at-school)))
+(define go8 (GPS2 state '(son-at-school)))
