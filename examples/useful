@@ -54,6 +54,7 @@ curl --data "
 ;; simulate throw a die
 (one-of '(1 2 3 4 5 6))
 " localhost:8080
+some number 1 to 6
 
 curl --data "
 (define (last l) 
@@ -64,15 +65,16 @@ curl --data "
 (last '(1 2 3))
 (last '(1 2))
 (last '(1))
-(last '(a . b))
+;; (last '(a . b))
 (last '())
 " localhost:8080
-
 λ
-(2 3)
-b
+4
+3
+2
+1
 
-can't get last of empty list   
+can't get last of empty list  
 
 curl --data "
 (define (mappend f l) (apply append (map f l)))
@@ -117,6 +119,7 @@ curl --data "
 (c 3)
 #f
 ((b))
+((x . 1) (y . 2) (z . 3))
 (y . 2)
 
 curl --data "

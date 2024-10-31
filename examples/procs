@@ -228,6 +228,8 @@ curl --data-raw "
 ()
 (3 5 7)
 (6 24 60 120)
+λ
+((1 6 a u) (2 7 b v) (3 8 c x) (4 9 d y) (5 0 e w))
 
 curl --data "
 (define (dot-product a b) (apply + (map2 * a b)))

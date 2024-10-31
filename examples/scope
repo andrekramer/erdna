@@ -132,13 +132,13 @@ curl --data-raw "
 (letrec ((x 2)
          (y (+ x x)))
   (+ x y))
+(define y 1)
 (letrec ((x (- y 2))
          (y (+ x x)))
   (+ x y))
 " localhost:8080
 6
-
-letrec bind eval fails Unbound variable y
+-3
 
 curl --data-raw "
 (letrec
