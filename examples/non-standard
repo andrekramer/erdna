@@ -1,49 +1,65 @@
-curl --data '
-(string-length "abcdefg")
-(slice "abcdefgh" 3 5)
-(slice "123abcdefgh" 4)
-(concat "abc " 100.001 "\ndef\n" "123" #f)
-(index-of "World" "Hello World!")
-' localhost:8080  
+curl --data "
+(string-length \"abcdefg\")
+(slice \"abcdefgh\" 3 5)
+(slice \"123abcdefgh\" 4)
+(concat \"abc \" 100.001 \" def \" \"123\" #f)
+(index-of \"World\" \"Hello World\")
+" localhost:8080  
 7
-de
-bcdefgh
-abc 100.001
-def
-123false
+"de"
+"bcdefgh"
+"abc 100.001 def 123false"
 6
 
-curl --data "(sqrt 2)" localhost:8080
+curl --data "
+(sqrt 2)
+" localhost:8080
 1.4142135623730951
 
-curl --data "(floor (sqrt 2))" localhost:8080
+curl --data "
+(floor (sqrt 2))
+" localhost:8080
 1
 
-curl --data "(random)" localhost:8080
+curl --data "
+(random)
+" localhost:8080
 0 <= result <= 1
 
-curl --data "(type-of 'a)" localhost:8080  
+curl --data "
+(type-of 'a)
+" localhost:8080  
 0
 
-curl --data "(div-mod 13 3)" localhost:8080  
+curl --data "
+(div-mod 13 3)
+" localhost:8080  
 (4 . 1)
 
-curl --data "(print '(+ 1 2.0 (a . 1) (a b c (d e)) \"ddd\"))" localhost:8080
-(+ 1 2 (a . 1) (a b c (d e)) "ddd")
+curl --data "
+(print '(+ 1 2.0 (a . 1) (a b c (d e)) \"ddd\"))
+" localhost:8080
+"(+ 1 2 (a . 1) (a b c (d e)) \"ddd\")"
 
-curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080  
+curl --data "
+(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))
+" localhost:8080  
 15   
 
-curl --data "(eval (read \"(+ 1 2) '(a b) (* 1 2)\") (lambda () ()))"  localhost:8080
+curl --data "
+(eval (read \"(+ 1 2) '(a b) (* 1 2)\") (lambda () ()))
+" localhost:8080
 2  
 
-curl --data "(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))"  localhost:8080
+curl --data "
+(eval (read \"(+ 1 2 3 4 5)\") (lambda () ()))
+" localhost:8080
 15
 
 curl --data "
 (define erdna (resolve (read-file-promise \"data/file3\"))) 
 (eval (read erdna) (lambda () ())) test
-"  localhost:8080
+" localhost:8080
 
 "(define test \"this is a test\")\n(display \"echo\")\n"
 
@@ -53,46 +69,77 @@ curl --data "
 (define (load file) (eval (read (resolve (read-file-promise file))) '()))
 (load \"data/file4\")
 (triple 4)
-"  localhost:8080
+" localhost:8080
+λ
+λ
 12
 
-# turn an error into a string
-curl --data "(error->string '())" localhost:8080  
+curl --data "
+;;; turn an error into a string
+(error->string '())
+" localhost:8080  
 ()
 
-curl --data "(error->string (eval '(xxx) '()))" localhost:8080    
+curl --data "
+(error->string (eval '(xxx) '()))
+" localhost:8080    
 "Error: Unbound variable xxx"
 
-# use screen to mask an error (last-error captures the last error raised)
 curl --data "
+;;; use screen to mask an error (last-error captures the last error raised)
 (screen 
   (eval '(xxx) '()) 
-  (display (concat \"Error: \" last-error)))" localhost:8080    
+  (display (concat \"Error: \" last-error)))
+" localhost:8080    
 
-# using unquote to force an eval
-curl  --data-raw " (unquote '(+ 1 2)) " localhost:8080
+curl --data "
+;;; using unquote to force an eval
+(unquote '(+ 1 2)) 
+" localhost:8080
 3
-curl  --data-raw "(define a 1) (unquote 'a) " localhost:8080
+
+curl --data "
+(define a 1) (unquote 'a) 
+" localhost:8080
 1
 
-curl --data "(while (equal? #f #t) (error \"in body\"))" localhost:8080
-curl --data "(while #f (error \"in body\"))" localhost:8080
-#f
+curl --data "
+(while (equal? #f #t) (error \"in body\"))
+" localhost:8080
 #f
 
-curl --data "(while (null? '()) (display \"in body\") (error \"bomb\"))" localhost:8080
-curl --data "(while #t (display \"in body\") (error \"bomb\"))" localhost:8080
-bombbomb
+curl --data "
+(while #f (error \"in body\"))
+" localhost:8080
+#f
 
-curl --data "(let ((i 0)) (while (< i 100) (display i) (set! i (+ i 1))) i)" localhost:8080
+curl --data "
+(while (null? '()) (display \"in body\") (error \"bomb\"))
+" localhost:8080
+
+curl --data "
+(while #t (display \"in body\") (error \"bomb\"))
+" localhost:8080
+bomb
+
+curl --data "
+(let ((i 0)) (while (< i 100) (display i) (set! i (+ i 1))) i)
+" localhost:8080
 100
 
-curl --data "(let ((i 0)) (while (< i 1000000) (set! i (+ i 1))) i)" localhost:8080
+curl --data "
+(let ((i 0)) (while (< i 1000000) (set! i (+ i 1))) i)
+" localhost:8080
 1000000
 
-curl --data "(let ((i 0)) (do (display i) (set! i (+ i 1)) (< i 100)) i)" localhost:8080
-curl --data "(let ((i 100)) (do (display i) (set! i (+ i 1)) (< i 100)) i)" localhost:8080
+curl --data "
+(let ((i 0)) (do (display i) (set! i (+ i 1)) (< i 100)) i)
+" localhost:8080
 100
+
+curl --data "
+(let ((i 100)) (do (display i) (set! i (+ i 1)) (< i 100)) i)
+" localhost:8080
 101
 
 curl --data "
@@ -101,7 +148,8 @@ curl --data "
     (display i) 
     (if (> i 100) (break)) 
     (set! i (+ i 1))) 
-  i)" localhost:8080
+  i)
+" localhost:8080
 101
 
 curl --data "
@@ -111,7 +159,8 @@ curl --data "
     (if (> i 10) (continue)) 
     (set! j (+ j 1)) 
     (display j))
-  (cons i j))" localhost:8080
+  (cons i j))
+" localhost:8080
 (100 . 10)
 
 
@@ -123,6 +172,7 @@ curl --data "
     (if (> i 10) (continue)) 
     (set! j (+ j 1))
     (display j) #t)
-  (cons i j))" localhost:8080
+  (cons i j))
+" localhost:8080
 (101 . 10)
 
