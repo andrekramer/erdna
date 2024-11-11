@@ -66,7 +66,7 @@ curl --data "
 There is a REPL (read evaluate print loop) that can be started in a running Node server  
 with the ./erdna script (which loads examples/repl into the already running server).    
   
-In one shell / cmd window run:  
+In one shell / cmd window run (with increased stack size and error tracing):  
   
 node --trace-uncaught --stack-size=100000 index.js   
   

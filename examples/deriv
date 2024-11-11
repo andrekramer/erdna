@@ -55,6 +55,23 @@ curl --data "
 (deriv '(* (* x y) (+ x 3)) 'x)
 (deriv '(** x 3) 'x)
 " localhost:8080
+equal?
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
+λ
 1
 y
 (+ (* x y) (* y (+ x 3)))

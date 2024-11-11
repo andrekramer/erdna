@@ -304,18 +304,26 @@ curl --data "
 (quasiquote (a 1 ,(+ 1 2)))
 " localhost:8080  
 (a 1 3)
-export bq='`';curl --data "$bq(a 1 ,(+ 1 2))" localhost:8080  
+
+export bq='`';curl --data "
+$bq(a 1 ,(+ 1 2))
+" localhost:8080  
 (a 1 3)
 
-export bq='`';curl --data "(define l '(1 2 3)) $bq(a ,@l)" localhost:8080  
+export bq='`';curl --data "
+(define l '(1 2 3)) $bq(a ,@l)
+" localhost:8080  
 (1 2 3)
 (a 1 2 3)
 
-export bq='`';curl --data "$bq(a ,@'(1 2 3) b)" localhost:8080  
+export bq='`';curl --data "
+$bq(a ,@'(1 2 3) b)
+" localhost:8080  
 (a 1 2 3 b)
 
-export bq='`'; curl --data "
-(let ((name 'a)) $bq(list ,name ',name))" localhost:8080
+export bq='`';curl --data "
+(let ((name 'a)) $bq(list ,name ',name))
+" localhost:8080
 (list a (quote a))
 
 curl --data "
@@ -380,9 +388,9 @@ curl --data "
 (error \"raise an error\")
 " localhost:8080  
 λ
-9  
+9
 
-hick  
+hick
 
 curl --data "  
 (symbol? 'a) (number? 1) (pair? '(1 2)) (string? \"abc\") (boolean? #f)  

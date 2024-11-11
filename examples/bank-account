@@ -37,10 +37,14 @@ curl --data "
 ((acct2 'balance))  
 ((acct2 'close))  
 " localhost:8080
+λ
+λ
+λ
 0
 100
 70
-Insufficient funds
+"Insufficient funds"
 0
 
 unknown method close
+

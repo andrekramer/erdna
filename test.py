@@ -20,6 +20,8 @@ def run_test(test, result):
     print("????????????????????????")
     # print(test)
     test = test.replace("\\\"", "\"")
+    test = test.replace("$bq", "`")
+    
     response = requests.post(url, data=test.encode('utf-8'), headers={'Content-Type': 'text/plain;charset=utf-8'})
     print(response.text)
     if response.text.strip() == result.strip():
@@ -36,7 +38,7 @@ def run_file(file_path):
         with open(file_path, 'r') as file:
             for line in file:
                 # print("line: " + line)
-                if line.startswith("curl --data \""):
+                if line.startswith("curl --data \"") or line.startswith("curl --data-raw '") or line.startswith("export bq='`';curl --data "):
                     intest = True
                     if len(result.strip()) != 0:
                         run_test(test, result)
@@ -44,7 +46,7 @@ def run_file(file_path):
                         test = ""
                         result = ""
                     continue
-                if line.startswith("\" localhost:8080"):
+                if line.startswith("\" localhost:8080") or line.startswith("' localhost:8080"):
                     intest = False
                     print("------------------------")
                     print(test)

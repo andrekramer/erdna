@@ -1,5 +1,5 @@
 
-curl  --data-raw "
+curl --data "
 (define-rewriter or2
    (lambda (expr)
       (let ((a (cadr expr))
@@ -30,9 +30,8 @@ curl  --data-raw "
 #t
 #t
 
-# xor using lists and quotes
-
-curl  --data-raw "
+curl --data "
+;;; xor using lists and quotes
 (define-rewriter xor
    (lambda (expr)
       (let ((a (cadr expr))
@@ -47,16 +46,15 @@ curl  --data-raw "
 (xor #f #t)
 (xor #t #t)
 " localhost:8080
-
 ()
 #f
 #t
 #t
 #f
 
-# xor using quasiquote and unquote
 
-export bq='`';curl  --data-raw "
+export bq='`';curl --data "
+;;; xor using quasiquote and unquote
 (define-rewriter xor
    (lambda (expr)
       (let ((a (cadr expr))
@@ -70,13 +68,13 @@ export bq='`';curl  --data-raw "
 (xor #t #t)
 " localhost:8080
 
-expression
+()
 #f
 #t
 #t
 #f
 
-export bq='`';curl  --data-raw "
+export bq='`';curl --data "
 (define-rewriter swap
    (lambda (expr)
       (let ((temp (gensym)))
@@ -96,7 +94,7 @@ y
 2
 1
 
-curl  --data-raw "
+curl --data "
 (define-rewriter when
    (lambda (expr)
       (list 'if (cadr expr) (append (list 'begin) (cddr expr)) '())))
@@ -111,7 +109,7 @@ curl  --data-raw "
 ()
 (1 2)
 
-curl  --data-raw "
+curl --data "
 (define-rewriter unless
    (lambda (expr)
       (list 'if (cadr expr) '() (append (list 'begin) (cddr expr)))))
