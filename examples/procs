@@ -1,4 +1,4 @@
-curl --data-raw "
+curl --data "
 (define (filter f l)
   (if (null? l) '()
     (let ((v (car l)) (r (cdr l)))
@@ -6,10 +6,11 @@ curl --data-raw "
              (else (filter f r ))))))
 (filter (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
 " localhost:8080
+λ
 (8 6 7 8 9)
 
-# if we don't mind the result being reversed (or can apply O(n) reverse) we can use tail recursion.
-curl --data-raw "
+curl --data "
+;;; if we don't mind the result being reversed (or can apply O(n) reverse) we can use tail recursion.
 (define (filter2 f l) 
   (define (fil f l l2) 
     (cond ((equal? l '()) l2)
@@ -18,9 +19,10 @@ curl --data-raw "
   (fil f l '()))
 (filter2 (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
 " localhost:8080
- (9 8 7 6 8)
+λ
+(9 8 7 6 8)
 
-curl --data-raw "
+curl --data "
 (define (filter2 f lst)
   (define (iter lst result)
     (cond
@@ -32,8 +34,10 @@ curl --data-raw "
   (iter lst '()))
 (filter2 (lambda (a) (< 5 a)) '(1 8 3 4 5 6 7 2 8 9))
 " localhost:8080
+λ
+(9 8 7 6 8)
 
-curl --data-raw "
+curl --data "
 (define (quick-sort xs)
    (if (null? xs) '()
       (let ((x (car xs))
@@ -49,9 +53,10 @@ curl --data-raw "
                             xs'))))))
 (quick-sort '(3 5 4 7 1 9 2 12 4 8 1.1 0 -1 2))
 " localhost:8080
+λ
 (-1 0 1 1.1 2 2 3 4 4 5 7 8 9 12)
 
-curl --data-raw "
+curl --data "
    (define (make-integer-list count l) 
      (cond 
        ((equal? count 0) l)
@@ -59,9 +64,11 @@ curl --data-raw "
    (define list-to-sort (reverse (make-integer-list 100 '())))
 " localhost:8080
 
-curl --data-raw "(quick-sort list-to-sort)" localhost:8080
+curl --data "
+(quick-sort list-to-sort)
+" localhost:8080
 
-curl --data-raw "
+curl --data "
 (define (merge l m)
   (if (null? l) m
     (if (null? m) l
@@ -89,11 +96,21 @@ curl --data-raw "
              (merge-sort (cadr (split l)))))))
 (merge-sort '(6 2 3 5 4 1 8 7 9 0))
 " localhost:8080
+λ
+(100 99 98 97 96 95 94 93 92 91 90 89 88 87 86 85 84 83 82 81 80 79 78 77 76 75 74 73 72 71 70 69 68 67 66 65 64 63 62 61 60 59 58 57 56 55 54 53 52 51 50 49 48 47 46 45 44 43 42 41 40 39 38 37 36 35 34 33 32 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3 2 1)
+(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100)
+λ
+λ
+λ
+λ
+λ
 (0 1 2 3 4 5 6 7 8 9)
 
-curl --data-raw "(merge-sort list-to-sort)" localhost:8080
+curl --data "
+(merge-sort list-to-sort)
+" localhost:8080
 
-curl --data-raw "
+curl --data "
 (define (merge2 l m)
   (if (null? l) m
     (if (null? m) l
@@ -117,14 +134,17 @@ curl --data-raw "
              (merge-sort2 (cadr (split2 l)))))))
 (merge-sort2 '(6 2 3 5 4 1 8 7 9 0))
 " localhost:8080
+(1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100)
+λ
+λ
+λ
 (0 1 2 3 4 5 6 7 8 9)
 
-curl --data-raw "(merge-sort2 list-to-sort)" localhost:8080
+curl --data "
+(merge-sort2 list-to-sort)
+" localhost:8080
 
-To increase stack size use, e.g.:
-node --stack-size=1000000 index.js 
-
-curl --data-raw "
+curl --data "
 (define (random-int max) (floor (* (random) max)))
 (define (make-random-integer-list count l) 
   (cond 
@@ -134,12 +154,20 @@ curl --data-raw "
 (define random-list-to-sort (make-random-integer-list 10000 '()))
 " localhost:8080
 
-curl --data-raw "(quick-sort random-list-to-sort)" localhost:8080
-curl --data-raw "(merge-sort random-list-to-sort)" localhost:8080
-curl --data-raw "(merge-sort2 random-list-to-sort)" localhost:8080
+curl --data "
+(quick-sort random-list-to-sort)
+" localhost:8080
 
+curl --data "
+(merge-sort random-list-to-sort)
+" localhost:8080
 
-curl --data-raw "
+curl --data "
+(merge-sort2 random-list-to-sort)
+" localhost:8080
+-- results are lenghty sorted lists
+
+curl --data "
 (define (min . l) 
   (define (min2 l m)
     (if (null? l) m 
@@ -147,9 +175,10 @@ curl --data-raw "
   (min2 (cdr l) (car l)))
 (min 4 5 2 7)
 " localhost:8080
+λ
 2
 
-curl --data-raw "
+curl --data "
 (define (member? m l)
   (cond ((null? l) #f)
         ((equal? m (car l)) l) 
@@ -161,20 +190,23 @@ curl --data-raw "
 (beatle? 'paul)
 (beatle? 'elvis)
 " localhost:8080
-false
+λ
+#f
 (2 3 (4 5))
+λ
 (paul george ringo)
 #f
 
-curl --data-raw "
+curl --data "
 (define (map f l) 
   (if (null? l) '() (cons (f (car l)) (map f (cdr l)))))
 (map (lambda (a) (+ a 1)) '(1 2 3 4 5))  
 " localhost:8080
+λ
 (2 3 4 5 6)
 
-# Scheme's standard map can apply a function to multiple lists. Here called map2:
-curl --data-raw "
+curl --data "
+;;; Scheme's standard map can apply a function to multiple lists. Here called map2:
 (define (any-null? lists)
    (cond ((null? lists) #f)
           (else (if (null? (car lists)) #t (any-null? (cdr lists))))))
@@ -210,8 +242,11 @@ curl --data-raw "
    (map-over-lists list lists))
 (transpose '(1 2 3 4 5) '(6 7 8 9 0) '(a b c d e) '(u v x y w z))
 " localhost:8080
-((1 6 a u) (2 7 b v) (3 8 c x) (4 9 d y) (5 0 e w))
-
+λ
+λ
+λ
+λ
+λ
 "testing"
 #f
 #t
@@ -236,10 +271,11 @@ curl --data "
 (dot-product '(1 3 -5) '(4 -2 -1 ))
 (dot-product '(1 3 -5) '(1 3 -5))
 " localhost:8080
+λ
 3
 35
 
-curl --data-raw "; reduce right associative aka foldr
+curl --data "; reduce right associative aka foldr
 (define (reduce fn l r)
   (if (null? l) r
       (fn (car l)
@@ -247,20 +283,22 @@ curl --data-raw "; reduce right associative aka foldr
 (reduce * '(1 2 3 4 5) 1)
 (reduce - '(100 20 30 5 40) 0)
 " localhost:8080
+λ
 120
 145
 
-curl --data-raw "; reduce left associative aka foldl
+curl --data "; reduce left associative aka foldl
 (define (reduce-left fn r l)
   (if (null? l) r
       (reduce-left fn (fn r (car l)) (cdr l))))
 (reduce-left / 1.0  '(1 2 3 4 5))
 (reduce-left - 0.0 '(100 20 30 5 40))
 " localhost:8080
+λ
 0.008333333333333333
 -195
 
-curl --data-raw "
+curl --data "
 (define (largest nums)
   (local [(define (bigger x y)
             (cond [(> x y) x]
@@ -271,9 +309,10 @@ curl --data-raw "
     (helper nums)))
 (largest (list 5 15 12 13 14 11 3 9 8 7 6 16 4 10 2 1))
 " localhost:8080
+λ
 16
 
-curl --data-raw "
+curl --data "
 (define curry
  (lambda (f)
    (lambda (x)
@@ -283,7 +322,7 @@ curl --data-raw "
 λ
 3
 
-curl --data-raw "
+curl --data "
 (define o (lambda (f g)
  (lambda (x) (f (g x)))))
 (define (mod x y) (cdr (div-mod x y)))
@@ -294,12 +333,16 @@ curl --data-raw "
 (odd? 1018)
 (even? 111)
 " localhost:8080
+λ
+λ
+λ
+λ
 #t
 #t
 #f
 #f
 
-curl --data-raw "
+curl --data "
 (define (all? p? xs)
  (if (null? xs)
   #t
@@ -308,10 +351,11 @@ curl --data-raw "
 (all? even? '(2 4 6 8))
 (all? odd? '(1 3 4 7 9))
 " localhost:8080
+λ
 #t
 #f
 
-curl --data-raw "
+curl --data "
 (define (any? p? xs)
  (if (null? xs)
   #f
@@ -331,7 +375,7 @@ curl --data-raw "
 λ
 #t
 
-curl --data-raw "
+curl --data "
 (define sum 
  (lambda (f lower upper)
   (if (> lower upper)
@@ -339,18 +383,20 @@ curl --data-raw "
     (+ (f lower) (sum f (+ 1 lower) upper)))))
 (sum (lambda (x) x) 1 10)
 " localhost:8080
+λ
 55
 
-curl --data-raw "
+curl --data "
 (define (for-each f lis)
    (cond 
      ((null? lis) '())
      (else (f (car lis)) (for-each f (cdr lis)))))
 (for-each (lambda (x) (display (* x 2))) '(1 2 3 4))
 " localhost:8080
+λ
 ()
 
-curl --data-raw "
+curl --data "
 (define (every f l) 
    (cond ((null? l) #t)
          ((f (car l)) (every f (cdr l)))
@@ -369,6 +415,8 @@ curl --data-raw "
 (some even? '(1 3 5))
 (some even? '(1 2 3 4))
 " localhost:8080
+λ
+λ
 #t
 #t
 #f
@@ -376,7 +424,7 @@ curl --data-raw "
 #f
 #t
 
-curl --data-raw "
+curl --data "
 (define (set-difference l l2) 
    (define (diff l l2 d) 
       (cond ((null? l) d)
@@ -396,6 +444,7 @@ curl --data-raw "
 (union '(1 2) '(1 2))
 " localhost:8080
 λ
+λ
 (7 3 1)
 (3 2 1)
 (2 1)
@@ -405,7 +454,7 @@ curl --data-raw "
 (1 2)
 (1 2)
 
-curl --data-raw "
+curl --data "
 (define (find-all f l)
    (define (find-all2 f l r)
      (cond ((null? l) r) 
@@ -417,14 +466,14 @@ curl --data-raw "
 (find-all even? '(1 33 55 77))
 (find-all even? '(20 400))
 " localhost:8080
-
+λ
 (0 8 6 4 2)
 ()
 ()
 (400 20)
 
 
-curl --data-raw "
+curl --data "
 (define (subset l ll) 
   (cond ((null? l) #t)
         ((member? (car l) ll) (subset (cdr l) ll))
@@ -456,9 +505,10 @@ curl --data "
 (flatten '(1))
 (flatten '(1 (2) 3))
 " localhost:8080
+λ
 (1 2 3 4 5 6 7 8 9)
 ()
-(3)    
+(3)
 (a b c)
 (1 2 3)
 (1)
