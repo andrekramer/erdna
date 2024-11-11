@@ -39,7 +39,7 @@ curl --data "(+ 1 2)" localhost:8080
 
 or a multi-line post with a Scheme style comment:    
 
-curl --data-raw "   
+curl --data "   
   
  (+ 1 2 3 4 5) ; adds the first 5 numbers together   
  
@@ -48,15 +48,12 @@ curl --data-raw "
 
 or to define and call a function:
 
-curl --data-raw "  
-(define (square x) (* x x))  
-(square 5)  
-" localhost:8080     
+curl --data "(define (square x) (* x x)) (square 5)" localhost:8080     
 25  
 
 calculate a number in the Fibonacci sequence:  
 
-curl --data-raw "   
+curl --data "   
 (define (fib n)   
 (cond   
   ((equal? n 0) 0)   
