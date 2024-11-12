@@ -81,3 +81,4 @@ Or GPS (General Problem Solver) from [Paradigms of AI Programming](https://en.wi
   
 or use "curl" commands to post any of the code samples in the files in the example directory to the running erdna server.   
   
+Tests are semi automated. Run py-install and then "python3 test examples/procs" or other files in the exmaples directory. A small number of Fails need manual examination but can be due to indeterminate results.
