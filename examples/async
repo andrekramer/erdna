@@ -1,31 +1,53 @@
-curl --data "(sleep-promise 2000)" localhost:8080
-curl --data "(resolve (sleep-promise 2000))" localhost:8080
+curl --data "
+(sleep-promise 2000)
+" localhost:8080
+
+curl --data "
+(resolve (sleep-promise 2000))
+" localhost:8080
+
 curl --data "
 (define (test) 
   (define a (sleep-promise 2000)) 
   (+ 1 2) 
-  (resolve a)) (test)" localhost:8080
-# writes "done." after each sleep
+  (resolve a)) (test)
+;;; writes "done." after each sleep
+" localhost:8080
 
-# In another console:
-export PORT=8081;node index.js 
+"done."
+"done."
+λ
+"done."
 
-# request some URLs:
-curl --data '(resolve (fetch-promise "http://localhost:8081" ""))' localhost:8080
-erdna
-curl --data '(resolve (fetch-promise "http://github.com/andrekramer/erdna" ""))' localhost:8080
+curl --data-raw '
+;;; request some URLs:
+;;; In another console:
+;;; export PORT=8081;node index.js 
+(resolve (fetch-promise "http://localhost:8081" ""))
+' localhost:8080
+"erdna"
+
+curl --data-raw '
+(resolve (fetch-promise "http://github.com/andrekramer/erdna" ""))
+' localhost:8080
 fetches the HTML page for this GitHub repo
-curl --data '(resolve (fetch-promise "http://worldtimeapi.org/api/timezone/Europe/Dublin" ""))' localhost:8080  
+
+curl --data-raw '
+(resolve (fetch-promise "http://worldtimeapi.org/api/timezone/Europe/Dublin" ""))
+' localhost:8080  
 time in Dublin
 
-# evaluate an expression remotely
-curl --data '(resolve (fetch-promise "http://localhost:8081" "" "(+ 1 2 3)"))' localhost:8080
+curl --data-raw '
+;;; evaluate an expression remotely
+(resolve (fetch-promise "http://localhost:8081" "" "(+ 1 2 3)"))
+' localhost:8080
 "6\n"
 
 curl --data "
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
 (resolve (remote-promise \"http://localhost:8081\" \"\" '(+ 1 2 3 4)))
 " localhost:8080
+λ
 "10\n"
 
 curl --data "
@@ -33,15 +55,18 @@ curl --data "
 (resolve (remote-promise \"http://localhost:8081\" \"\"
 '(begin (define add1 (lambda (b) (+ 1 b))) (add1 7))))
 " localhost:8080
+λ
 "8\n"
 
-# Use api key XXX
-export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js 
-curl --data '(resolve (fetch-promise "http://localhost:8081" "XXX"))' localhost:8080
+curl --data-raw '
+;;; Use api key XXX
+;;; export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js 
+(resolve (fetch-promise "http://localhost:8081" "XXX"))
+' localhost:8080
 "erdna"
 
-# read and eval the result from a remote promise:
 curl --data "
+;;; read and eval the result from a remote promise:
 (define (remote-value-promise url apikey exp) 
   (eval 
     (read 
@@ -56,19 +81,22 @@ curl --data "
       (y (add1 1)))
       (quasiquote (+ ,x ,y 3))))
 " localhost:8080
+λ
 13
 
-# background processing:
-curl --data "(apply-promise (lambda (x y z) (display x) z) '(1 2 'a))" localhost:8080
+curl --data "
+;;; background processing:
+(apply-promise (lambda (x y z) (display x) z) '(1 2 'a))
+" localhost:8080
 a
 
-curl --data "(begin (apply-promise (lambda (x y z) (display x) 
-(resolve (sleep-promise 2000)) (display y) z) '(1 2 'a)) (display 3) 4)" localhost:8080 
+curl --data "
+(begin (apply-promise (lambda (x y z) (display x) 
+(resolve (sleep-promise 2000)) (display y) z) '(1 2 'a)) (display 3) 4)
+;;; displays: 3 2 1
+" localhost:8080 
 4
-displays:
-3
-1
-2 
+
 
 curl --data "
 (define (resolve-all l) 
@@ -79,26 +107,29 @@ curl --data "
   (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 100)) (display y) z) '(1 2 3))
   (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 200)) (display y) z) '(4 5 6)) 
   (apply-promise (lambda (x y z) (display x) (resolve (sleep-promise 300)) (display y) z) '(7 8 9)) 
-))" localhost:8080
-displays:  
-1
-4
-7
-2
-3
-5
-6
-8
-9
+))
+;;; displays:  1 4 7 2 3 5 6 8 9
+" localhost:8080
+ok
 
-curl --data "(resolve (read-file-promise \"data/file1\"))"  localhost:8080
+curl --data "
+(resolve (read-file-promise \"data/file1\"))
+" localhost:8080
+λ
+()
 "coola boola\n"
 
-curl --data "(resolve (write-file-promise \"data/file2\" \"hello erdna\"))"  localhost:8080
-cat data/file2 
-hello erdna 
+curl --data "
+(resolve (write-file-promise \"data/file2\" \"hello erdna\"))
+;;; cat data/file2 
+;;; hello erdna
+" localhost:8080
+()
 
-# read a line from a prompt
-curl --data "(let ((name (resolve (prompt-promise \"Hi, who are you? \")))) 
- (display (concat \"Hello, \" name))) " localhost:8080
+curl --data "
+;;; read a line from a prompt
+(let ((name (resolve (prompt-promise \"Hi, who are you? \")))) 
+ (display (concat \"Hello, \" name)) #t) 
+" localhost:8080
+#t
 

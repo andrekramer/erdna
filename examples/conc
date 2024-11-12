@@ -1,28 +1,32 @@
 
-# Define process and yield
 
 curl --data "
+;;; Define process and yield
 (define (process f id) (apply-promise f (list id)) '())
 (define (yield) (resolve (sleep-promise 0)))
 (define (maybe-yield) (if (> (random) 0.5) (yield) '()))
 " localhost:8080
-
-# Simulating processes that yield
+λ
+λ
+λ
 
 curl --data "
+;;; Simulating processes that yield
 (define (loops id n)
     (cond ((equal? n 0) '())
           (else (maybe-yield) (display id) (loops id (- n 1)))))
 (process (lambda (id) (loops id 100)) \"p1\")
 (process (lambda (id) (loops id 100)) \"p2\")
 (process (lambda (id) (loops id 100)) \"p3\")
+;;; displays a mix of p1, p2 and p3s
 " localhost:8080
-
-displays a mix of p1, p2 and p3s
-
-# Pass a message to a waiting child process
+λ
+()
+()
+()
 
 curl --data "
+;;; Pass a message to a waiting child process
 (let 
   ((mp (message-promise)))
 
@@ -144,8 +148,8 @@ echo actor
 done.
 bye
 
-# Go Actor
 curl --data "
+;;; Go Actor
 (define (go-actor) 
   (letrec
     ((count 0))
@@ -177,13 +181,14 @@ curl --data "
        (send-message inbox '(\"stop\"))
        (display \"sent stop\"))) \"sent stop\"))
 " localhost:8080
+λ
+()
 
-# Use api key XXX for a second erdna node listening on port 8081:
-export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js
-
-# Create an Actor in the remote node (8081) with the actor's inbox 
-# defined as "portal" in the top level env from first node (8080).  
 curl --data "
+;;; Use api key XXX for a second erdna node listening on port 8081:
+;;; export APIKEY=XXX; export PORT=8081; node --stack-size=1000000 index.js
+;;; Create an Actor in the remote node (8081) with the actor's inbox 
+;;; defined as "portal" in the top level env from first node (8080).  
 (define (remote-promise url apikey exp) (fetch-promise url apikey (print exp)))
 (resolve (remote-promise \"http://localhost:8081\" \"XXX\"  
 '(begin
@@ -215,17 +220,22 @@ curl --data "
 
    (define portal (actor portal-actor)) 
    ())
-))" localhost:8080
+))
+" localhost:8080
+λ
+"()\n"
 
-# Remote call that executes a script to send a message to the portal defined in previous step.
 curl --data "
+;;; Remote call that executes a script to send a message to the portal defined in previous step.
 (display \"requesting remote promise\")
 (resolve (remote-promise \"http://localhost:8081\" \"XXX\" 
 '(send-message  portal '(\"display\" . \"hello\"))
-)) " localhost:8080
+)) 
+" localhost:8080
+"\n"
 
-# Ask for the count maintained by the remote actor and display and return it.
 curl --data "
+;;; Ask for the count maintained by the remote actor and display and return it.
 (resolve (remote-promise \"http://localhost:8081\" \"XXX\" 
 '(let
    ((consumer (message-promise)))
@@ -233,23 +243,34 @@ curl --data "
    (let ((reply (receive-message consumer)))
          (display reply)
          reply))
-))" localhost:8080
+))
+" localhost:8080
+"1\n"
 
-# Use a post URL query param to send an expression to an actor portal 
-# (using the one from above which happens to be named "portal").
 curl --data "
+;;; Use a post URL query param to send an expression to an actor portal 
+;;; (using the one from above which happens to be named "portal").
 (resolve (remote-promise \"http://localhost:8081?portal=portal\" \"XXX\" 
 '(cons \"display\" \"hi\")
-)) " localhost:8080
+)) 
+" localhost:8080
+"message sent."
 
-# Or with a helper function to do the send of the expression
-# and ' quoting the pair to be sent instead of using cons as above.
 curl --data "
+;;; Or with a helper function to do the send of the expression
+;;; and ' quoting the pair to be sent instead of using cons as above.
 (define (send-to-portal url portal apikey exp)
   (resolve (remote-promise (concat url \"?portal=\" portal) apikey exp))) 
 (send-to-portal \"http://localhost:8081\" \"portal\" \"XXX\" ''(\"display\" . \"hey\"))
- " localhost:8080
+" localhost:8080
+λ
+"message sent."
 
-# Don't forget to tell the actor to quit - can go direct to 8081 to send the poison message.
-curl --header "apikey: XXX" --data "(send-message  portal '(\"quit\"))" localhost:8081
+curl --data "
+;;; --header "apikey: XXX" 
+;;; Don't forget to tell the actor to quit - can go direct to 8081 to send the poison message.
+(send-message  portal '(\"quit\"))
+" localhost:8081
+λ
+"message sent."
 

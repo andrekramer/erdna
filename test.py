@@ -46,7 +46,7 @@ def run_file(file_path):
                         test = ""
                         result = ""
                     continue
-                if line.startswith("\" localhost:8080") or line.startswith("' localhost:8080"):
+                if line.startswith("\" localhost:8080") or line.startswith("' localhost:8080") or line.startswith("\" localhost:8081"):
                     intest = False
                     print("------------------------")
                     print(test)
