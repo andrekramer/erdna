@@ -491,12 +491,38 @@ curl --data "
 #t
 
 curl --data "
-(define (flatten l)
+(define (flatten1 l)
   (cond 
     ((null? l) '())
-    ((list? (car l)) (append (flatten (car l)) (flatten (cdr l))))
-    (else (cons (car l) (flatten (cdr l))))))
+    ((list? (car l)) (append (flatten1 (car l)) (flatten1 (cdr l))))
+    (else (cons (car l) (flatten1 (cdr l))))))
 
+(flatten1 '(1 2 (3 4) (5 (6) (7 (8 9)))))
+(flatten1 '())
+(flatten1 '(((3))))
+(flatten1 '((a (b (c)))))
+(flatten1 '(1 2 3))
+(flatten1 '(1))
+(flatten1 '(1 (2) 3))
+" localhost:8080
+λ
+(1 2 3 4 5 6 7 8 9)
+()
+(3)
+(a b c)
+(1 2 3)
+(1)
+(1 2 3)
+
+curl --data "
+(define (flatten l)
+  (define (flat l r)
+    (cond 
+      ((null? l) r)
+      ((list? l) (flat (car l) (flat (cdr l) r)))
+      (else (cons l r))))
+  (flat l '()))
+  
 (flatten '(1 2 (3 4) (5 (6) (7 (8 9)))))
 (flatten '())
 (flatten '(((3))))
