@@ -115,8 +115,6 @@ ok
 curl --data "
 (resolve (read-file-promise \"data/file1\"))
 " localhost:8080
-λ
-()
 "coola boola\n"
 
 curl --data "
