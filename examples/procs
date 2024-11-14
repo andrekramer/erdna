@@ -515,13 +515,13 @@ curl --data "
 (1 2 3)
 
 curl --data "
-(define (flatten l)
-  (define (flat l r)
+(define (flatten lst)
+  (define (flatten-helper lst acc)
     (cond 
-      ((null? l) r)
-      ((list? l) (flat (car l) (flat (cdr l) r)))
-      (else (cons l r))))
-  (flat l '()))
+      ((null? lst) acc)
+      ((list? lst) (flatten-helper (car lst) (flatten-helper (cdr lst) acc)))
+      (else (cons lst acc))))
+  (flatten-helper lst '()))
   
 (flatten '(1 2 (3 4) (5 (6) (7 (8 9)))))
 (flatten '())
@@ -530,6 +530,8 @@ curl --data "
 (flatten '(1 2 3))
 (flatten '(1))
 (flatten '(1 (2) 3))
+(flatten '((1 2) 3 4))
+(flatten '((1 2) 3))
 " localhost:8080
 λ
 (1 2 3 4 5 6 7 8 9)
@@ -539,4 +541,5 @@ curl --data "
 (1 2 3)
 (1)
 (1 2 3)
-
+(1 2 3 4)
+(1 2 3)

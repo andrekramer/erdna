@@ -28,6 +28,28 @@ curl --data "
 5
 
 curl --data "
+;; doc comments in function definitions are allowed
+(define (inc x) 
+  \"increment by adding 1 to the x argument\"
+  (+ x 1))
+(inc 122)
+" localhost:8080  
+λ
+123
+
+curl --data-raw '   
+(define (fib n) 
+"calculate the nth fibonacci number"
+(cond   
+  ((equal? n 0) 0)   
+  ((equal? n 1) 1)   
+  (else (+ (fib (- n 1)) (fib (- n 2))))))    
+(fib 19)  
+' localhost:8080    
+λ
+4181   
+
+curl --data "
 (define (addx x) (lambda (y) (+ x y))) 
 (define add5 (addx 5)) (add5 3)
 " localhost:8080  

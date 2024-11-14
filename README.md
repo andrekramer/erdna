@@ -53,14 +53,15 @@ curl --data "(define (square x) (* x x)) (square 5)" localhost:8080
 
 calculate a number in the Fibonacci sequence:  
 
-curl --data "   
+curl --data '   
 (define (fib n)   
+"calculate the nth fibonacci number"
 (cond   
   ((equal? n 0) 0)   
   ((equal? n 1) 1)   
   (else (+ (fib (- n 1)) (fib (- n 2))))))    
-(fib 19)   
-" localhost:8080    
+(fib 19)  
+' localhost:8080    
 4181   
      
 There is a REPL (read evaluate print loop) that can be started in a running Node server  

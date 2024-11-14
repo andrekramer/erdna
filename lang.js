@@ -967,6 +967,14 @@ async function evalDefine(exp, env) {
         if (exp.value.length < 3) {
             return { type: ERR, value: "define procedure needs a body" };
         }
+        let body = 2;
+        if (exp.value[2].type === STR) {
+            if (exp.value.length < 4) {
+                return { type: ERR, value: "define procedure needs a body as well as a doc comment" };
+            }
+            body = 3;
+            const doc = exp.value[2];
+        }
         const proc = def.value[0];
         if (proc.type !== ATOM) {
             return { type: ERR, value: "define procedure needs a name" };
@@ -976,7 +984,7 @@ async function evalDefine(exp, env) {
             args.push(def.value[i]);
         }
         const lambda = [{ type: ATOM, value: "lambda" }, { type: EXP, value: args }];
-        for (let i = 2; i < exp.value.length; i++) {
+        for (let i = body; i < exp.value.length; i++) {
             lambda.push(exp.value[i]);
         }
         // console.log("define proc " + JSON.stringify(lambda));
