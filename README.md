@@ -55,7 +55,7 @@ calculate a number in the Fibonacci sequence:
 
 curl --data '   
 (define (fib n)   
-"calculate the nth fibonacci number"
+"calculate the nth fibonacci number"   
 (cond   
   ((equal? n 0) 0)   
   ((equal? n 1) 1)   
@@ -82,4 +82,8 @@ Or GPS (General Problem Solver) from [Paradigms of AI Programming](https://en.wi
   
 or use "curl" commands to post any of the code samples in the files in the example directory to the running erdna server.   
   
-Tests are semi automated. Run py-install and then "python3 test examples/procs" or other files in the exmaples directory. A small number of Fails need manual examination but can be due to indeterminate results.
+Tests are semi automated. Run py-install and then "python3 test examples/procs" or on other files in the examples directory. A small number of Fails need manual examination but can be due to indeterminate results.
+
+The ai directory contains some experiments of using ai models from a scheme repl. 
+e.g. Add an api key in "ai/gemini-api-key" from Google AI and do a (load "ai/gemini.scm")
+

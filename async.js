@@ -28,10 +28,18 @@ async function fetchPromise(args, env) {
     if (args.length === 2) {
         // console.log("fetch " + args[0].value);
         promise = fetch(args[0].value, { headers });
-    } else if (args.length === 3) {
-        headers[ "Content-Type"] = "application/text";
+    } else if (args.length === 3 || args.length === 4) {
+        
         if (args[2].type !== STR) {
             return { type: ERR, value: "fetch-promise expect a text body as optional 3rd argument" };
+        }
+        if (args.length === 4) {
+            if (args[3].type !== STR) {
+                return { type: ERR, value: "fetch-promise expect a string content type header as optional 4rd argument" };
+            }
+            headers[ "Content-Type"] = args[3].value;
+        } else {
+            headers[ "Content-Type"] = "application/text";
         }
         promise = fetch(args[0].value, {
             method: "POST",
