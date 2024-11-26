@@ -12,6 +12,11 @@ else:
     print("No arguments were provided.")
     exit()
 
+if len(sys.argv) > 2:
+    replaceBackQuote = sys.argv[2] == "true"
+else:
+    replaceBackQuote = True
+
 url = "http://localhost:8080"
 
 def run_test(test, result):
@@ -19,7 +24,8 @@ def run_test(test, result):
     print(result)
     print("????????????????????????")
     # print(test)
-    test = test.replace("\\\"", "\"")
+    if replaceBackQuote:
+        test = test.replace("\\\"", "\"")
     test = test.replace("$bq", "`")
     
     response = requests.post(url, data=test.encode('utf-8'), headers={'Content-Type': 'text/plain;charset=utf-8'})

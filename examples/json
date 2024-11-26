@@ -1,0 +1,58 @@
+curl --data-raw '
+;;; test with:
+;;; python3 test.py examples/json false
+(json-parse "{ \"a\": \"abc123\", \"x\": 2.1, \"bool\": true}")
+' localhost:8080
+((a "abc123") (x 2.1) (bool #t))
+
+curl --data-raw '
+(json-parse "{ \"a\": \"abc\",  
+ \"point\": { \"x\": 1, \"y\": 2, \"z\": 3 }}")
+' localhost:8080
+((a "abc") (point ((x 1) (y 2) (z 3))))
+
+curl --data-raw '
+(json-parse "{ 
+ \"point\": { \"x\": 1, \"y\": 2, \"properties\": { \"colour\": \"blue\" }, \"z\": 3 },
+ \"doc\": \"point with colour\"
+}")
+' localhost:8080
+((point ((x 1) (y 2) (properties ((colour "blue"))) (z 3))) (doc "point with colour"))
+
+curl --data-raw '
+(json-parse "{ 
+\"name\":\"Jane\",
+\"age\":30,
+\"horses\":[\"Trigger\", \"Poppy\", \"Sunny\"]
+}")
+' localhost:8080
+((name "Jane") (age 30) (horses ((0 "Trigger") (1 "Poppy") (2 "Sunny"))))
+
+
+curl --data-raw '
+(json-parse "{ 
+  \"candidates\": [
+    {
+      \"content\": {
+        \"parts\": [
+          {
+            \"text\": \"Yes.  Since Esland (Democracy) is next to Middland, and Wesland (Communist) is next to Middland, regardless of whether Middland is a democracy or communist country, there will always be a democracy next to a communist country.\\n\"
+          }
+        ],
+        \"role\": \"model\"
+      },
+      \"finishReason\": \"STOP\",
+      \"avgLogprobs\": -0.069065033305775042
+    }
+  ],
+  \"usageMetadata\": {
+    \"promptTokenCount\": 98,
+    \"candidatesTokenCount\": 55,
+    \"totalTokenCount\": 153
+  },
+  \"modelVersion\": \"gemini-1.5-flash-latest\"
+}")
+' localhost:8080
+
+((candidates ((0 ((content ((parts ((0 ((text "Yes.  Since Esland (Democracy) is next to Middland, and Wesland (Communist) is next to Middland, regardless of whether Middland is a democracy or communist country, there will always be a democracy next to a communist country.\n"))))) (role "model"))) (finishReason "STOP") (avgLogprobs -0.06906503330577504))))) (usageMetadata ((promptTokenCount 98) (candidatesTokenCount 55) (totalTokenCount 153))) (modelVersion "gemini-1.5-flash-latest"))
+

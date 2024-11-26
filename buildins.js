@@ -2,8 +2,8 @@ const { ATOM, EXP, ERR, NUM, STR, BOOL, PAIR, VOID, CLOSURE, PROMISE, OBJ, trueV
 
 function pairToExp(exp) {
     if (exp.type === PAIR) {
-       const value = [pairToExp(exp.value)];
-       let head = exp.rest;
+        const value = [pairToExp(exp.value)];
+        let head = exp.rest;
         while (head.type === PAIR) {
             value.push(pairToExp(head.value));
             head = head.rest;
@@ -16,7 +16,7 @@ function pairToExp(exp) {
 function listify(expList) {
     if (expList.length === 3 && expList[1].type === ATOM && expList[1].value === ".") {
         let left = expList[0].type === EXP ? listify(expList[0].value) : expList[0];
-        let right = expList[2].type === EXP? listify(expList[2].value) : expList[2];
+        let right = expList[2].type === EXP ? listify(expList[2].value) : expList[2];
         const pair = { type: PAIR, value: left, rest: right };
         return pair;
     }
@@ -141,7 +141,7 @@ async function applyLambda(args, env, evalExp) {
         return { type: ERR, value: "apply requires a list as second argument" };
     }
     for (let head = args[1]; head.type === PAIR; head = head.rest) {
-        const quotedValue = { type: EXP, value: [ QUOTE, head.value ]};
+        const quotedValue = { type: EXP, value: [QUOTE, head.value] };
         expValue.push(quotedValue);
     }
 
@@ -184,14 +184,14 @@ function equal(args, env) {
         }
         return { type: BOOL, value: equalValue(left, right) };
     }
-    
+
     if (type === VECTOR) {
         const vector = value.value;
         const otherVector = otherValue.value;
         if (vector.length !== otherVector.length) {
             return falseValue;
         }
-        
+
         for (let i = 0; i < vector.length; i++) {
             if (vector[i] === undefined) {
                 if (otherValue[i] !== undefined) {
@@ -255,7 +255,7 @@ function numberEqual(args, env) {
     }
     return trueValue;
 }
- 
+
 function plus(args, env) {
     let value = 0;
     for (let arg of args) {
@@ -335,7 +335,7 @@ function divmod(args, env) {
     }
     const x = args[0].value;
     const y = args[1].value;
-    return { type: PAIR, value: { type: NUM, value: Math.floor(x / y)}, rest:  { type: NUM, value: x % y} };
+    return { type: PAIR, value: { type: NUM, value: Math.floor(x / y) }, rest: { type: NUM, value: x % y } };
 }
 
 function sqrt(args, env) {
@@ -353,28 +353,28 @@ function floor(args, env) {
 }
 
 function random(args, env) {
-    if (args.length !== 0)  {
+    if (args.length !== 0) {
         return { type: ERR, value: "random takes no arguments" };
     }
     return { type: NUM, value: Math.random() };
 }
 
 function makeVector(args, env) {
-    if ((args.length !== 1 && args.length !== 2) || args[0].type !== NUM)  {
+    if ((args.length !== 1 && args.length !== 2) || args[0].type !== NUM) {
         return { type: ERR, value: "make-vector takes a length argument and an optional initializer" };
     }
     const len = args[0].value;
     if (len < 0 || Math.floor(len) !== len) {
         return { type: ERR, value: "Can't make a vector with less than 0 or non-integer entries" };
     }
-   
+
     const vector = new Array(len);
     if (args.length === 2) {
         for (let i = 0; i < len; i++) {
             vector[i] = args[1];
         }
     }
-    return { type: VECTOR, value: vector};
+    return { type: VECTOR, value: vector };
 }
 
 function vectorSet(args, env) {
@@ -411,7 +411,7 @@ function vectorRef(args, env) {
 
     const result = args[0].value[index];
     if (result === undefined) {
-        return { type: ERR, value: "vector has no value at index " + index};
+        return { type: ERR, value: "vector has no value at index " + index };
     }
     return result;
 }
@@ -424,14 +424,14 @@ function vectorLength(args, env) {
 }
 
 function makeByteVector(args, env) {
-    if ((args.length !== 1 && args.length !== 2) || args[0].type !== NUM)  {
+    if ((args.length !== 1 && args.length !== 2) || args[0].type !== NUM) {
         return { type: ERR, value: "make-vector takes a length argument and an optional initializer" };
     }
     const len = args[0].value;
     if (len < 0 || Math.floor(len) !== len) {
         return { type: ERR, value: "Can't make a vector with less than 0 or non-integer entries" };
     }
-   
+
     const buffer = new ArrayBuffer(len);
     const vector = new Uint8Array(buffer);
     if (args.length === 2) {
@@ -443,7 +443,7 @@ function makeByteVector(args, env) {
             vector[i] = value;
         }
     }
-    return { type: BYTEVECTOR, value: vector};
+    return { type: BYTEVECTOR, value: vector };
 }
 
 function byteVectorSet(args, env) {
@@ -455,7 +455,7 @@ function byteVectorSet(args, env) {
     }
     const index = args[1].value;
     if (index < 0 || index >= args[0].value.length) {
-         return { type: ERR, value: "byte-vector-set! index out of bounds" };
+        return { type: ERR, value: "byte-vector-set! index out of bounds" };
     }
     if (Math.floor(index) !== index) {
         return { type: ERR, value: "byte-vector-set! requires an integer index" };
@@ -483,10 +483,10 @@ function byteVectorRef(args, env) {
     if (index < 0 || index >= args[0].value.length) {
         return { type: ERR, value: "byte-vector-set! index out of bounds" };
     }
-    if ( Math.floor(index) !== index) {
+    if (Math.floor(index) !== index) {
         return { type: ERR, value: "byte-vector-ref requires an integer index" };
     }
-    const result = args[0].value[index]; 
+    const result = args[0].value[index];
     return { type: NUM, value: result };
 }
 
@@ -548,21 +548,21 @@ function symbolToString(args, env) {
     if (args.length !== 1 || args[0].type !== ATOM) {
         return { type: ERR, value: "symbol->string takes a symbol as argument" };
     }
-    return { type: STR, value: args[0].value};
+    return { type: STR, value: args[0].value };
 }
 
 function stringToSymbol(args, env) {
     if (args.length !== 1 || args[0].type !== STR) {
         return { type: ERR, value: "string->symbol takes a string as argument" };
     }
-    return { type: ATOM, value: args[0].value};
+    return { type: ATOM, value: args[0].value };
 }
 
 let gensymcounter = 1;
 
 function gensym(args, env) {
     if (args.length !== 0 && (args.length !== 1 || args[0].type !== STR)) {
-         return { type: ERR, value: "gensym takes one optional string argument" };
+        return { type: ERR, value: "gensym takes one optional string argument" };
     }
     const prefix = args.length === 0 ? "g" : args[0].value;
     return { type: ATOM, value: prefix + gensymcounter++ };
@@ -576,30 +576,30 @@ function error(args, env) {
 }
 
 function escape(str) {
-   let r = '"';
-   for (let i = 0; i < str.length; i++) {
-      switch(str[i]) {
-        case '"': 
-            r += '\\"';
-            break;
-        case '\n':
-            r += '\\n';
-            break;
-         case '\t':
-            r += '\\t';
-            break;
-        case '\r':
-            r += '\\r';
-            break;
-        case '\\':
-            r += '\\';
-            break;
-        default:
-            r += str[i];
-      }
-   }
-   r += '"';
-   return r;
+    let r = '"';
+    for (let i = 0; i < str.length; i++) {
+        switch (str[i]) {
+            case '"':
+                r += '\\"';
+                break;
+            case '\n':
+                r += '\\n';
+                break;
+            case '\t':
+                r += '\\t';
+                break;
+            case '\r':
+                r += '\\r';
+                break;
+            case '\\':
+                r += '\\';
+                break;
+            default:
+                r += str[i];
+        }
+    }
+    r += '"';
+    return r;
 }
 
 function printValue(value) {
@@ -676,8 +676,52 @@ function print(args, env) {
         }
         result += str;
     }
-  
+
     return { type: STR, value: result };
+}
+
+function jsonParse(args, env) {
+    if (args.length !== 1 || args[0].type !== STR) {
+        return { type: ERR, value: "json-parse requires a string to parse" };
+    }
+   
+    try {
+        const obj = JSON.parse(args[0].value);
+        return toFields(obj);
+    } catch (exn) {
+        return { type: ERR, value: "failed to parse json: " + exn};
+    }
+}
+
+function toFields(obj) {
+    const list = [];
+    for (const property in obj) {
+        const value = obj[property];
+        var type = typeof value;
+        let valueToCons;
+        
+        if (type === 'function' || type === 'object' && !!obj) {
+            valueToCons = toFields(value);
+        } else if (type === "number") {
+            valueToCons = { type: NUM, value: value };
+        } else if (type === "string") {
+            valueToCons = { type: STR, value: value };
+        } else if (type === "boolean") {
+            valueToCons = { type: BOOL, value: value };
+        } else {
+            valueToCons = { type: STR, value: "" + value };
+        }
+        
+        const field = {
+            type: PAIR, 
+            value: { type: ATOM, value: property }, 
+            rest: { type: PAIR , value: valueToCons, rest: nullList}
+        };
+        list.push(field);
+    }
+
+    // console.log(JSON.stringify(list));
+    return listify(list);
 }
 
 exports.listify = listify
@@ -722,3 +766,4 @@ exports.error = error
 exports.print = print
 exports.escape = escape
 exports.printValue = printValue
+exports.jsonParse = jsonParse

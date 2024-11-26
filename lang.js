@@ -14,7 +14,8 @@ const {
     sqrt, floor, random,
     strLength, strSlice, strConcat, strIndexOf,
     typeOf, symbolToString, stringToSymbol, gensym,
-    print, error, printValue
+    print, error, printValue, 
+    jsonParse
 } = require("./buildins.js");
 
 const { sleepPromise, fetchPromise, applyPromise, readFilePromise, writeFilePromise, promptPromise, messagePromise, sendToPromise, sendMessage, receiveMessage, resolve } = require("./async.js");
@@ -41,7 +42,8 @@ const buildIns = {
     "message-promise": messagePromise, "send-to-promise": sendToPromise,
     "send-message": sendMessage, "receive-message": receiveMessage,
     "apply-promise": applyPromise, "resolve": resolve,
-    "read": readExp, "display": display
+    "read": readExp, "display": display,
+    "json-parse": jsonParse
 };
 
 const asyncBuildIns = {
