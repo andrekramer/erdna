@@ -20,14 +20,68 @@ curl --data-raw '
 ((point ((x 1) (y 2) (properties ((colour "blue"))) (z 3))) (doc "point with colour"))
 
 curl --data-raw '
-(json-parse "{ 
+(define json (json-parse "{ 
 \"name\":\"Jane\",
 \"age\":30,
+\"partner\": {
+   \"name\": \"John\",
+   \"age\": 28,
+   \"relationship\": \"married\" 
+},
 \"horses\":[\"Trigger\", \"Poppy\", \"Sunny\"]
-}")
+}"))
 ' localhost:8080
-((name "Jane") (age 30) (horses ((0 "Trigger") (1 "Poppy") (2 "Sunny"))))
+((name "Jane") (age 30) (partner ((name "John") (age 28) (relationship "married"))) (horses ((0 "Trigger") (1 "Poppy") (2 "Sunny"))))
 
+curl --data "
+(define (json-get prop json)
+  (cond ((null? json) '())
+        ((equal? prop (caar json)) (car (cdar json)))
+        (else (json-get prop (cdr json)))))
+
+(json-get 'age json)
+(json-get 'name (json-get 'partner json))
+" localhost:8080
+λ
+30
+"John"
+
+curl --data "
+(define (json-find prop json) 
+  (letrec 
+   ((result '())
+    (define (find prop json) 
+      (define (check pair)
+        (cond ((null? pair) #f)
+              ((not (list? pair)) #f)
+              ((null? (cdr pair)) #f)
+              ((equal? (car pair) prop) (set! result (cadr pair)))
+              (else #f)))
+      (define (check-value pair) 
+        (cond ((null? pair) #f)
+              ((not (list? pair)) #f)
+              ((null? (car pair)) #f)
+              ((null? (cdr pair)) #f)
+              (else (if (list? (cdr pair)) (find prop (cdr pair)) #f))))
+      (cond 
+        ((null? json) #f)
+        ((check (car json)) #t)
+        ((check-value (car json)) #t)
+        (else (find prop (cdr json))))))
+
+   (find prop json)
+   result))
+
+(json-find 'relationship json)
+(json-find 'age json)
+(json-find 'salary json)
+
+" localhost:8080
+
+λ
+"married"
+30
+()
 
 curl --data-raw '
 (json-parse "{ 
