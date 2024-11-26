@@ -5,7 +5,8 @@
 (define content-type "application/json")
 
 (define (ask-gemini query)
-  (resolve (fetch-promise gemini-url "" query content-type)) )
+  (let ((reply (resolve (fetch-promise gemini-url "" query content-type))))
+       (json-parse reply)))
 
 ;; (define text "Explain how AI works")
 
