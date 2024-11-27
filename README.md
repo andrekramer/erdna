@@ -13,7 +13,10 @@ as well as allowing experimenting with functional, procedural and symbolic progr
     
 What if the Web was programmable in such a uniform but flexible syntax?  
 
-The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use. More examples where added and some bugs fixed in later minor versions.  
+The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use. More examples where added and some bugs fixed in later minor versions.   
+
+The ability to use LLMs from a Scheme repl may be interesting given the classic AI lisp legacy.  
+
   
 To clone:
   
@@ -84,6 +87,11 @@ or use "curl" commands to post any of the code samples in the files in the examp
   
 Tests are semi automated. Run py-install and then "python3 test examples/procs" or on other files in the examples directory. A small number of Fails need manual examination but can be due to indeterminate results.
 
-The ai directory contains some experiments of using ai models from a scheme repl. 
-e.g. Add an api key in "ai/gemini-api-key" from Google AI and do a (load "ai/gemini.scm")
+Gen AI Samples:   
+
+The ai directory contains some experiments of using ai large language models from a scheme repl.   
+e.g.   
+Add an api key in "ai/gemini-api-key" from Google AI and do a (load "ai/gemini.scm")  
+Add an api key in "ai/claud-api-key" from Anthropic and do a (load "ai/claud.scm")    
+
 
