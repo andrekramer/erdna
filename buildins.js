@@ -714,7 +714,7 @@ function toFields(obj) {
         
         const field = {
             type: PAIR, 
-            value: { type: ATOM, value: property }, 
+            value: { type: ATOM, value: "" + property }, 
             rest: { type: PAIR , value: valueToCons, rest: nullList}
         };
         list.push(field);

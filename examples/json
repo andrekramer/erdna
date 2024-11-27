@@ -55,6 +55,7 @@ curl --data "
          (cond ((null? pair) #f)
                ((not (list? pair)) #f)
                ((equal? (car pair) prop) (set! result (cadr pair)))
+               ((list? (car pair)) (find prop (car pair)))
                (else #f)))
        (define (check-value pair) 
          (cond ((null? pair) #f)
@@ -62,6 +63,7 @@ curl --data "
                (else (if (list? (cdr pair)) (find prop (cdr pair)) #f))))
        (cond 
          ((null? json) #f)
+         ((check-prop json) #t)
          ((check-prop (car json)) #t)
          ((check-value (car json)) #t)
          (else (find prop (cdr json))))))
@@ -80,7 +82,12 @@ curl --data "
 ()
 
 curl --data-raw '
-(json-parse "{ 
+(json-find (string->symbol "0") json)
+' localhost:8080
+"Trigger"
+
+curl --data-raw '
+(define json (json-parse "{ 
   \"candidates\": [
     {
       \"content\": {
@@ -101,8 +108,12 @@ curl --data-raw '
     \"totalTokenCount\": 153
   },
   \"modelVersion\": \"gemini-1.5-flash-latest\"
-}")
+}"))
 ' localhost:8080
 
 ((candidates ((0 ((content ((parts ((0 ((text "Yes.  Since Esland (Democracy) is next to Middland, and Wesland (Communist) is next to Middland, regardless of whether Middland is a democracy or communist country, there will always be a democracy next to a communist country.\n"))))) (role "model"))) (finishReason "STOP") (avgLogprobs -0.06906503330577504))))) (usageMetadata ((promptTokenCount 98) (candidatesTokenCount 55) (totalTokenCount 153))) (modelVersion "gemini-1.5-flash-latest"))
 
+curl --data "
+(json-find 'text json)
+" localhost:8080
+"Yes.  Since Esland (Democracy) is next to Middland, and Wesland (Communist) is next to Middland, regardless of whether Middland is a democracy or communist country, there will always be a democracy next to a communist country.\n"
