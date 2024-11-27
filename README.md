@@ -93,5 +93,5 @@ The ai directory contains some experiments of using ai large language models fro
 e.g.   
 Add an api key in "ai/gemini-api-key" from Google AI and do a (load "ai/gemini.scm")  
 Add an api key in "ai/claud-api-key" from Anthropic and do a (load "ai/claud.scm")    
-
+Add an api key in "ai/openai-api-key" from OpenAI and do a (load "ai/openai.scm")    
 
