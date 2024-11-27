@@ -28,12 +28,12 @@ async function fetchPromise(args, env) {
     if (args.length === 2) {
         // console.log("fetch " + args[0].value);
         promise = fetch(args[0].value, { headers });
-    } else if (args.length === 3 || args.length === 4) {
+    } else if (args.length >= 3 && args.length <= 5) {
         
         if (args[2].type !== STR) {
             return { type: ERR, value: "fetch-promise expect a text body as optional 3rd argument" };
         }
-        if (args.length === 4) {
+        if (args.length >= 4) {
             if (args[3].type !== STR) {
                 return { type: ERR, value: "fetch-promise expect a string content type header as optional 4rd argument" };
             }
@@ -41,6 +41,23 @@ async function fetchPromise(args, env) {
         } else {
             headers[ "Content-Type"] = "application/text";
         }
+
+        if (args.length === 5) {
+            let list = args[4];
+            // console.log(JSON.stringify(list));
+            if (list.type != PAIR) {
+                return { type: ERR, value: "fetch-promise expects the 4th argument to be a list of headers" };
+            }
+            while (list.type === PAIR) {
+                const pair = list.value;
+                if (pair.type !== PAIR || pair.value.type !== STR || pair.rest.type !== STR) {
+                    return { type: ERR, value: "fetch-promise expects header list items to be pairs of strings" };
+                }
+                headers[pair.value.value] = pair.rest.value;
+                list = list.rest;
+            }
+        }
+
         promise = fetch(args[0].value, {
             method: "POST",
             headers,
