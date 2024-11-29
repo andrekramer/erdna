@@ -1,3 +1,5 @@
+(load "examples/json.scm")
+
 (define gemini-api-key (resolve (read-file-promise "ai/gemini-api-key"))) 
 
 (define gemini-url (concat "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" gemini-api-key))
@@ -16,5 +18,5 @@
 
 (define gemini-reply (ask-gemini (make-query text)))
 
-;; (json-find 'text gemini-reply)
+(json-find 'text gemini-reply)
 

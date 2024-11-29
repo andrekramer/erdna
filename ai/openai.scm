@@ -1,3 +1,5 @@
+(load "examples/json.scm")
+
 (define openai-api-key (resolve (read-file-promise "ai/openai-api-key"))) 
 
 (define headers (list (cons "Authorization" (concat "Bearer " openai-api-key))))
@@ -23,4 +25,4 @@
 
 (define openai-reply (ask-openai query))
 
-;; (json-find 'content openai-reply)
+(json-find 'content openai-reply)

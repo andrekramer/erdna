@@ -1,3 +1,5 @@
+(load "examples/json.scm")
+
 (define claud-api-key (resolve (read-file-promise "ai/claud-api-key"))) 
 
 (define headers (list (cons "x-api-key" claud-api-key) (cons "anthropic-version" "2023-06-01")))
@@ -23,4 +25,5 @@
 
 (define claud-reply (ask-claud query))
 
-;; (json-find 'text claud-reply)
+(json-find 'text claud-reply)
+
