@@ -42,6 +42,7 @@ const procs = `
 (define (force f) (f))
 (define (break) 'break)
 (define (continue) 'continue)
+(define (load file) (eval (read (resolve (read-file-promise file))) '()))
 `;
 
 function seed() {

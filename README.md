@@ -1,6 +1,6 @@
 An interpreter for a Scheme -like language written in Javascript hosted in a Node web server.  
 Loosely based on
-[An Introduction to Scheme and its Implemementation](https://docs.scheme.org/schintro/schintro_toc.html).  
+[An Introduction to Scheme and its Implemementation](https://docs.scheme.org/schintro/schintro_toc.html). 
 The project commit history builds up language features for the example curl commands below
 and those in the files in the examples directory.  
 Full Scheme macros and callcc are not covered (but see examples/macros for lisp style macros).  
@@ -11,13 +11,13 @@ Remote script execution and distributed / concurrency examples (using Actor mode
 Bootstraps a simple object system so that object-oriented programming can be employed (examples/objects),  
 as well as allowing experimenting with functional, procedural and symbolic programming. See examples/useful for other functional techniques such as lazy evaluation. 
     
-What if the Web was programmable in such a uniform but flexible syntax?  
+The ability to use LLMs from a Scheme repl may be interesting given the classic AI Lisp legacy connections.   
+
+What if the Web (or Agentic AI) was programmable in such a uniform but flexible syntax?  
 
 The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use. More examples where added and some bugs fixed in later minor versions.   
-
-The ability to use LLMs from a Scheme repl may be interesting given the classic AI lisp legacy.  
-
   
+
 To clone:
   
 git clone git@github.com:andrekramer/erdna.git  
