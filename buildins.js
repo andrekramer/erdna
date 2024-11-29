@@ -537,6 +537,13 @@ function strIndexOf(args, env) {
     return { type: NUM, value: args[1].value.indexOf(args[0].value) };
 }
 
+function strReplace(args, env) {
+    if (args.length !== 3 || args[0].type !== STR || args[1].type !== STR || args[2].type !== STR) {
+        return { type: ERR, value: "string-replace requires three string arguments" };
+    }
+    return { type: STR, value: args[0].value.replaceAll(args[1].value, args[2].value) };
+}
+
 function typeOf(args, env) {
     if (args.length !== 1) {
         return { type: ERR, value: "type-of takes one argument" };
@@ -758,6 +765,7 @@ exports.strLength = strLength
 exports.strSlice = strSlice
 exports.strConcat = strConcat
 exports.strIndexOf = strIndexOf
+exports.strReplace = strReplace
 exports.typeOf = typeOf
 exports.symbolToString = symbolToString
 exports.stringToSymbol = stringToSymbol

@@ -4,12 +4,14 @@ curl --data "
 (slice \"123abcdefgh\" 4)
 (concat \"abc \" 100.001 \" def \" \"123\" #f)
 (index-of \"World\" \"Hello World\")
+(string-replace \"Hello {planet}WideWeb\" \"{planet}\" \"World\")
 " localhost:8080  
 7
 "de"
 "bcdefgh"
 "abc 100.001 def 123false"
 6
+"Hello WorldWideWeb"
 
 curl --data "
 (sqrt 2)

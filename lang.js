@@ -12,7 +12,7 @@ const {
     equal, numberEqual,
     plus, minus, multiply, divide, divmod,
     sqrt, floor, random,
-    strLength, strSlice, strConcat, strIndexOf,
+    strLength, strSlice, strConcat, strIndexOf, strReplace,
     typeOf, symbolToString, stringToSymbol, gensym,
     print, error, printValue, 
     jsonParse
@@ -33,7 +33,7 @@ const buildIns = {
     "make-vector": makeVector, "vector": makeVector, "vector-set!": vectorSet, "vector-ref": vectorRef, "vector-length": vectorLength,
     "make-byte-vector": makeByteVector, "byte-vector": makeByteVector, "byte-vector-set!": byteVectorSet, "byte-vector-ref": byteVectorRef, "byte-vector-length": byteVectorLength,
     "apply": applyLambda,
-    "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf,
+    "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf, "string-replace": strReplace,
     "type-of": typeOf, "print": print, "error": error,
     "symbol->string": symbolToString, "string->symbol": stringToSymbol, "gensym": gensym,
     "sleep-promise": sleepPromise, "fetch-promise": fetchPromise, 
