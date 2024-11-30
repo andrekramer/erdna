@@ -15,7 +15,7 @@ The ability to use LLMs from a Scheme repl may be interesting given the classic 
 
 What if the Web (or Agentic AI) was programmable in such a uniform but flexible syntax?  
 
-The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use. More examples where added and some bugs fixed in later minor versions.   
+The v1 code was written in small pieces over the summer of 2024 without AI input and is free for non commercial use. More examples where added and some bugs fixed in later minor versions. Example files with .gen. in their name are derived from AI generated or translated code.
   
 
 To clone:
