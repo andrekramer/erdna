@@ -13,7 +13,8 @@ const {
     plus, minus, multiply, divide, divmod,
     sqrt, floor, random,
     strLength, strSlice, strConcat, strIndexOf, strReplace,
-    typeOf, symbolToString, stringToSymbol, gensym,
+    typeOf, 
+    numberToString, symbolToString, stringToSymbol, gensym,
     print, error, printValue, 
     jsonParse
 } = require("./buildins.js");
@@ -35,7 +36,7 @@ const buildIns = {
     "apply": applyLambda,
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf, "string-replace": strReplace,
     "type-of": typeOf, "print": print, "error": error,
-    "symbol->string": symbolToString, "string->symbol": stringToSymbol, "gensym": gensym,
+    "number->string": numberToString, "symbol->string": symbolToString, "string->symbol": stringToSymbol, "gensym": gensym,
     "sleep-promise": sleepPromise, "fetch-promise": fetchPromise, 
     "read-file-promise": readFilePromise, "write-file-promise": writeFilePromise, 
     "prompt-promise": promptPromise,

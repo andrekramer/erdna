@@ -565,6 +565,13 @@ function stringToSymbol(args, env) {
     return { type: ATOM, value: args[0].value };
 }
 
+function numberToString(args, env) {
+    if (args.length !== 1 || args[0].type !== NUM) {
+        return { type: ERR, value: "number->string takes a number as argument" };
+    }
+    return { type: STR, value: '' + args[0].value };
+}
+
 let gensymcounter = 1;
 
 function gensym(args, env) {
@@ -769,6 +776,7 @@ exports.strReplace = strReplace
 exports.typeOf = typeOf
 exports.symbolToString = symbolToString
 exports.stringToSymbol = stringToSymbol
+exports.numberToString = numberToString
 exports.gensym = gensym
 exports.error = error
 exports.print = print
