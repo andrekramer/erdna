@@ -90,3 +90,4 @@ curl --data "
 (json-find 'text json)
 " localhost:8080
 "Yes.  Since Esland (Democracy) is next to Middland, and Wesland (Communist) is next to Middland, regardless of whether Middland is a democracy or communist country, there will always be a democracy next to a communist country.\n"
+

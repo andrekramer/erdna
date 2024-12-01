@@ -27,3 +27,22 @@
     (find prop json)
     result))
 
+(define (string-join items separator)
+  (cond ((null? items) "")
+        (else (if (null? (cdr items))
+                (car items)
+                (concat (car items) separator (string-join (cdr items) separator))))))
+
+(define (sexp->json sexp) 
+  (cond ((null? sexp) "null")
+        ((and (pair? sexp) (symbol? (car sexp)) (equal? (length sexp) 2)) 
+         (concat "\"" (symbol->string (car sexp)) "\": " (sexp->json (cadr sexp)))
+        )
+        ((list? sexp) (concat "{" (string-join (map sexp->json sexp) ", ") "}"))
+        ((string? sexp) (concat "\"" sexp "\""))
+        ((number? sexp) (number->string sexp))
+        ((symbol? sexp) (symbol->string sexp))
+        ((boolean? sexp) (if sexp "true" "false"))
+        (else (error (concat "Sorry don't know how to jsonify that " (print sexp))))
+))
+

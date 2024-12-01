@@ -23,3 +23,7 @@
 (define gemini-reply (one-shot-gemini text))
 
 ;;; (one-shot-gemini "Alice is 16 years old, which is twice as old as Emily was when Alice was as old as Emily is now. How old is Emily?")
+
+;;(define query (make-gemini-query text))
+;;(define json-reply ((ask-gemini query)))
+;;(define reply (json-find 'text json-reply))

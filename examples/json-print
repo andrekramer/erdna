@@ -1,0 +1,22 @@
+curl --data-raw '
+(load "examples/json.scm")
+' localhost:8080
+λ
+
+curl --data "
+(sexp->json '((name \"Hellen\")))
+(sexp->json '((name \"Hellen\") (title \"queen\")))
+(sexp->json '((name \"Hellen\") (from \"of Troy\") (title \"queen\")))
+(sexp->json '((name \"Hellen\") (age 33) (from \"of Troy\") (title \"queen\") (heroine #t)))
+(sexp->json '((name ((forname \"Hellen\") (surname \"of Troy\")))))
+(sexp->json '((tree ((branch ((branch-branch \"red\"))) (branch-right \"black\")))))
+(sexp->json '((a ((b ((c 1) (d 2))) (e ((f ((x 3))) (g 4) (h 5)) )))))
+" localhost:8080
+"{\"name\": \"Hellen\"}"
+"{\"name\": \"Hellen\", \"title\": \"queen\"}"
+"{\"name\": \"Hellen\", \"from\": \"of Troy\", \"title\": \"queen\"}"
+"{\"name\": \"Hellen\", \"age\": 33, \"from\": \"of Troy\", \"title\": \"queen\", \"heroine\": true}"
+"{\"name\": {\"forname\": \"Hellen\", \"surname\": \"of Troy\"}}"
+"{\"tree\": {\"branch\": {\"branch-branch\": \"red\"}, \"branch-right\": \"black\"}}"
+"{\"a\": {\"b\": {\"c\": 1, \"d\": 2}, \"e\": {\"f\": {\"x\": 3}, \"g\": 4, \"h\": 5}}}"
+
