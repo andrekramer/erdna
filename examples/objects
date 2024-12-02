@@ -30,7 +30,7 @@ curl --data "
 " localhost:8080
 object
 1
-2 
+2
 
 @ field to get not found
 

@@ -110,7 +110,8 @@ curl --data "
 ))
 ;;; displays:  1 4 7 2 3 5 6 8 9
 " localhost:8080
-ok
+λ
+()
 
 curl --data "
 (resolve (read-file-promise \"data/file1\"))
