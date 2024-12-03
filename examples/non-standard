@@ -179,3 +179,8 @@ curl --data "
 " localhost:8080
 (101 . 10)
 
+curl --data "
+(get-env-var \"SHELL\")
+" localhost:8080
+"/bin/zsh"
+

@@ -15,7 +15,7 @@ const {
     strLength, strSlice, strConcat, strIndexOf, strReplace,
     typeOf, 
     numberToString, symbolToString, stringToSymbol, gensym,
-    print, error, printValue, 
+    getEnvVar, print, error, printValue, 
     jsonParse
 } = require("./buildins.js");
 
@@ -37,6 +37,7 @@ const buildIns = {
     "string-length": strLength, "slice": strSlice, "concat": strConcat,  "index-of": strIndexOf, "string-replace": strReplace,
     "type-of": typeOf, "print": print, "error": error,
     "number->string": numberToString, "symbol->string": symbolToString, "string->symbol": stringToSymbol, "gensym": gensym,
+    "get-env-var": getEnvVar,
     "sleep-promise": sleepPromise, "fetch-promise": fetchPromise, 
     "read-file-promise": readFilePromise, "write-file-promise": writeFilePromise, 
     "prompt-promise": promptPromise,

@@ -572,6 +572,17 @@ function numberToString(args, env) {
     return { type: STR, value: '' + args[0].value };
 }
 
+function getEnvVar(args, env) {
+    if (args.length !== 1 || args[0].type !== STR) {
+        return { type: ERR, value: "get-env-var takes a string as argument" };
+    }
+    const value = process.env[args[0].value];
+    if (value === undefined) {
+         return { type: ERR, value: "no such env variable set" };
+    }
+    return { type: STR, value: value };
+}
+
 let gensymcounter = 1;
 
 function gensym(args, env) {
@@ -783,3 +794,5 @@ exports.print = print
 exports.escape = escape
 exports.printValue = printValue
 exports.jsonParse = jsonParse
+exports.getEnvVar = getEnvVar
+
