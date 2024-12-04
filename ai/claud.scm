@@ -25,5 +25,11 @@
   (let ((reply (ask-claud (make-claud-query text))))
        (json-find 'text reply)))
 
-(define claud-reply (one-shot-claud text))
+;; (define claud-reply (one-shot-claud text))
+
+(define (task-claud text)
+  (letrec ((query (make-claud-query text))
+           (promise (fetch-promise claud-url "" query json-content-type claud-headers))
+           (completion (lambda () (json-find 'text (json-parse (resolve promise))))))
+          completion))
 

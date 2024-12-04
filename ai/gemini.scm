@@ -2,7 +2,10 @@
 
 (define gemini-api-key (resolve (read-file-promise "ai/gemini-api-key"))) 
 
-(define gemini-url (concat "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=" gemini-api-key))
+(define gemini-model "gemini-1.5-flash-latest")
+;; (define gemini-model "gemini-1.5-flash-001") ;;; used by cache example as latest not supported there
+
+(define gemini-url (concat "https://generativelanguage.googleapis.com/v1beta/models/" gemini-model ":generateContent?key=" gemini-api-key))
 
 (define json-content-type "application/json")
 
@@ -20,10 +23,35 @@
   (let ((reply (ask-gemini (make-gemini-query text))))
        (json-find 'text reply)))
 
-(define gemini-reply (one-shot-gemini text))
 
-;;; (one-shot-gemini "Alice is 16 years old, which is twice as old as Emily was when Alice was as old as Emily is now. How old is Emily?")
 
-;;(define query (make-gemini-query text))
-;;(define json-reply ((ask-gemini query)))
+(define cache-name (get-env-var "CACHE_NAME"))
+
+(define (make-gemini-cache-query text cache-name) (concat "{
+      \"contents\": [
+        {
+          \"parts\":[{
+            \"text\": \"" text  "\"}],
+          \"role\": \"user\"
+        }
+      ],
+      \"cachedContent\": \"" cache-name "\"}"))
+
+;; (define query (make-gemini-query text))
+
+;; (define query (make-gemini-cache-query "What did the horse say?" cache-name))
+
+;;(define json-reply (ask-gemini query))
 ;;(define reply (json-find 'text json-reply))
+
+;; (one-shot-gemini "Alice is 16 years old, 
+;; which is twice as old as Emily was when Alice was as old as Emily is now. How old is Emily?")
+
+;; (define gemini-reply (one-shot-gemini text))
+
+(define (task-gemini text)
+  (letrec ((query (make-gemini-query text))
+           (promise (fetch-promise gemini-url "" query json-content-type))
+           (completion (lambda () (json-find 'text (json-parse (resolve promise))))))
+          completion))
+

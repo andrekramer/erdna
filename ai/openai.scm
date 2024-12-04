@@ -25,4 +25,11 @@
   (let ((reply (ask-openai (make-openai-query text))))
        (json-find 'content reply)))
 
-(define openai-reply (one-shot-openai text))
+;; (define openai-reply (one-shot-openai text))
+
+(define (task-openai text)
+  (letrec ((query (make-openai-query text))
+           (promise (fetch-promise openai-url "" query json-content-type openai-headers))
+           (completion (lambda () (json-find 'content (json-parse (resolve promise))))))
+          completion))
+
