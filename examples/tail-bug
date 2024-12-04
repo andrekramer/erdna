@@ -1,0 +1,28 @@
+curl --data " 
+;; bug in apply lambda: f could be aliased
+(define text \"abc\")
+(define (call f v)
+  (f v)
+)
+(call (lambda (f) (f text)) display)
+" localhost:8080
+"abc"
+λ
+
+curl --data "
+(define text \"abc\")
+(define (call f v)
+  (f v)
+)
+(call (lambda (arg) (arg text)) display)
+" localhost:8080
+"abc"
+λ
+
+curl --data "
+(define text \"abc\")
+(map (lambda (func) (func text)) '(display))
+" localhost:8080
+"abc"
+()
+

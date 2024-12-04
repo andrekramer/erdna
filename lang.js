@@ -360,7 +360,7 @@ async function eval(exp, env) {
 
     if (type === ATOM) {
         // console.log("eval atom");
-        atom = lookup(exp.value, env);
+        const atom = lookup(exp.value, env);
         if (atom !== undefined) {
             // console.log("found atom " + JSON.stringify(atom));
             return atom;
@@ -405,11 +405,19 @@ async function eval(exp, env) {
                 return result;
             }
         }
-
+        
         let proc = await eval(exp.value[0], env);
-        // console.log("proc " + JSON.stringify(proc));
+        // console.log("proc type " + JSON.stringify(proc.type));
         if (proc.type === ERR) {
             return proc;
+        }
+
+        // resolve proc atom in scope
+        if (proc.type == ATOM) {
+            const proc2 = lookup(proc.value, env);
+            if (proc2 !== undefined) {
+                proc = proc2;
+            }
         }
 
         let closureEnv = env;
@@ -469,6 +477,7 @@ async function eval(exp, env) {
                         localEnv[formals[formals.length -1].value] = listify(rest);
                         break;
                     }
+                    
                     localEnv[formal.value] = args[i++];
                 }
                 // console.log("localEnv " + JSON.stringify(localEnv));
@@ -486,7 +495,7 @@ async function eval(exp, env) {
                                 const procName = target.value[0].value;
                                 const rewrite = rewrites[procName];
                                 if (rewrite !== undefined) {
-                                    // console.log("tail " + target.value[0].value);
+                                    // console.log("tail rewrite " + target.value[0].value);
                                     [target, localEnv] = await rewrite(target, localEnv);
                                     continue;
                                 }
@@ -516,9 +525,10 @@ async function eval(exp, env) {
                         }
 
                         if (target.type === EXP && target.value.length !== 0) {
-                            // console.log("tail target " + JSON.stringify(target));
+                           
                             // Call to same proc can be optimized to avoid stack growing.
-                            if (target.value[0].type === ATOM && target.value[0].value === exp.value[0].value) {
+                            if (target.value[0].type === ATOM && env[target.value[0].value] === undefined && target.value[0].value === exp.value[0].value) {
+                                // console.log("tail target " + JSON.stringify(target));
                                 proc = await eval(target.value[0], env);
                                 if (proc.type === ERR) {
                                     return proc;
@@ -536,6 +546,7 @@ async function eval(exp, env) {
                             }
                         }
                     }
+                   
                     result = await eval(target, localEnv);
                     if (result.type === ERR) {
                         return result;
@@ -547,6 +558,7 @@ async function eval(exp, env) {
             }
         } else {
             if (proc.type !== ATOM) {
+                //console.log("proc " + JSON.stringify(proc));
                 return { type: ERR, value: "can't apply " + displayType(proc.type) };
             }
 

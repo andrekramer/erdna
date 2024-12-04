@@ -1,0 +1,48 @@
+
+export B64FLAGS="--input"
+
+echo '{
+  "model": "models/gemini-1.5-flash-001",
+  "contents":[
+    {
+      "parts":[
+        {
+          "inline_data": {
+            "mime_type":"text/plain",
+            "data": "'$(base64 $B64FLAGS ai/text)'"
+          }
+        }
+      ],
+    "role": "user"
+    }
+  ],
+  "systemInstruction": {
+    "parts": [
+      {
+        "text": "You are an expert on Ulysses by James Joyce"
+      }
+    ]
+  },
+  "ttl": "3600s"
+}' > request.json
+
+curl -X POST "https://generativelanguage.googleapis.com/v1beta/cachedContents?key=$GOOGLE_API_KEY" \
+ -H 'Content-Type: application/json' \
+ -d @request.json \
+ > cache.json
+
+export CACHE_NAME=$(cat cache.json | grep '"name":' | cut -d '"' -f 4 | head -n 1)
+
+curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=$GOOGLE_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{
+      "contents": [
+        {
+          "parts":[{
+            "text": "Please find the man in the macintosh coat."
+          }],
+          "role": "user"
+        },
+      ],
+      "cachedContent": "'$CACHE_NAME'"
+    }'
