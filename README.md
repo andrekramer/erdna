@@ -94,4 +94,6 @@ e.g.
 Add an api key in "ai/gemini-api-key" from Google AI and do a (load "ai/gemini.scm")  
 Add an api key in "ai/claud-api-key" from Anthropic and do a (load "ai/claud.scm")    
 Add an api key in "ai/openai-api-key" from OpenAI and do a (load "ai/openai.scm")    
+    
+Once you are set up you can use (load "ai/multi-llm.scm") and perform queries over the above models from the repl: > (map display (multi-way "your query here"))   
 
