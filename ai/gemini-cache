@@ -1,4 +1,4 @@
-
+export GOOGLE_API_KEY=`cat ai/gemini-api-key`
 export B64FLAGS="--input"
 
 echo '{

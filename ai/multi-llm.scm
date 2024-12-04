@@ -9,3 +9,4 @@
        (map (lambda (task) (task)) tasks)))
 
 ;; (define replies (multi-query text '(task-gemini task-claud task-openai)))
+;; (map display replies)
