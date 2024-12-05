@@ -518,7 +518,7 @@ function strConcat(args, env) {
         return (type >= NUM && type <= BOOL) || type === ATOM;
     }
     if (args.length === 0 || !concatable(args[0].type)) {
-        return { type: ERR, value: "concat requires at least one argument" };
+        return { type: ERR, value: "concat requires at least one string argument" };
     }
     let value = "";
     for (const arg of args) {
