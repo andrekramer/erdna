@@ -527,7 +527,7 @@ async function eval(exp, env) {
                         if (target.type === EXP && target.value.length !== 0) {
                            
                             // Call to same proc can be optimized to avoid stack growing.
-                            if (target.value[0].type === ATOM && env[target.value[0].value] === undefined && target.value[0].value === exp.value[0].value) {
+                            if (target.value[0].type === ATOM && target.value[0].value === exp.value[0].value && env[target.value[0].value] === undefined) {
                                 // console.log("tail target " + JSON.stringify(target));
                                 proc = await eval(target.value[0], env);
                                 if (proc.type === ERR) {
