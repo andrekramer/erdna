@@ -3,9 +3,13 @@
 (define gemini-api-key (resolve (read-file-promise "ai/gemini-api-key"))) 
 
 (define gemini-model "gemini-1.5-flash-latest")
-;; (define gemini-model "gemini-1.5-flash-001") ;;; used by cache example as latest not supported there
+(define gemini-model-001 "gemini-1.5-flash-001") ;;; used by cache example as latest not supported there
 
-(define gemini-url (concat "https://generativelanguage.googleapis.com/v1beta/models/" gemini-model ":generateContent?key=" gemini-api-key))
+(define (make-gemini-url model) 
+  (concat "https://generativelanguage.googleapis.com/v1beta/models/" model ":generateContent?key=" gemini-api-key))
+
+(define gemini-url (make-gemini-url gemini-model))
+(define gemini-url-001 (make-gemini-url gemini-model-001))
 
 (define json-content-type "application/json")
 
@@ -39,8 +43,6 @@
 
 ;; (define query (make-gemini-query text))
 
-;; (define query (make-gemini-cache-query "What did the horse say?" cache-name))
-
 ;;(define json-reply (ask-gemini query))
 ;;(define reply (json-find 'text json-reply))
 
@@ -48,6 +50,13 @@
 ;; which is twice as old as Emily was when Alice was as old as Emily is now. How old is Emily?")
 
 ;; (define gemini-reply (one-shot-gemini text))
+
+(define (ask-gemini-with-cache query)
+  (let ((reply (resolve (fetch-promise gemini-url-001 "" query json-content-type))))
+       (json-parse reply)))
+
+;;; (define query2 (make-gemini-cache-query "What did the horse say?" cache-name))
+;;; (define reply (json-find 'text (ask-gemini-with-cache query2)))
 
 (define (task-gemini text)
   (letrec ((query (make-gemini-query text))
