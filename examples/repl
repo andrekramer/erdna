@@ -1,3 +1,5 @@
+(define $_ '())
+
 (define (repl) 
   (let
     ((exp (resolve (prompt-promise ">"))))
@@ -7,6 +9,7 @@
       (else 
         (let 
           ((result (error->string (eval (read exp) '()))))
+          (set! $_ result)
           (display result)
           (repl))))))
 (repl)
