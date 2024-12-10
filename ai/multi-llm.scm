@@ -35,7 +35,7 @@
           (comparison1 (clean (concat (format-comparison "Alice" opinion1 "Bob" opinion2) compare-instructions)))
           (comparison2 (clean (concat (format-comparison "Alice" opinion1 "Eve" opinion3) compare-instructions)))
           (comparison3 (clean (concat (format-comparison "Bob" opinion2 "Eve" opinion3) compare-instructions)))
-          (pass (lambda (opinion) (> (index-of "YES" opinion) -1))))
+          (pass (lambda (opinion) (> (index-of "YES" (safe opinion)) -1))))
       (if (and gate1 (comparable opinion1 opinion2) (pass (one-shot comparison1))) 
         (if (and consensus (comparable opinion2 opinion3) (pass (one-shot comparison3)))
           (concat "PASS all\n" opinion1)
